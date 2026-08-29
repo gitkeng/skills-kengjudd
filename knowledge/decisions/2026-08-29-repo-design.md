@@ -16,7 +16,7 @@ sources:
   - resource: "file:///Users/keng/Coding/gitkeng/skills-kengjudd/docs/superpowers/specs/2026-08-29-skills-kengjudd-design.md"
     title: "Approved design document (2026-08-29)"
   - resource: "https://github.com/GoogleCloudPlatform/open-knowledge-format"
-    title: "OKF canonical spec repository (SPEC.md, Version 0.2)"
+    title: "OKF canonical spec repository (SPEC.md — version declared in-file)"
   - resource: "https://agentskills.io/specification"
     title: "Agent Skills specification (six-field frontmatter rule)"
   - resource: "https://code.claude.com/docs/en/plugins"
@@ -89,8 +89,12 @@ so a future session can act without re-scanning the source projects.
    The shared implementation is `scripts/update.sh <skill-name>` (also
    `--all`), following the ACT flow: verify clone → clean tree on main →
    `git fetch` → compare local vs `origin/main` skill version → show changelog
-   delta → confirm → `git pull` → print per-agent reload reminders. Mechanism
-   details: /skill-authoring/update-mechanism.md.
+   delta → confirm → `git pull` → print per-agent reload reminders. That script
+   serves the git-clone/symlink channel only; plugin-marketplace installs
+   update with `claude plugin update skills-kengjudd@kengjudd`, since the
+   plugin cache has no `.git` and `update.sh` exits 1 there. CLAUDE.md rule 3
+   requires each `## Updating` section to name **both**. Mechanism details:
+   /skill-authoring/update-mechanism.md.
 3. **No import of old skills at initialization.** Initial scaffold only; the
    sole initial skill is `creating-skills` (the format's reference
    implementation). The old-skill inventory is preserved below for a future
@@ -103,8 +107,10 @@ so a future session can act without re-scanning the source projects.
 
 ### `skills/` vs `knowledge/`: the spec conflict forces disjoint subtrees
 
-OKF 0.2 requires every non-reserved `.md` in a bundle to carry YAML
-frontmatter with a non-empty `type:` key (/specs/okf-spec.md). The Agent
+OKF requires every non-reserved `.md` in a bundle to carry YAML
+frontmatter with a non-empty `type:` key (/specs/okf-spec.md — that document's
+`spec_version`, mirrored by `okf_version` in the bundle index, is the only
+place the version this repo targets is recorded). The Agent
 Skills spec allows exactly six SKILL.md frontmatter fields (`name`,
 `description`, `license`, `compatibility`, `metadata`, `allowed-tools`), and
 claude.ai upload / Skills API packaging hard-fails on unknown keys
@@ -130,10 +136,17 @@ never verified, and the adapter pattern makes the question moot here.
 The copy at `GoogleCloudPlatform/knowledge-catalog/okf/` is a **frozen
 snapshot** — never cite it as current. The canonical home is
 `github.com/GoogleCloudPlatform/open-knowledge-format` (SPEC.md at repo root,
-currently Version 0.2, declared via a `**Version X.Y**` line; the repo has no
-tags/releases). `scripts/check-spec-versions.sh` compares that line against
-the version recorded in /specs/okf-spec.md and must run before significant KB
-changes (CLAUDE.md rule 5).
+which declares its version on a `**Version X.Y**` line; the repo has no
+tags/releases, so that line is the only version source).
+`scripts/check-spec-versions.sh` compares it against the `spec_version`
+recorded in /specs/okf-spec.md and must run before significant KB changes
+(CLAUDE.md rule 5). The match is anchored to the start of the declaration line
+so a "Changes since Version X.Y" mention elsewhere in the document cannot be
+read as current; exit 1 means drift, and exit 2 means the check could not run
+(no `spec_version` in the KB, or no `**Version X.Y**` line in the fetched
+spec — read the spec by hand before trusting the KB). The version this repo
+targets is not restated here or anywhere else: it lives only in
+/specs/okf-spec.md (`spec_version`) and the bundle index (`okf_version`).
 
 ### Why per-skill updates work despite no native mechanism
 
@@ -146,8 +159,11 @@ the per-skill version source, while `git pull` still updates the whole repo —
 the per-skill version comparison in `scripts/update.sh` is what makes the
 command per-skill. Marketplace caveat (verified from Claude Code docs):
 plugin.json `version` pins the plugin; **users only receive marketplace
-updates when that version is bumped**, so every release must bump
-`plugin.json` and `marketplace.json` versions alongside `VERSION`.
+updates when that version is bumped**, so every release must move all four
+repo-level version fields together — `VERSION`, `plugin.json` `.version`,
+`marketplace.json` `.metadata.version`, and `marketplace.json`
+`.plugins[0].version` (the one Claude Code compares). `./scripts/bump-version.sh
+<semver>` sets all four; `--show` prints the current values.
 
 ## Deferred: old-skill imports
 
@@ -212,10 +228,15 @@ Import-session notes:
   together; `analysis-report` is their AWS-branded sibling and likely stays
   behind.
 - Any import must follow the `creating-skills` lifecycle (CLAUDE.md rules 3–4):
-  add `## Updating` + `metadata.version`, register in
-  `.claude-plugin/plugin.json`, capture knowledge, bump versions. Names must
-  not collide with the 40+ `act-*` and other skills already installed in
-  `~/.claude/skills` / `~/.agents/skills`.
+  add an `## Updating` section covering both install channels
+  (`./scripts/update.sh <skill-name>` and
+  `claude plugin update skills-kengjudd@kengjudd`) plus `metadata.version`,
+  register in `.claude-plugin/plugin.json`, capture knowledge, and bump all
+  four repo-level version fields with `./scripts/bump-version.sh <semver>`.
+  Names must not collide with the 40+ `act-*` and other skills already
+  installed on the machine: check every directory `install.sh` targets and the
+  plugin-provided skills, per the **Skill naming** rule in the repo-root
+  `CLAUDE.md` (authoritative list — do not keep a copy here).
 
 ## Open questions inherited from the research critic
 

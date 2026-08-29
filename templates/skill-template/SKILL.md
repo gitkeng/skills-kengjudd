@@ -31,9 +31,16 @@ One short paragraph: what problem this skill solves and what the output is.
 2. Step two.
 3. Step three.
 
+<!--
+Optional: if this skill needs depth beyond the body, create a references/
+directory and link the files here, one level deep. Delete this section if
+there are none — a link to a file that does not exist is a defect.
+
 ## References
 
-- [references/example.md](references/example.md) — load only when needed.
+- [references/<topic>.md](references/<topic>.md) — load only when needed.
+-->
+
 
 ## Updating
 
@@ -47,12 +54,9 @@ that matches how it was installed.
 ./scripts/update.sh skill-name-here
 ```
 
-If this skill directory is a symlink (the normal install), the repo root is
-two levels above the resolved path:
-
-```bash
-dirname "$(dirname "$(readlink -f "$(dirname "$0")")")"
-```
+If this skill directory is a symlink (the normal install), resolve it with
+`readlink -f <this-skill-dir>`; the repo root is two directories above the
+resolved path.
 
 The script fetches `origin/main`, compares this skill's `metadata.version`,
 shows this skill's pending commits, and pulls after confirmation.

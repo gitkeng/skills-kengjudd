@@ -2,6 +2,16 @@
 
 ## 2026-08-29
 
+- **Update** from the final review round (repo v0.3.0), per binding rule 7:
+  brought /skill-authoring/update-mechanism.md, /skill-authoring/best-practices.md
+  and /decisions/2026-08-29-repo-design.md back in line with the revised
+  CLAUDE.md — two-channel `## Updating` contract, unconditional lockstep bump of
+  the four repo-level version fields via the new `scripts/bump-version.sh`, the
+  five `install.sh` user-scope targets, and corrected `--force` / unknown-tool
+  script behaviour. Removed hardcoded OKF version strings so the version lives
+  only in `knowledge/index.md` and /specs/okf-spec.md. Reframed the evals
+  section as upstream guidance that this repo does not require, rather than an
+  implied convention it does not have.
 - **Update** from the expert review of `CLAUDE.md`/`AGENTS.md` (repo v0.2.0):
   documented ZCode (Z.ai) in /agents/skill-discovery-matrix.md and
   /specs/agents-md-standard.md — it reads AGENTS.md and *only* AGENTS.md, never

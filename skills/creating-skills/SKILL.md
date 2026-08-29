@@ -31,6 +31,8 @@ multiple agents, and always carries its own update command.
 
 ## Workflow: creating a new skill
 
+0. **Run the spec freshness gate.** `./scripts/check-spec-versions.sh`
+   (CLAUDE.md rule 5). On exit 1, migrate the knowledge base before continuing.
 1. **Clarify scope.** One skill = one capability with clear triggers. If the
    idea spans several independent capabilities, split it.
 2. **Name it.** Lowercase `a-z0-9-`, 1-64 chars, no leading/trailing/consecutive
@@ -57,26 +59,31 @@ multiple agents, and always carries its own update command.
 8. **Register the skill** in `.claude-plugin/plugin.json` → `skills` array as
    `"./skills/<skill-name>"` (the `./` prefix and directory path are required
    for Claude Code plugin discovery).
-9. **Capture knowledge (mandatory).** Add or update an OKF concept under
-   `knowledge/` describing what was learned or decided while building the
-   skill (frontmatter `type:`, `sources:` for external claims, `generated:`),
-   and append an entry to `knowledge/log.md` under today's date.
-10. **Version bookkeeping.** Add a `CHANGELOG.md` entry under the skill's name,
-    bump the repo `VERSION` (SemVer: new skill = minor bump), and bump the
-    `version` field in both `.claude-plugin/plugin.json` and
-    `.claude-plugin/marketplace.json` — plugin-channel users only receive
-    updates when those move.
+9. **Capture knowledge (mandatory).** Add or update an OKF concept describing
+   what was learned or decided while building the skill. Default destination:
+   `knowledge/skill-authoring/<topic>.md` with `type: Playbook` — or
+   `knowledge/decisions/<YYYY-MM-DD>-<topic>.md` with `type: Decision` when the
+   skill encodes a lasting decision. Include `generated:` and `sources:` for
+   any external claim. Then list it in `knowledge/index.md` (plain relative
+   path form) and append an entry to `knowledge/log.md` under today's date.
+10. **Version bookkeeping.** Run `./scripts/bump-version.sh <semver>` (new skill
+    = minor bump) — it sets all four repo-level version fields. Then add a
+    `CHANGELOG.md` entry under the skill's name and a row in the README
+    `## Skills` table (name, version, description).
 11. **Validate.** Run the checklist in
-    [references/authoring-checklist.md](references/authoring-checklist.md),
-    then test that the skill triggers on its intended prompts and does NOT
-    trigger on near-miss prompts.
+    [references/authoring-checklist.md](references/authoring-checklist.md).
+    Then install the repo so the skill is discoverable —
+    `./scripts/install.sh --tool claude --project .` — and in a fresh session
+    test that it triggers on its intended prompts and does NOT trigger on
+    near-miss prompts.
 
 ## Workflow: updating an existing skill
 
+0. Run `./scripts/check-spec-versions.sh` (CLAUDE.md rule 5).
 1. Edit the skill's files.
 2. Bump `metadata.version` (SemVer) and `metadata.updated` in its SKILL.md.
-3. Add a CHANGELOG.md entry under the skill's name; bump repo `VERSION` and the
-   `version` field in both `.claude-plugin/` JSON files.
+3. Run `./scripts/bump-version.sh <semver>`; add a CHANGELOG.md entry under the
+   skill's name; update the skill's version in the README `## Skills` table.
 4. Update the related `knowledge/` concept and `knowledge/log.md`.
 
 ## Workflow: importing a skill from another project
@@ -88,7 +95,16 @@ multiple agents, and always carries its own update command.
 3. Remove build artifacts (`__pycache__/`, `.git/` of vendored repos).
 4. If it has an upstream (vendored third-party skill), record the upstream URL
    in `metadata.upstream` and in its knowledge/ concept so it can be re-synced.
-5. Then follow steps 4-11 of "creating a new skill".
+5. Imported skills start at `metadata.version: "1.0.0"` regardless of any
+   upstream numbering; record the upstream version or commit in
+   `metadata.upstream`. If the user asks for a different number, confirm the
+   intent before deviating.
+6. Then follow steps 4-11 of "creating a new skill".
+
+If asked to update a skill that is not in `skills/` yet, say so and offer to
+import it — do not invent a version history. The deferred-import inventory of
+skills from older projects (with source paths, readiness, and dependencies)
+lives in `knowledge/decisions/2026-08-29-repo-design.md`.
 
 ## Multi-agent compatibility rules
 

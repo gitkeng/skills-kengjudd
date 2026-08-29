@@ -34,9 +34,12 @@ reads); `GEMINI.md` does the same for Gemini CLI.
    entry, a `CHANGELOG.md` entry, a `metadata.version` bump, a repo `VERSION`
    bump, and the plugin `version` bumps (see Versioning). No exceptions.
 5. **Check spec freshness before KB work.** Before significant changes to
-   `knowledge/`, run `./scripts/check-spec-versions.sh`. If the OKF spec has
-   moved past the recorded version, update `knowledge/specs/okf-spec.md` and
-   migrate the bundle first. The canonical OKF spec lives at
+   `knowledge/`, run `./scripts/check-spec-versions.sh` (it checks the OKF spec
+   only — the other spec summaries have no automated freshness gate). On exit 1,
+   migrate before continuing: update `knowledge/specs/okf-spec.md` (content +
+   `spec_version`), update `okf_version` in `knowledge/index.md`, bring the
+   bundle to the new rules, and log it in `knowledge/log.md`. The canonical
+   OKF spec lives at
    `github.com/GoogleCloudPlatform/open-knowledge-format` — the copy under
    `GoogleCloudPlatform/knowledge-catalog/okf/` is a frozen snapshot; never
    cite it as current.
@@ -53,8 +56,8 @@ reads); `GEMINI.md` does the same for Gemini CLI.
 skills/<name>/           one folder per skill (Agent Skills spec)
   SKILL.md               frontmatter + body + required "## Updating" section
   references|scripts|assets/
-knowledge/               OKF 0.2 bundle (project knowledge base)
-  index.md               bundle index (okf_version)
+knowledge/               OKF bundle (version recorded in knowledge/index.md)
+  index.md               bundle index (okf_version) + listing of every concept
   log.md                 KB change history (newest date first)
   specs/                 spec knowledge: agent-skills, agents-md, okf, claude plugins
   agents/                per-agent skill discovery paths and constraints
@@ -78,23 +81,33 @@ README.md                human docs
 
 ## Working with skills
 
-- **Create / update / import a skill:** invoke the `creating-skills` skill
-  (`skills/creating-skills/SKILL.md`) and follow it exactly — it encodes the
-  full lifecycle including registration and knowledge capture. Its checklist:
-  `skills/creating-skills/references/authoring-checklist.md`.
+- **Create / update / import a skill:** follow `skills/creating-skills/SKILL.md`
+  exactly — it encodes the full lifecycle including registration and knowledge
+  capture. Its checklist: `skills/creating-skills/references/authoring-checklist.md`.
+  Reading that file and following it is equivalent to invoking the skill; the
+  repo's own skills are not discoverable here until installed. To make them
+  discoverable while working in this repo, run once:
+  `./scripts/install.sh --tool claude --project .` (this also enables the
+  trigger tests in the authoring checklist).
 - **Register:** every new skill must be added to `.claude-plugin/plugin.json`
   → `skills` array as `"./skills/<name>"` (`./` prefix + directory path).
 - **Skill naming:** directory name == frontmatter `name`; lowercase `a-z0-9-`,
   max 64 chars; gerund or noun phrase; must be unique among the skills already
   installed on the user's machine — check every directory `install.sh` targets:
   `~/.claude/skills`, `~/.agents/skills`, `~/.config/agents/skills`,
-  `~/.kiro/skills`, `~/.zcode/skills`. A collision makes `install.sh` print
-  `SKIP ... already exists (not ours)` and skip that skill; pass `--force` only
-  when you intend to replace the existing entry.
+  `~/.kiro/skills`, `~/.zcode/skills`. Also check plugin-provided skills
+  (`claude plugin list`) — they are namespaced but still compete for
+  description-match and slash-command space. A collision makes `install.sh`
+  print `SKIP ... already exists (not ours)` and skip that skill. `--force`
+  replaces a symlink outright and moves a real file or directory aside to
+  `<name>.bak.<pid>` rather than deleting it.
 
 ## Knowledge base (OKF) rules
 
-- Bundle root is `knowledge/`; it conforms to OKF 0.2:
+- Bundle root is `knowledge/`. The OKF version it conforms to is recorded in
+  exactly two machine-readable places — `knowledge/index.md` (`okf_version`) and
+  `knowledge/specs/okf-spec.md` (`spec_version`, which `check-spec-versions.sh`
+  reads). Do not hardcode the version anywhere else. Current rules:
   - every non-reserved `.md` has YAML frontmatter with non-empty `type:`;
   - reserved names: `index.md` (listing; frontmatter only at bundle root),
     `log.md` (history, `## YYYY-MM-DD` headings, newest first);
@@ -104,6 +117,14 @@ README.md                human docs
     `stale_after:`.
 - `type` vocabulary used in this repo: `Spec Summary`, `Reference`, `Playbook`,
   `Decision`. Extend only with user approval.
+- **Where a new concept goes:** knowledge gained while building or changing a
+  skill → `knowledge/skill-authoring/<topic>.md` with `type: Playbook`;
+  a decision with lasting consequences → `knowledge/decisions/<YYYY-MM-DD>-<topic>.md`
+  with `type: Decision`; a summary of an external spec → `knowledge/specs/`
+  (`Spec Summary`); per-agent facts → `knowledge/agents/` (`Reference`).
+  Every new concept must also be listed in `knowledge/index.md`.
+- `sources:` may be omitted only when a document makes no external factual
+  claim (e.g. a pure decision record about this repo's own choices).
 - Actor convention: agents write `generated.by` as `<agent>/<model>`
   (e.g. `claude-code/claude-fable-5`); humans as `human:kengjudd`.
 - Cross-link **concept documents** with bundle-relative links starting with `/`
@@ -114,12 +135,23 @@ README.md                human docs
 
 ## Versioning
 
-- Repo: `VERSION` (SemVer) + `CHANGELOG.md` (Keep a Changelog). New skill =
-  minor bump; skill content fix = patch bump; breaking layout change = major.
-- Per skill: `metadata.version` + `metadata.updated` in SKILL.md frontmatter.
-- Plugin channel: also bump the `version` fields in `.claude-plugin/plugin.json`
-  and `.claude-plugin/marketplace.json` — plugin users only receive updates when
-  those move.
+- **Four repo-level version fields move in lockstep to the same SemVer string**:
+  `VERSION`, `.claude-plugin/plugin.json` → `version`,
+  `.claude-plugin/marketplace.json` → `metadata.version`, and
+  `.claude-plugin/marketplace.json` → `plugins[0].version` (the last is what
+  Claude Code compares). Do not edit them by hand — run
+  `./scripts/bump-version.sh <semver>`, which sets all four
+  (`--show` prints the current values). Plugin users receive nothing if these
+  do not move.
+- Bump size: new skill = minor; skill content fix = patch; breaking layout
+  change = major. **Knowledge-only or scripts-only changes** (spec migrations,
+  KB corrections, tooling fixes) also bump `VERSION` — minor for a spec-version
+  migration, patch otherwise — and get a `CHANGELOG.md` entry under a
+  `### Knowledge` or `### Tooling` heading.
+- Per skill: `metadata.version` + `metadata.updated` in SKILL.md frontmatter,
+  bumped by hand in the skill you changed.
+- Every `CHANGELOG.md` release needs a matching entry; skill changes are
+  recorded under the skill's name.
 - All of the above move together on every skill change (rule 4).
 - Commits touching `skills/<name>/` are surfaced verbatim by `update.sh` as that
   skill's update preview — write meaningful, skill-scoped commit messages (one
@@ -128,8 +160,9 @@ README.md                human docs
 ## Install & update
 
 ```bash
-# clone (private repo — requires git auth)
-git clone git@github.com:gitkeng/skills-kengjudd.git
+# clone (private repo — requires git auth; use whichever you have set up)
+git clone git@github.com:gitkeng/skills-kengjudd.git       # SSH
+git clone https://github.com/gitkeng/skills-kengjudd.git   # HTTPS (gh auth login)
 
 # link all skills into an agent's discovery dir (user scope)
 # tools: claude|codex|cursor|opencode|gemini|zed|goose|kimi|amp|kiro|zcode|all

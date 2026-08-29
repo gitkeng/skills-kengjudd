@@ -14,8 +14,8 @@ project knowledge base in the [OKF](https://github.com/GoogleCloudPlatform/open-
 | Path | Purpose |
 |---|---|
 | `skills/<name>/` | One skill per folder (agentskills.io spec). Every skill has its own `## Updating` command and `metadata.version`. |
-| `knowledge/` | OKF 0.2 knowledge bundle — specs, per-agent facts, authoring playbooks, decisions. |
-| `scripts/` | `install.sh` (symlink into agent dirs), `update.sh` (per-skill updater), `check-spec-versions.sh` (OKF freshness). |
+| `knowledge/` | OKF knowledge bundle (version recorded in `knowledge/index.md`) — specs, per-agent facts, authoring playbooks, decisions. |
+| `scripts/` | `install.sh` (symlink into agent dirs), `update.sh` (per-skill updater), `check-spec-versions.sh` (OKF freshness), `bump-version.sh` (all four version fields at once). |
 | `templates/skill-template/` | Scaffold for new skills. |
 | `docs/` | Human design/spec documents. Not an OKF bundle and not a substitute for a `knowledge/` concept. |
 | `.claude-plugin/` | Claude Code plugin + marketplace packaging. |
@@ -76,4 +76,4 @@ naming, frontmatter, structure, registration, knowledge capture, and versioning.
 
 | Skill | Version | Description |
 |---|---|---|
-| [creating-skills](skills/creating-skills/SKILL.md) | 1.0.0 | Meta-skill: create, update, and register skills in this repo. |
+| [creating-skills](skills/creating-skills/SKILL.md) | 1.1.0 | Meta-skill: create, update, and register skills in this repo. |

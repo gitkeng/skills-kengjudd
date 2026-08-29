@@ -7,6 +7,47 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.3.0] - 2026-08-29
+
+Final expert-review round: regression fixes, two script bugs, and consolidation
+of the release procedure.
+
+### Added
+
+- `scripts/bump-version.sh <semver>` — sets all four repo-level version fields
+  in lockstep (`VERSION`, `plugin.json` `.version`, `marketplace.json`
+  `.metadata.version`, `marketplace.json` `.plugins[0].version`). `--show`
+  prints the current values. The previous instructions said "the `version`
+  fields" without naming them, and `marketplace.json` has two.
+- `CLAUDE.md`: where a new knowledge concept goes (directory + `type:` per
+  kind), and a release procedure for knowledge-only and scripts-only changes.
+- Authoring checklist: `knowledge/index.md` listing, README skills-table row,
+  the spec-freshness gate, and the `skills-ref validate` portability gate.
+
+### Fixed
+
+- **`install.sh --force` could destroy real data.** It ran `rm -rf` on any
+  existing path, including a real directory (the plausible case when importing
+  a skill that already lives in `~/.claude/skills`). It now removes symlinks
+  only and moves a real file or directory aside to `<name>.bak.<pid>`.
+- **`install.sh` exited 0 on an unknown `--tool`.** `targets_for_tool` runs in
+  a process substitution, so its `exit 1` killed only the subshell: a typo
+  installed nothing while reporting success. The value is now validated in the
+  main shell before the loop.
+- `check-spec-versions.sh` matched `Version X.Y` anywhere in the spec; a
+  "Changes since Version 0.2" line above the header would have reported a stale
+  version as current. It now anchors to the `**Version X.Y**` declaration line
+  and exits 2 if that line is absent.
+- README skills table showed creating-skills at 1.0.0 after the 1.1.0 bump.
+- The OKF version was hardcoded in four instruction files; it now lives only in
+  `knowledge/index.md` and `knowledge/specs/okf-spec.md`.
+- `templates/skill-template/` shipped two defects into every scaffolded skill:
+  a `$0`-based path snippet that does not work in a SKILL.md body, and a link
+  to a `references/example.md` that does not exist.
+- Clone instructions offered only the SSH URL while this checkout uses HTTPS.
+- KB playbooks that restated the single-channel update rule and the conditional
+  plugin bump were brought back in line with CLAUDE.md (binding rule 7).
+
 ## [0.2.0] - 2026-08-29
 
 Expert review of `CLAUDE.md` / `AGENTS.md` (three specialist lenses) plus

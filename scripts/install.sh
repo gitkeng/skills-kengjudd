@@ -34,8 +34,17 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+VALID_TOOLS="claude codex cursor opencode gemini zed goose kimi amp kiro zcode all"
+
 if [[ -z "$TOOL" ]]; then
   echo "Error: --tool is required. See --help." >&2
+  exit 1
+fi
+
+# Validate here, in the main shell: targets_for_tool() runs in a process
+# substitution below, where its exit would not stop the script.
+if [[ " $VALID_TOOLS " != *" $TOOL "* ]]; then
+  echo "Error: unknown tool '$TOOL'. Valid: $VALID_TOOLS" >&2
   exit 1
 fi
 
@@ -77,12 +86,19 @@ while IFS= read -r target_dir; do
       continue
     fi
     if [[ -e "$link" || -L "$link" ]]; then
-      if [[ "$FORCE" -eq 1 ]]; then
-        rm -rf "$link"
-      else
+      if [[ "$FORCE" -ne 1 ]]; then
         echo "SKIP  $link already exists (not ours). Use --force to replace." >&2
         skipped=$((skipped + 1))
         continue
+      fi
+      # --force replaces symlinks outright, but never silently destroys real
+      # content: a regular file or directory is moved aside, not deleted.
+      if [[ -L "$link" ]]; then
+        rm -f "$link"
+      else
+        backup="$link.bak.$$"
+        mv "$link" "$backup"
+        echo "MOVED $link -> $backup (real directory/file preserved)" >&2
       fi
     fi
     ln -s "$src" "$link"

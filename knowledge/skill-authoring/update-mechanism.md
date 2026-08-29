@@ -2,12 +2,13 @@
 type: Playbook
 title: Per-skill update mechanism
 description: >-
-  How per-skill updates work in this repo: the required "## Updating" section
-  and metadata.version in every SKILL.md, the shared scripts/update.sh engine
-  (guards, per-skill version comparison against origin/main, changelog delta,
-  confirm, pull, reload reminders), the provenance of the design (ACT
-  act-update pattern), and the release steps an author must perform for
-  updates to be detectable.
+  How per-skill updates work in this repo: the required two-channel "## Updating"
+  section and metadata.version in every SKILL.md, the shared scripts/update.sh
+  engine (guards, per-skill version comparison against origin/main, changelog
+  delta, confirm, pull, reload reminders), the parallel plugin-marketplace
+  channel, the provenance of the design (ACT act-update pattern), and the
+  release steps — including scripts/bump-version.sh and the four lockstep
+  repo-level version fields — that make updates detectable.
 tags:
   - skills
   - updating
@@ -29,6 +30,12 @@ sources:
     title: Claude Code docs — Discover and install plugins (auto-update)
   - resource: https://github.com/vercel-labs/skills
     title: vercel-labs/skills — npx skills CLI (alternative pattern)
+  - resource: file:///Users/keng/Coding/gitkeng/skills-kengjudd/scripts/update.sh
+    title: scripts/update.sh — per-skill updater (verified by local inspection)
+  - resource: file:///Users/keng/Coding/gitkeng/skills-kengjudd/scripts/install.sh
+    title: scripts/install.sh — symlink installer, --tool targets and --force behaviour
+  - resource: file:///Users/keng/Coding/gitkeng/skills-kengjudd/scripts/bump-version.sh
+    title: scripts/bump-version.sh — lockstep bump of the four repo-level version fields
 generated:
   by: claude-code/claude-fable-5
   at: 2026-08-29T10:45:08Z
@@ -37,22 +44,38 @@ status: stable
 
 # Per-skill update mechanism
 
-Every skill in this repo carries its own update command, but all skills share
-one update engine and one git clone. This playbook describes the contract each
-SKILL.md must satisfy, the exact flow of `scripts/update.sh`, why the design
-looks the way it does, and what an author must do on each release so updates
-are detectable.
+Every skill in this repo carries its own update command, but the command a user
+runs depends on the channel they installed through: git-clone/symlink installs
+share one update engine and one git clone, while Claude Code plugin installs
+update through the marketplace. This playbook describes the two-channel
+contract each SKILL.md must satisfy, the exact flow of `scripts/update.sh`, why
+the design looks the way it does, and what an author must do on each release so
+updates are detectable on **both** channels.
 
 ## The per-skill contract
 
 Every `skills/<name>/SKILL.md` MUST contain (CLAUDE.md binding rule 3):
 
-1. **A `## Updating` section** in the body that tells the reader (human or
-   agent) to run, from the repository root:
+1. **A `## Updating` section** in the body that covers **both install
+   channels**, because the right command depends on how the skill was
+   installed:
 
-   ```bash
-   ./scripts/update.sh <skill-name>
-   ```
+   - *git clone + symlink install* — run from the repository root:
+
+     ```bash
+     ./scripts/update.sh <skill-name>
+     ```
+
+   - *Claude Code plugin-marketplace install*:
+
+     ```bash
+     claude plugin update skills-kengjudd@kengjudd
+     ```
+
+   The plugin cache is not a git clone (it has no `.git` directory), so
+   `update.sh` cannot run there — it hits its clone guard and exits 1. A
+   `## Updating` section that documents only one of the two channels sends
+   half the users to a command that cannot work for them.
 
 2. **`metadata.version`** in the frontmatter — a SemVer string, quoted
    (e.g. `version: "1.0.0"`). The Agent Skills spec has *no* standard version
@@ -65,19 +88,23 @@ Example frontmatter (from `skills/creating-skills/SKILL.md`):
 
 ```yaml
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   updated: "2026-08-29"
 ```
 
-Skills missing the `## Updating` section or `metadata.version` are incomplete
-by definition. The scaffold in `templates/skill-template/` already includes
-both; keep them when creating new skills (see
+Skills missing `metadata.version`, or carrying an `## Updating` section that
+does not document *both* channels above, are incomplete by definition. The
+scaffold in `templates/skill-template/` already includes the two-channel
+section and both metadata keys; keep them when creating new skills (see
 /skill-authoring/best-practices.md and the `creating-skills` skill).
 
 ## The shared engine: scripts/update.sh
 
 `scripts/update.sh` (at `/Users/keng/Coding/gitkeng/skills-kengjudd/scripts/update.sh`)
-is the single implementation behind every skill's `## Updating` section.
+is the single implementation behind the git-clone/symlink half of every skill's
+`## Updating` section. (The other half, `claude plugin update
+skills-kengjudd@kengjudd`, is handled entirely by Claude Code — see
+/specs/claude-code-plugins.md.)
 
 Usage:
 
@@ -91,8 +118,12 @@ Step-by-step flow:
 
 1. **Resolve repo root** from the script's own location and `cd` there, so it
    works when invoked through a symlinked skill directory.
-2. **Guard: git clone.** Requires `.git` to exist; otherwise prints the clone
-   command (`git clone git@github.com:gitkeng/skills-kengjudd.git`) and exits 1.
+2. **Guard: git clone.** Requires a `.git` directory at the repo root;
+   otherwise prints the clone command
+   (`git clone git@github.com:gitkeng/skills-kengjudd.git`) and exits 1. This
+   is exactly the guard a plugin-marketplace install trips: the plugin cache
+   holds a copy of the skills with no `.git`, so those users must run
+   `claude plugin update skills-kengjudd@kengjudd` instead.
 3. **Guard: branch.** `git branch --show-current` must be `main`; otherwise
    errors and exits.
 4. **Guard: clean tree.** `git status --porcelain` must be empty; otherwise
@@ -112,8 +143,10 @@ Step-by-step flow:
 7. **Changelog delta per skill.** When an update is available it shows the
    pending commits scoped to that skill's path:
    `git log --oneline HEAD..origin/main -- "skills/<name>/"`.
-8. **Confirm.** Prompts `Pull updates now? (git pull updates the whole repo)
-   [y/N]` unless `-y/--yes` was passed. Anything other than `y`/`Y` aborts.
+8. **Confirm.** If no checked skill reported an update, the script exits 0 here
+   without prompting. Otherwise it prompts `Pull updates now? (git pull updates
+   the whole repo) [y/N]` unless `-y/--yes` was passed; anything other than
+   `y`/`Y` prints `Aborted.` and exits 0 without pulling.
 9. **Pull.** `git pull origin main`.
 10. **Reload reminders.** Prints how to make each agent pick up the change:
     - Claude Code (symlink install): start a new session — symlinked SKILL.md
@@ -129,11 +162,23 @@ plain scalar on its own line for detection to work.
 ## Why one `git pull` but a per-skill command
 
 All skills live in a single git clone, and `scripts/install.sh` symlinks each
-`skills/<name>` directory into the agents' discovery dirs (`~/.claude/skills`,
-`~/.agents/skills`, `~/.config/agents/skills`, `~/.kiro/skills` — see
-/agents/skill-discovery-matrix.md). Because the install is symlink-based, a
-single `git pull` updates every installed skill in place at once — there is no
+`skills/<name>` directory into the agents' discovery dirs. At user scope there
+are five targets — `~/.claude/skills`, `~/.agents/skills`,
+`~/.config/agents/skills`, `~/.kiro/skills`, and `~/.zcode/skills` — selected by
+`--tool claude|codex|cursor|opencode|gemini|zed|goose|kimi|amp|kiro|zcode|all`
+(`all` links into all five; an unrecognised `--tool` value is rejected with
+exit 1 before anything is linked). See /agents/skill-discovery-matrix.md for
+the per-agent mapping. Because the install is symlink-based, a single
+`git pull` updates every installed skill in place at once — there is no
 per-skill checkout to update independently.
+
+That property depends on the link actually pointing back into the clone. When a
+target name is already taken by something that is not our symlink, `install.sh`
+prints `SKIP ... already exists (not ours)` and leaves it alone; `--force`
+replaces a symlink outright but *moves* a real file or directory aside to
+`<name>.bak.<pid>` rather than deleting it. A skipped or backed-up entry is not
+symlinked, so `git pull` will not refresh it — re-run the installer before
+relying on the update flow.
 
 The command is still per-skill because the *decision* is per-skill: the user
 invoking `## Updating` from one skill wants to know whether *that* skill
@@ -153,8 +198,8 @@ main, clean tree) → `git fetch` → compare local vs remote version via
 delta → explicit user confirmation → `git pull` → print reload/reinstall
 reminders, never auto-run installers. ACT compares a single repo-root
 `VERSION` file; this repo refines that to per-skill `metadata.version` in
-each SKILL.md so a skill-scoped answer is possible, while keeping the
-repo-level `VERSION` + `CHANGELOG.md` for whole-repo releases.
+each SKILL.md so a skill-scoped answer is possible, while keeping the four
+lockstep repo-level version fields + `CHANGELOG.md` for whole-repo releases.
 
 Why this model over the alternatives (researched trade-offs):
 
@@ -166,9 +211,12 @@ Why this model over the alternatives (researched trade-offs):
   sandboxed environments.
 - **Claude Code plugin marketplace:** first-class semver, scoped installs,
   background auto-update + `/reload-plugins`, namespacing — but Claude
-  Code-specific, and setting `plugin.json` `version` *pins* the plugin: users
-  only receive updates when the author bumps it. This repo supports it as a
-  secondary channel via `.claude-plugin/` (see /specs/claude-code-plugins.md).
+  Code-specific, and the declared `version` *pins* the plugin: users only
+  receive updates when the author bumps it (Claude Code compares the
+  marketplace entry's `plugins[].version`). This repo ships it as a fully
+  supported second channel via `.claude-plugin/` — which is why the four
+  version bumps in the author checklist are mandatory rather than optional
+  (see /specs/claude-code-plugins.md).
 - **npx skills CLI (vercel-labs/skills):** cross-agent GitHub-as-registry with
   a built-in `update` command — but Node-dependent and HEAD-based (no semver;
   lockfile still experimental).
@@ -179,23 +227,39 @@ Founding rationale is recorded in /decisions/2026-08-29-repo-design.md.
 
 ## Author checklist: what makes an update detectable
 
-`update.sh` detects updates **only** by comparing `metadata.version` strings.
-If you change a skill without bumping its version, every clone will report
-"up to date" and the change is invisible to the update mechanism. On every
-skill release you MUST (CLAUDE.md binding rule 4):
+Each channel has its own detector, and both are version-driven. `update.sh`
+detects updates **only** by comparing `metadata.version` strings, and Claude
+Code decides whether a plugin update exists **only** by comparing the
+marketplace plugin entry's `version`. If you change a skill without bumping
+those, every clone reports "up to date" and every plugin user receives nothing.
+On every skill release you MUST (CLAUDE.md binding rule 4):
 
 1. **Bump `metadata.version`** in the skill's SKILL.md (SemVer) and set
-   `metadata.updated` to today's date.
-2. **Add a `CHANGELOG.md` entry** at the repo root (Keep a Changelog format) —
+   `metadata.updated` to today's date. Do this by hand, in the skill you
+   changed — no script touches per-skill versions.
+2. **Bump all four repo-level version fields to the same SemVer string.** They
+   move in lockstep and are not optional:
+   - `VERSION`
+   - `.claude-plugin/plugin.json` → `version`
+   - `.claude-plugin/marketplace.json` → `metadata.version`
+   - `.claude-plugin/marketplace.json` → `plugins[0].version` (the one Claude
+     Code actually compares)
+
+   Do not edit them by hand — run `./scripts/bump-version.sh <semver>`, which
+   validates the SemVer string, writes all four, and prints the result;
+   `./scripts/bump-version.sh --show` prints the current values without
+   changing anything. Bump size: new skill = minor, skill content fix = patch,
+   breaking layout change = major.
+3. **Add a `CHANGELOG.md` entry** at the repo root (Keep a Changelog format) —
    this plus the commit messages on `skills/<name>/` is what users see as the
    pending-changes preview.
-3. **Bump the repo `VERSION` file** (SemVer): new skill = minor, content fix =
-   patch, breaking layout change = major.
 4. Capture the knowledge (OKF concept + `knowledge/log.md` entry) — required
    by the same rule, though not part of update detection.
-5. If also distributing as a Claude Code plugin: bump the `version` fields in
-   `.claude-plugin/plugin.json` and `marketplace.json`, since plugin users
-   only receive updates when those are bumped.
+
+Knowledge-only and scripts-only changes are held to the same versioning bar:
+they also bump all four version fields — minor for an OKF spec-version
+migration, patch otherwise — and get a `CHANGELOG.md` entry under a
+`### Knowledge` or `### Tooling` heading.
 
 Commit messages that touch `skills/<name>/` should be meaningful — they are
 surfaced verbatim by step 7 of the update flow as the skill's changelog delta.

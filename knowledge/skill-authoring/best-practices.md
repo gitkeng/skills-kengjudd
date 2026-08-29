@@ -4,7 +4,7 @@ title: Skill authoring best practices
 description: >
   Actionable playbook for writing Agent Skills that trigger correctly and work
   across agents: description writing, naming, progressive disclosure discipline,
-  degrees of freedom, bundling scripts, and eval-first testing.
+  degrees of freedom, bundling scripts, and trigger testing before shipping.
 tags:
   - agent-skills
   - authoring
@@ -77,9 +77,11 @@ Anti-patterns:
   lowercase `a-z0-9-` only, no leading/trailing/consecutive hyphens, name MUST
   equal the parent directory name, and (Anthropic platform) no `anthropic` or
   `claude` reserved words, no XML tags.
-- Repo-specific: the name must also be unique among skills already installed on
-  the machine — see the naming rule in the repo-root `CLAUDE.md` and check
-  `~/.claude/skills`, `~/.agents/skills` before choosing.
+- Repo-specific: the name must also be unique among the skills already installed
+  on the machine, including plugin-provided ones. The authoritative list of
+  directories to check is the **Skill naming** rule in the repo-root
+  `CLAUDE.md` — follow it there rather than a copy kept here, so there is one
+  place to maintain when `install.sh` gains a target.
 
 ## 3. Respect progressive disclosure — budget every level
 
@@ -132,19 +134,35 @@ in `scripts/` as executable code and have SKILL.md invoke it, rather than
 writing instructions for the agent to re-derive the operation each time.
 Scripts are Level-3 content: they cost no context until executed, they don't
 drift, and they remove a whole class of transcription errors. (In this repo the
-mandatory `## Updating` section already follows this rule by delegating to
-`./scripts/update.sh <skill-name>` — see
+mandatory `## Updating` section follows this rule by naming commands instead of
+describing steps. It must cover **both** install channels — CLAUDE.md binding
+rule 3: `./scripts/update.sh <skill-name>`, run from the repo root, for
+git-clone/symlink installs; and `claude plugin update skills-kengjudd@kengjudd`
+for plugin-marketplace installs, where `update.sh` cannot work because the
+plugin cache has no `.git` directory and the script exits 1. See
 [/skill-authoring/update-mechanism.md](/skill-authoring/update-mechanism.md).)
 
-## 6. Build evals BEFORE writing extensive documentation
+## 6. Evals: upstream guidance, optional in this repo
 
-Official guidance is explicit: create evaluations first, then write the docs to
-pass them. Concretely:
+Anthropic's official authoring guidance says to build evaluations *before*
+writing extensive documentation, then write the docs to pass them. Its tooling
+(`skill-creator`) expresses that with `evals/evals.json` test cases run in
+isolated subagents, `grading.json` for scoring, and `benchmark.json` for
+with-skill vs without-skill comparison.
 
-- Define test cases (the skill-creator tooling uses `evals/evals.json` test
-  cases run in isolated subagents, with `grading.json` for scoring and
-  `benchmark.json` for with-skill vs without-skill comparison).
-- Benchmark **with and without the skill** — a skill that doesn't beat the
+Those filenames belong to that upstream tooling. **This repo has no eval
+convention of its own**, and the `creating-skills` skill never asks for one.
+What a skill must pass here before shipping is the smaller loop in sections 7
+and 8: the trigger and anti-trigger tests in
+`skills/creating-skills/references/authoring-checklist.md`, plus
+`skills-ref validate`. A formal eval suite is **optional** — if you want one,
+agree its layout with the repo owner and record the decision under
+`knowledge/decisions/` rather than assuming any of the filenames above are
+expected here.
+
+The upstream ideas worth borrowing even without an eval harness:
+
+- Compare **with and without the skill** — a skill that doesn't beat the
   no-skill baseline is overhead, not help.
 - **Test across model sizes.** What works for Opus may need more detail for
   Haiku; verify with every model the skill targets before calling it done.

@@ -31,9 +31,14 @@ fi
 # Buffer the whole file first: piping curl straight into 'grep -m1' closes the
 # pipe early and trips pipefail with curl exit 56.
 spec_content="$(curl -fsSL "$SPEC_URL")"
-latest="$(printf '%s\n' "$spec_content" | grep -m1 -o 'Version [0-9]\+\.[0-9]\+' | sed 's/Version //')"
+# Anchor to the '**Version X.Y**' declaration line. A loose match anywhere in
+# the document could pick up a "Changes since Version 0.2" reference and report
+# a stale version as current — a silent false negative on the exact event this
+# check exists to catch.
+latest="$(printf '%s\n' "$spec_content" | grep -m1 -oE '^\*\*Version [0-9]+\.[0-9]+(\.[0-9]+)?\*\*' | sed 's/\*\*Version //; s/\*\*//')"
 if [[ -z "$latest" ]]; then
-  echo "Error: could not parse '**Version X.Y**' line from $SPEC_URL" >&2
+  echo "Error: no '**Version X.Y**' declaration line found in $SPEC_URL." >&2
+  echo "The spec's format may have changed — read it manually before trusting the KB." >&2
   exit 2
 fi
 

@@ -20,7 +20,7 @@ overrides your personal defaults for this repo.
 
 - `skills/<name>/` — one Agent Skill per folder (agentskills.io format); every
   SKILL.md has a required `## Updating` section and `metadata.version`.
-- `knowledge/` — OKF 0.2 knowledge bundle; every document needs `type:`
+- `knowledge/` — OKF knowledge bundle (version in `knowledge/index.md`); every document needs `type:`
   frontmatter and `sources:` for external facts. Keep it disjoint from `skills/`.
 - `scripts/install.sh --tool <agent>` links skills into your agent's discovery
   directory. Accepted values: `claude|codex|cursor|opencode|gemini|zed|goose|kimi|amp|kiro|zcode|all`.
