@@ -6,7 +6,7 @@ description: >-
   content or version, importing a skill from another project, or asking how
   skills in this repo are structured, versioned, installed, or updated.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   updated: "2026-08-29"
 ---
 
@@ -61,8 +61,11 @@ multiple agents, and always carries its own update command.
    `knowledge/` describing what was learned or decided while building the
    skill (frontmatter `type:`, `sources:` for external claims, `generated:`),
    and append an entry to `knowledge/log.md` under today's date.
-10. **Version bookkeeping.** Add a `CHANGELOG.md` entry under the skill's name
-    and bump the repo `VERSION` (SemVer: new skill = minor bump).
+10. **Version bookkeeping.** Add a `CHANGELOG.md` entry under the skill's name,
+    bump the repo `VERSION` (SemVer: new skill = minor bump), and bump the
+    `version` field in both `.claude-plugin/plugin.json` and
+    `.claude-plugin/marketplace.json` — plugin-channel users only receive
+    updates when those move.
 11. **Validate.** Run the checklist in
     [references/authoring-checklist.md](references/authoring-checklist.md),
     then test that the skill triggers on its intended prompts and does NOT
@@ -72,7 +75,8 @@ multiple agents, and always carries its own update command.
 
 1. Edit the skill's files.
 2. Bump `metadata.version` (SemVer) and `metadata.updated` in its SKILL.md.
-3. Add a CHANGELOG.md entry under the skill's name; bump repo `VERSION`.
+3. Add a CHANGELOG.md entry under the skill's name; bump repo `VERSION` and the
+   `version` field in both `.claude-plugin/` JSON files.
 4. Update the related `knowledge/` concept and `knowledge/log.md`.
 
 ## Workflow: importing a skill from another project
@@ -100,9 +104,10 @@ multiple agents, and always carries its own update command.
 ## Updating
 
 This skill is versioned via `metadata.version` (see frontmatter) and
-distributed from the private repo `gitkeng/skills-kengjudd`.
+distributed from the private repo `gitkeng/skills-kengjudd`. Use the command
+that matches how it was installed.
 
-To update this skill to the latest version, run from the repository root:
+**Git clone + symlink install** — run from the repository root:
 
 ```bash
 ./scripts/update.sh creating-skills
@@ -110,5 +115,13 @@ To update this skill to the latest version, run from the repository root:
 
 The script verifies the clone (branch `main`, clean tree), fetches
 `origin/main`, compares this skill's `metadata.version` against the remote,
-shows this skill's pending commits, and pulls after confirmation. After
-updating, restart the agent session so the new version loads.
+shows this skill's pending commits, and pulls after confirmation.
+
+**Claude Code plugin install** — the plugin cache has no `.git`, so
+`update.sh` cannot run there:
+
+```bash
+claude plugin update skills-kengjudd@kengjudd
+```
+
+After updating, restart the agent session so the new version loads.

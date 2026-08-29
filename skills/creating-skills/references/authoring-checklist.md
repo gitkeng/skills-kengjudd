@@ -38,8 +38,10 @@ Write the description last, after the body. Then check:
 - [ ] Deterministic, repeatable operations are shipped as executable scripts
       in `scripts/`, not as prose instructions.
 - [ ] Workflows with more than ~3 steps are numbered checklists.
-- [ ] `## Updating` section present and names this skill in the
-      `./scripts/update.sh <skill-name>` command.
+- [ ] `## Updating` section present, names this skill in the
+      `./scripts/update.sh <skill-name>` command, AND gives the plugin-channel
+      alternative `claude plugin update skills-kengjudd@kengjudd` (the plugin
+      cache has no `.git`, so `update.sh` fails there).
 
 ## Repo integration
 
@@ -48,6 +50,8 @@ Write the description last, after the body. Then check:
 - [ ] `knowledge/` concept added/updated with `type:`, `sources:`, `generated:`.
 - [ ] `knowledge/log.md` entry appended under today's date.
 - [ ] `CHANGELOG.md` entry added; repo `VERSION` bumped (SemVer).
+- [ ] `version` bumped in BOTH `.claude-plugin/plugin.json` and
+      `.claude-plugin/marketplace.json` — plugin users receive nothing otherwise.
 
 ## Testing before calling it done
 

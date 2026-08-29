@@ -2,6 +2,16 @@
 
 ## 2026-08-29
 
+- **Update** from the expert review of `CLAUDE.md`/`AGENTS.md` (repo v0.2.0):
+  documented ZCode (Z.ai) in /agents/skill-discovery-matrix.md and
+  /specs/agents-md-standard.md — it reads AGENTS.md and *only* AGENTS.md, never
+  `CLAUDE.md` at runtime, which makes this repo's adapter pointer load-bearing
+  rather than merely acceptable; recorded its skill-discovery roots
+  (`~/.zcode/skills` primary, `~/.agents/skills` secondary) and frontmatter
+  limits; added `zcode` to the documented `install.sh --tool` mapping.
+  Corrected the opencode claim in both /agents/skill-discovery-matrix.md and
+  /specs/agent-skills-spec.md: it recognizes five of the six spec frontmatter
+  fields, silently ignoring `allowed-tools`.
 - **Update** after adversarial verification against live sources: corrected the
   status of anthropics/claude-code#6235 (closed "completed" 2026-08-17, docs
   still show no native AGENTS.md support) and #50778 (closed 2026-04-19, docs

@@ -85,7 +85,11 @@ ONLY the six spec fields.** Any other frontmatter key fails hard with an
 `Unexpected key(s) in SKILL.md frontmatter` error. Frontmatter restricted to
 the six spec fields loads unchanged in Claude Code, so there is no downside
 to staying spec-pure — this is CLAUDE.md binding rule 6 ("Portability
-first"). Note that opencode likewise recognizes only the spec fields.
+first"). opencode is close but not identical: its frontmatter docs recognize
+only **five** of the six spec fields — `name`, `description`, `license`,
+`compatibility`, `metadata` — omitting `allowed-tools`, and state that
+unknown frontmatter fields are silently ignored (so an `allowed-tools` entry
+is a no-op there rather than an error).
 
 ## Claude Code extension fields — forbidden in portable skills
 

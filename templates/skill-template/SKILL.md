@@ -37,22 +37,31 @@ One short paragraph: what problem this skill solves and what the output is.
 
 ## Updating
 
-This skill is versioned via `metadata.version` (currently see frontmatter) and
-distributed from the private repo `gitkeng/skills-kengjudd`.
+This skill is versioned via `metadata.version` (see frontmatter) and
+distributed from the private repo `gitkeng/skills-kengjudd`. Use the command
+that matches how it was installed.
 
-To update this skill to the latest version, run from the repository root:
+**Git clone + symlink install** — run from the repository root:
 
 ```bash
 ./scripts/update.sh skill-name-here
 ```
 
-If this skill directory is a symlink (the normal install), find the repo root with:
+If this skill directory is a symlink (the normal install), the repo root is
+two levels above the resolved path:
 
 ```bash
 dirname "$(dirname "$(readlink -f "$(dirname "$0")")")"
 ```
 
-or simply run the script from the clone location (default: where you cloned
-`git@github.com:gitkeng/skills-kengjudd.git`). The script fetches `origin/main`,
-compares this skill's `metadata.version`, shows this skill's pending commits,
-and pulls after confirmation.
+The script fetches `origin/main`, compares this skill's `metadata.version`,
+shows this skill's pending commits, and pulls after confirmation.
+
+**Claude Code plugin install** — the plugin cache has no `.git`, so
+`update.sh` cannot run there:
+
+```bash
+claude plugin update skills-kengjudd@kengjudd
+```
+
+After updating, restart the agent session so the new version loads.

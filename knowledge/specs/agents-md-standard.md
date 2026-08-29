@@ -31,6 +31,8 @@ sources:
     title: google-gemini/gemini-cli issue #12345 — AGENTS.md by default (closed, not planned)
   - resource: https://opencode.ai/docs/rules/
     title: opencode docs — Rules (AGENTS.md, CLAUDE.md fallback, instructions config)
+  - resource: https://zcode.z.ai/en/docs/agents
+    title: ZCode docs — AGENTS.md (user + workspace resolution; CLAUDE.md only a one-time onboarding migration source)
   - resource: https://zed.dev/docs/ai/instructions
     title: Zed docs — Instructions (compatibility instruction files, first-match-wins)
   - resource: https://raw.githubusercontent.com/zed-industries/zed/main/docs/src/ai/rules.md
@@ -90,6 +92,7 @@ Notable per-tool behavior:
 | **opencode** | Reads project AGENTS.md (falls back to CLAUDE.md for Claude Code compatibility) plus global `~/.config/opencode/AGENTS.md`. Explicitly "doesn't automatically parse file references in AGENTS.md" — extra files come via the `instructions` array in `opencode.json` (globs and URLs supported). |
 | **Zed** | First-match-wins list: `.rules`, `.cursorrules`, `.windsurfrules`, `.clinerules`, `.github/copilot-instructions.md`, `AGENT.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`. A stray `.cursorrules` silently shadows AGENTS.md. |
 | **Gemini CLI** | Does **not** read AGENTS.md by default (default context file is GEMINI.md); requires opting in via the `contextFileName` setting. Issue google-gemini/gemini-cli#12345 requesting it by default was closed as not planned. Gemini CLI's context files are the only non-Claude ones with `@file.md` import syntax. |
+| **ZCode** (Z.ai) | Reads **AGENTS.md only** — the engine's candidate-filename list is the single entry `["AGENTS.md"]` (verified in `/Applications/ZCode.app/Contents/Resources/glm/zcode.cjs`, v3.9.2). User default `~/.zcode/AGENTS.md` is injected first, then the workspace `<repo>/AGENTS.md` is searched from cwd upward to the project root and overrides it; hidden alternates `<repo>/.zcode/AGENTS.md` and `<repo>/.agents/AGENTS.md` also resolve. **CLAUDE.md is never read at runtime** — the Z.ai docs use it only during onboarding as a one-time migration source. |
 | **Claude Code** | Does **not** read AGENTS.md at all — see below. |
 
 ### Precedence semantics are NOT standardized
@@ -158,6 +161,15 @@ Rationale:
 - Tools that select a single rules file (Zed, opencode) find either file
   anyway — both list CLAUDE.md in their lookup chains — and tools that read
   only AGENTS.md get the pointer.
+- **ZCode makes the adapter load-bearing, not merely acceptable.** It is a
+  concrete, verified agent whose candidate-filename list is exactly
+  `["AGENTS.md"]`: CLAUDE.md is never loaded automatically, and unlike Zed or
+  opencode there is no CLAUDE.md fallback in its lookup chain at all. The only
+  thing ZCode reads by itself is AGENTS.md, so the prose pointer in AGENTS.md
+  is the *sole* mechanism that carries this repo's binding rules into a ZCode
+  session — the agent follows it by reading CLAUDE.md with its own file tools.
+  This is the case that turns the inverted layout from a defensible choice
+  into a functional requirement: drop the pointer and ZCode gets nothing.
 
 Full founding rationale: /decisions/2026-08-29-repo-design.md.
 

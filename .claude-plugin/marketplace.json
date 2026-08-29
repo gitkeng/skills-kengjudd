@@ -4,14 +4,14 @@
   "owner": { "name": "kengjudd" },
   "metadata": {
     "description": "Private marketplace for kengjudd's skills",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
     {
       "name": "skills-kengjudd",
       "source": "./",
       "description": "Central multi-agent skills collection with an OKF knowledge base",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": { "name": "kengjudd" },
       "category": "workflow"
     }

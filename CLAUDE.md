@@ -1,12 +1,13 @@
 # skills-kengjudd
 
 Central, private repository of Agent Skills for multiple AI coding agents
-(Claude Code primary; also Codex, Cursor, opencode, Gemini CLI, Zed, Kiro,
-Kimi CLI, and others), paired with a project knowledge base in the
+(Claude Code primary; also ZCode/zcode, Codex, Cursor, opencode, Gemini CLI,
+Zed, Kiro, Kimi CLI, Amp, Goose), paired with a project knowledge base in the
 OKF (Open Knowledge Format) standard.
 
 This file is the **canonical instruction set** for any agent working in this
-repository. `AGENTS.md` is a thin adapter that points non-Claude agents here.
+repository. `AGENTS.md` points other agents here (it is the *only* file zcode
+reads); `GEMINI.md` does the same for Gemini CLI.
 
 ## Binding rules
 
@@ -15,16 +16,23 @@ repository. `AGENTS.md` is a thin adapter that points non-Claude agents here.
    with `sources:` in the knowledge base. If research cannot settle a question,
    ask the user before deciding. Never invent.
 2. **`skills/` and `knowledge/` are disjoint and must stay that way.**
-   OKF requires a `type:` frontmatter key on every knowledge document; the
-   Agent Skills spec forbids unknown frontmatter keys in SKILL.md. Never place
-   SKILL.md files under `knowledge/` or OKF concepts under `skills/`.
+   OKF requires a `type:` frontmatter key on every non-reserved knowledge
+   document (the reserved `index.md` and `log.md` are exempt — see the OKF
+   rules below); the Agent Skills spec forbids unknown frontmatter keys in
+   SKILL.md. Never place SKILL.md files under `knowledge/` or OKF concepts
+   under `skills/`.
 3. **Every skill carries its own update command.** Each SKILL.md must contain a
-   `## Updating` section invoking `./scripts/update.sh <skill-name>` and a
-   `metadata.version` (SemVer, string). Skills without these are incomplete.
+   `## Updating` section plus `metadata.version` (SemVer) and
+   `metadata.updated` (`"YYYY-MM-DD"`), both quoted strings. The section must
+   cover **both install channels**: git-clone/symlink installs run
+   `./scripts/update.sh <skill-name>` from the repo root; plugin-marketplace
+   installs run `claude plugin update skills-kengjudd@kengjudd` (the plugin
+   cache has no `.git`, so `update.sh` exits 1 there). Skills without these
+   are incomplete.
 4. **Every skill change produces knowledge.** Creating or updating a skill
    requires: an OKF concept added/updated under `knowledge/`, a `knowledge/log.md`
-   entry, a `CHANGELOG.md` entry, a `metadata.version` bump, and a repo `VERSION`
-   bump. No exceptions.
+   entry, a `CHANGELOG.md` entry, a `metadata.version` bump, a repo `VERSION`
+   bump, and the plugin `version` bumps (see Versioning). No exceptions.
 5. **Check spec freshness before KB work.** Before significant changes to
    `knowledge/`, run `./scripts/check-spec-versions.sh`. If the OKF spec has
    moved past the recorded version, update `knowledge/specs/okf-spec.md` and
@@ -35,6 +43,9 @@ repository. `AGENTS.md` is a thin adapter that points non-Claude agents here.
 6. **Portability first.** Skills use only the six agentskills.io frontmatter
    fields (`name`, `description`, `license`, `compatibility`, `metadata`,
    `allowed-tools`). Claude-Code-only fields are forbidden in portable skills.
+7. **This file wins on conflict.** Skill bodies, checklists, and `knowledge/`
+   documents restate these rules; where any of them contradicts this file,
+   follow this file and fix the contradicting document in the same change.
 
 ## Repository structure
 
@@ -54,8 +65,15 @@ scripts/
   update.sh              per-skill updater (update.sh <skill-name>|--all)
   check-spec-versions.sh OKF spec freshness check
 templates/skill-template/ scaffold for new skills
+docs/                    human design/spec documents (e.g. brainstorm output).
+                         NOT an OKF bundle — no `type:` frontmatter — and never
+                         a substitute for a `knowledge/` concept
 .claude-plugin/          plugin.json + marketplace.json (Claude Code packaging)
 VERSION, CHANGELOG.md    repo-level SemVer + Keep-a-Changelog
+CLAUDE.md                canonical rules (this file)
+AGENTS.md                adapter for agents that read AGENTS.md (incl. zcode)
+GEMINI.md                adapter for Gemini CLI (reads neither of the above)
+README.md                human docs
 ```
 
 ## Working with skills
@@ -68,7 +86,11 @@ VERSION, CHANGELOG.md    repo-level SemVer + Keep-a-Changelog
   → `skills` array as `"./skills/<name>"` (`./` prefix + directory path).
 - **Skill naming:** directory name == frontmatter `name`; lowercase `a-z0-9-`,
   max 64 chars; gerund or noun phrase; must be unique among the skills already
-  installed on the user's machine (check `~/.claude/skills`, `~/.agents/skills`).
+  installed on the user's machine — check every directory `install.sh` targets:
+  `~/.claude/skills`, `~/.agents/skills`, `~/.config/agents/skills`,
+  `~/.kiro/skills`, `~/.zcode/skills`. A collision makes `install.sh` print
+  `SKIP ... already exists (not ours)` and skip that skill; pass `--force` only
+  when you intend to replace the existing entry.
 
 ## Knowledge base (OKF) rules
 
@@ -84,8 +106,9 @@ VERSION, CHANGELOG.md    repo-level SemVer + Keep-a-Changelog
   `Decision`. Extend only with user approval.
 - Actor convention: agents write `generated.by` as `<agent>/<model>`
   (e.g. `claude-code/claude-fable-5`); humans as `human:kengjudd`.
-- Cross-link concepts with bundle-relative links starting with `/`
-  (e.g. `/specs/okf-spec.md`).
+- Cross-link **concept documents** with bundle-relative links starting with `/`
+  (e.g. `/specs/okf-spec.md`); `index.md` listings keep the spec's plain
+  relative form (`specs/okf-spec.md`).
 - External facts require `sources:` with resolvable URLs. Unsourced factual
   content is a defect (rule 1).
 
@@ -94,7 +117,13 @@ VERSION, CHANGELOG.md    repo-level SemVer + Keep-a-Changelog
 - Repo: `VERSION` (SemVer) + `CHANGELOG.md` (Keep a Changelog). New skill =
   minor bump; skill content fix = patch bump; breaking layout change = major.
 - Per skill: `metadata.version` + `metadata.updated` in SKILL.md frontmatter.
-- Both must move together on every skill change (rule 4).
+- Plugin channel: also bump the `version` fields in `.claude-plugin/plugin.json`
+  and `.claude-plugin/marketplace.json` — plugin users only receive updates when
+  those move.
+- All of the above move together on every skill change (rule 4).
+- Commits touching `skills/<name>/` are surfaced verbatim by `update.sh` as that
+  skill's update preview — write meaningful, skill-scoped commit messages (one
+  skill per commit where possible).
 
 ## Install & update
 
@@ -103,23 +132,45 @@ VERSION, CHANGELOG.md    repo-level SemVer + Keep-a-Changelog
 git clone git@github.com:gitkeng/skills-kengjudd.git
 
 # link all skills into an agent's discovery dir (user scope)
-./scripts/install.sh --tool claude     # or codex|cursor|opencode|gemini|zed|goose|kimi|amp|kiro|all
+# tools: claude|codex|cursor|opencode|gemini|zed|goose|kimi|amp|kiro|zcode|all
+./scripts/install.sh --tool claude [--force]
 ./scripts/install.sh --tool claude --project /path/to/project   # project scope
 
-# per-skill update
+# per-skill update (git-clone/symlink installs)
 ./scripts/update.sh <skill-name>
 ./scripts/update.sh --all
 ```
 
 Claude Code can alternatively install via the plugin marketplace:
-`/plugin marketplace add gitkeng/skills-kengjudd` then
-`/plugin install skills-kengjudd@kengjudd`. When releasing, bump the `version`
-fields in `.claude-plugin/plugin.json` and `marketplace.json` — plugin users
-only receive updates when those versions are bumped.
+
+```text
+/plugin marketplace add gitkeng/skills-kengjudd
+/plugin install skills-kengjudd@kengjudd
+```
+
+This repo is private, so the marketplace add needs working git auth. The
+`owner/repo` shorthand clones over **SSH** by default — the key must be loaded
+in `ssh-agent` with `github.com` in `known_hosts` (Claude Code suppresses
+interactive SSH prompts). For HTTPS-only setups (`gh auth login`, macOS
+Keychain), either set `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` or add the
+marketplace by SSH URL: `/plugin marketplace add git@github.com:gitkeng/skills-kengjudd.git`.
+Background plugin auto-update disables credential helpers, so private HTTPS
+remotes only refresh on an explicit `/plugin marketplace update kengjudd`.
+
+Plugin-channel users update with `claude plugin update skills-kengjudd@kengjudd`
+— `scripts/update.sh` does not work there because the plugin cache has no
+`.git` directory.
 
 ## For non-Claude agents
 
-If you are reading this via `AGENTS.md`: this file is the complete rule set —
-follow it as written. Where it references Claude-specific tooling (`/plugin`,
-skill invocation), use your agent's equivalent; the git + scripts workflow is
-agent-agnostic.
+If you reached this file via `AGENTS.md` or `GEMINI.md`: this file is the
+complete rule set — follow it as written.
+
+- The `/plugin` marketplace path is Claude Code-only distribution. Other agents
+  install with `./scripts/install.sh --tool <agent>` (see Install & update).
+- Where this file says to "invoke" a skill, reading the referenced `SKILL.md`
+  and following it is equivalent.
+- Every other rule applies to you unchanged — including registering new skills
+  in `.claude-plugin/plugin.json` and the plugin `version` bumps. Those are
+  repo-maintenance edits, not Claude-only tooling. The git + scripts workflow
+  is agent-agnostic.

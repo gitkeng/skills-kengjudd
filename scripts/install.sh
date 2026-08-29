@@ -2,7 +2,7 @@
 # Install skills-kengjudd skills into an agent's skill directory via symlinks.
 #
 # Usage:
-#   ./scripts/install.sh --tool <claude|codex|cursor|opencode|gemini|zed|goose|kimi|amp|kiro|all> [--project <dir>] [--force]
+#   ./scripts/install.sh --tool <claude|codex|cursor|opencode|gemini|zed|goose|kimi|amp|kiro|zcode|all> [--project <dir>] [--force]
 #
 # Default scope is user-level (home directory). Pass --project <dir> to link into
 # that project's skill directories instead.
@@ -13,7 +13,8 @@
 #   codex|cursor|opencode|gemini|zed|goose -> ~/.agents/skills   (universal convention)
 #   kimi|amp                            -> ~/.config/agents/skills
 #   kiro                                -> ~/.kiro/skills
-#   all                                 -> all four directories above
+#   zcode                               -> ~/.zcode/skills       (ZCode's highest-precedence root)
+#   all                                 -> all five directories above
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -39,24 +40,27 @@ if [[ -z "$TOOL" ]]; then
 fi
 
 targets_for_tool() {
-  local base_claude base_agents base_config_agents base_kiro
+  local base_claude base_agents base_config_agents base_kiro base_zcode
   if [[ -n "$PROJECT_DIR" ]]; then
     base_claude="$PROJECT_DIR/.claude/skills"
     base_agents="$PROJECT_DIR/.agents/skills"
     base_config_agents="$PROJECT_DIR/.agents/skills"
     base_kiro="$PROJECT_DIR/.kiro/skills"
+    base_zcode="$PROJECT_DIR/.zcode/skills"
   else
     base_claude="$HOME/.claude/skills"
     base_agents="$HOME/.agents/skills"
     base_config_agents="$HOME/.config/agents/skills"
     base_kiro="$HOME/.kiro/skills"
+    base_zcode="$HOME/.zcode/skills"
   fi
   case "$1" in
     claude) echo "$base_claude" ;;
     codex|cursor|opencode|gemini|zed|goose) echo "$base_agents" ;;
     kimi|amp) echo "$base_config_agents" ;;
     kiro) echo "$base_kiro" ;;
-    all) printf '%s\n' "$base_claude" "$base_agents" "$base_config_agents" "$base_kiro" | sort -u ;;
+    zcode) echo "$base_zcode" ;;
+    all) printf '%s\n' "$base_claude" "$base_agents" "$base_config_agents" "$base_kiro" "$base_zcode" | sort -u ;;
     *) echo "Error: unknown tool '$1'" >&2; exit 1 ;;
   esac
 }

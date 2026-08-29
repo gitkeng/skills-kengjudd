@@ -3,8 +3,8 @@ type: Reference
 title: Skill discovery matrix
 description: >
   Where each supported AI coding agent (Claude Code, Codex, Cursor, opencode,
-  Gemini CLI, Zed, Kiro, Kimi CLI, Amp, Goose) discovers Agent Skills, per
-  scope, plus the universal path conventions and how this repo's
+  Gemini CLI, Zed, Kiro, Kimi CLI, Amp, Goose, ZCode) discovers Agent Skills,
+  per scope, plus the universal path conventions and how this repo's
   scripts/install.sh maps --tool values to target directories.
 tags:
   - agent-skills
@@ -20,6 +20,7 @@ tags:
   - kimi-cli
   - amp
   - goose
+  - zcode
 sources:
   - resource: https://agentskills.io
     title: Agent Skills Overview (open standard)
@@ -49,6 +50,16 @@ sources:
     title: "Kimi Code CLI: Agent Skills docs"
   - resource: https://github.com/MoonshotAI/kimi-cli/blob/main/AGENTS.md
     title: MoonshotAI kimi-cli AGENTS.md (skill registration)
+  - resource: https://zcode.z.ai/en/docs
+    title: "ZCode (Z.ai): Agentic Development Environment overview"
+  - resource: https://zcode.z.ai/en/docs/skill
+    title: "ZCode: Skills docs (discovery roots, frontmatter limits)"
+  - resource: https://zcode.z.ai/en/docs/agents
+    title: "ZCode: AGENTS.md docs (CLAUDE.md not read at runtime)"
+  - resource: file:///Applications/ZCode.app/Contents/Resources/glm/zcode.cjs
+    title: ZCode 3.9.2 bundled agent engine (local, inspected)
+  - resource: file:///Users/keng/.zcode/
+    title: Local ZCode user config dir (v2/setting.json, skills root)
 generated:
   by: claude-code/claude-fable-5
   at: 2026-08-29T10:45:34Z
@@ -90,7 +101,7 @@ In every path, a skill lives at `<dir>/<skill-name>/SKILL.md`.
 
 | Project-scope path(s) | User-scope path(s) | Invocation style | Notes |
 |---|---|---|---|
-| `.opencode/skills/`, `.claude/skills/`, `.agents/skills/` — walking up to the git worktree root | `~/.config/opencode/skills/`, `~/.claude/skills/`, `~/.agents/skills/` | Loaded via a native skill tool | Only the six spec frontmatter fields recognized (`name`, `description`, `license`, `compatibility`, `metadata`). Per-skill permissions (allow/deny/ask) configurable in `opencode.json` |
+| `.opencode/skills/`, `.claude/skills/`, `.agents/skills/` — walking up to the git worktree root | `~/.config/opencode/skills/`, `~/.claude/skills/`, `~/.agents/skills/` | Loaded via a native skill tool | Recognizes only **five** of the six spec frontmatter fields — `name`, `description`, `license`, `compatibility`, `metadata`. `allowed-tools` is **not** documented as recognized, and the docs state unknown frontmatter fields are silently ignored. Per-skill permissions (allow/deny/ask) configurable in `opencode.json` |
 
 ### Gemini CLI
 
@@ -128,6 +139,12 @@ In every path, a skill lives at `<dir>/<skill-name>/SKILL.md`.
 |---|---|---|---|
 | `.goose/skills/`, `.agents/skills/` (recommended), `.claude/skills/` | `~/.config/goose/skills/`, `~/.agents/skills/`, `~/.claude/skills/` | `/skills` session command; `goose skills list` CLI | Skills platform extension enabled by default |
 
+### ZCode (Z.ai)
+
+| Project-scope path(s) | User-scope path(s) | Invocation style | Notes |
+|---|---|---|---|
+| `.zcode/skills/` then `.agents/skills/` — searched from cwd up to the git worktree root, **deeper directories win**; plus enabled plugin roots | `~/.zcode/skills/` (primary), then `~/.agents/skills/` (secondary); explicitly configured roots outrank both | `$<skill-name>` in the composer, plus model-driven auto-invocation | Not a PATH binary and not Zed: ZCode is Z.ai (Zhipu AI)'s Electron **Agentic Development Environment** for the GLM family (`/Applications/ZCode.app`, bundle id `dev.zcode.app`, v3.9.2), with a bundled agent engine at `Contents/Resources/glm/zcode.cjs`. Full root precedence: configured roots > `~/.zcode/skills` > `~/.agents/skills` > workspace `.zcode/skills` > workspace `.agents/skills` > plugin roots; within a level `.zcode` is scanned before `.agents`. **Skill identity is the file path**, so same-named skills at different roots are all discovered but only the first loads — the rest are silently shadowed. Discovery is exactly one level deep (`<root>/<name>/SKILL.md`); dot-directories (except `.system`) and `node_modules` are skipped; **symlinks are followed** (the loader treats `isDirectory() \|\| isSymbolicLink()` as a directory), so this repo's symlink install works unchanged. Frontmatter: `name` and `description` both mandatory (missing either drops the skill), `description` over 1024 chars drops the skill, ~250 chars of it get injected into context, and the body is truncated at 100 KB. Disable a single skill by absolute path with `enable: false` in `~/.zcode/cli/config.json` or workspace `.zcode/config.json`. **Instruction file is `AGENTS.md` and only `AGENTS.md`** — the engine's candidate filename list is the single-element `["AGENTS.md"]`: user default `~/.zcode/AGENTS.md` is injected first, then a workspace `<repo>/AGENTS.md` found from cwd upward overrides it (hidden alternates `<repo>/.zcode/AGENTS.md` and `<repo>/.agents/AGENTS.md`). `CLAUDE.md` is **never read at runtime**; Z.ai docs describe it only as a one-time onboarding migration source |
+
 ## Universal conventions
 
 - **De facto cross-agent convention:** `.agents/skills/` at project level;
@@ -135,22 +152,32 @@ In every path, a skill lives at `<dir>/<skill-name>/SKILL.md`.
   **no single normative user-scope path** — the Agent Skills spec defines only
   the skill directory format, not discovery locations, and agents split
   between the two user-level variants:
-  - `~/.agents/skills/`: Codex, Cursor, opencode, Gemini CLI, Zed, Goose.
+  - `~/.agents/skills/`: Codex, Cursor, opencode, Gemini CLI, Zed, Goose, and
+    ZCode — though for ZCode it is only the **secondary** root; its primary
+    user root is `~/.zcode/skills/`, which outranks it.
   - `~/.config/agents/skills/`: Amp, Kimi CLI.
 - **`.claude/skills/` compat** is widespread (Cursor, opencode, Amp, Goose
-  read it) but not universal (Zed and Kiro do not).
+  read it) but not universal (Zed, Kiro, and ZCode do not).
 - **Outliers:** Kiro reads only its own `.kiro/skills` / `~/.kiro/skills`;
   Zed reads only the `.agents/skills` convention and expects symlinks for
-  everything else.
+  everything else; ZCode leads with its own `.zcode/skills` roots and only
+  falls back to `.agents/skills`.
+- **Instruction-file loading is not the same as skill discovery.** ZCode reads
+  `AGENTS.md` and *only* `AGENTS.md` — `CLAUDE.md` is never read at runtime
+  (Z.ai treats it purely as a one-time onboarding migration source). That is
+  exactly why this repo's root `AGENTS.md` must point at `CLAUDE.md`: it is
+  the only file an agent like ZCode will ever load.
 - **Symlinks** are explicitly supported where documented (Claude Code, Codex,
-  Zed), which is why this repo installs by symlink.
+  Zed, ZCode), which is why this repo installs by symlink.
 
 ## How this repo installs: `scripts/install.sh` mapping
 
 `./scripts/install.sh --tool <tool> [--project <dir>] [--force]` symlinks
-every `skills/<name>/` directory into the target dir(s). Default scope is
-user-level (`$HOME`); `--project <dir>` switches to project scope. The exact
-`--tool` → target mapping (mirrors `targets_for_tool()` in the script):
+every `skills/<name>/` directory into the target dir(s). Accepted `--tool`
+values are `claude`, `codex`, `cursor`, `opencode`, `gemini`, `zed`, `goose`,
+`kimi`, `amp`, `kiro`, `zcode`, `all`. Default scope is user-level (`$HOME`);
+`--project <dir>` switches to project scope. The exact `--tool` → target
+mapping (mirrors `targets_for_tool()` in the script):
 
 | `--tool` value | User-scope target (default) | Project-scope target (`--project <dir>`) |
 |---|---|---|
@@ -158,14 +185,17 @@ user-level (`$HOME`); `--project <dir>` switches to project scope. The exact
 | `codex`, `cursor`, `opencode`, `gemini`, `zed`, `goose` | `~/.agents/skills` | `<dir>/.agents/skills` |
 | `kimi`, `amp` | `~/.config/agents/skills` | `<dir>/.agents/skills` |
 | `kiro` | `~/.kiro/skills` | `<dir>/.kiro/skills` |
-| `all` | All four user dirs above, deduplicated | All project dirs above, deduplicated (`.claude/skills`, `.agents/skills`, `.kiro/skills` — the kimi/amp entry collapses into `.agents/skills`) |
+| `zcode` | `~/.zcode/skills` | `<dir>/.zcode/skills` |
+| `all` | All five user dirs above, deduplicated | All project dirs above, deduplicated (`.claude/skills`, `.agents/skills`, `.kiro/skills`, `.zcode/skills` — the kimi/amp entry collapses into `.agents/skills`) |
 
 Rationale for the collapsed mapping: agents that read `~/.agents/skills`
 share one symlink farm; Kimi and Amp use `~/.config/agents/skills` at user
-scope but the universal `.agents/skills` at project scope; Claude Code and
-Kiro need their own dirs because they do not read the universal paths
-(Claude Code's canonical personal dir is `~/.claude/skills`; Kiro reads
-nothing else).
+scope but the universal `.agents/skills` at project scope; Claude Code, Kiro,
+and ZCode need their own dirs because they do not read the universal paths, or
+do not read them first (Claude Code's canonical personal dir is
+`~/.claude/skills`; Kiro reads nothing else; ZCode does read `~/.agents/skills`
+as a fallback, but `~/.zcode/skills` is its highest-precedence non-configured
+root, so installing there avoids being shadowed by a same-named skill).
 
 Script behavior worth knowing:
 
@@ -192,7 +222,8 @@ primary docs before relying on these points:
   guides.
 - **`allowed-tools` semantics**: the spec marks the field experimental
   ("support may vary between agent implementations"); whether it acts as a
-  permission grant or a restriction is not standardized per agent.
+  permission grant or a restriction is not standardized per agent. Confirmed
+  data point: opencode does not document it at all and silently ignores it.
 - **User-scope path convention**: no normative answer exists
   (`~/.agents/skills` vs `~/.config/agents/skills`); this repo handles the
   split via the `install.sh` mapping above.
