@@ -1,0 +1,10 @@
+{
+  "name": "skills-kengjudd",
+  "description": "Kongsak (kengjudd)'s central multi-agent skills collection with an OKF knowledge base",
+  "version": "0.1.0",
+  "author": { "name": "kengjudd" },
+  "keywords": ["skills", "multi-agent", "knowledge-base", "okf"],
+  "skills": [
+    "./skills/creating-skills"
+  ]
+}
