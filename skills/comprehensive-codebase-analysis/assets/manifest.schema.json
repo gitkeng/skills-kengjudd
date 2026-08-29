@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/comprehensive-codebase-analysis/manifest.schema.json",
+  "title": "Comprehensive codebase analysis manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "repository_root", "output_root", "coverage", "documents", "business_rules", "findings", "components", "test_cases", "traceability", "severity_counts", "delta"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "repository_root": {"type": "string", "minLength": 1},
+    "output_root": {"type": "string", "minLength": 1},
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "components", "limitations"],
+      "properties": {
+        "mode": {"enum": ["full", "focused", "sampled"]},
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["component_alias", "depth", "files_read", "rationale"],
+            "properties": {
+              "component_alias": {"type": "string", "pattern": "^CMP-[0-9]{3}$"},
+              "depth": {"enum": ["fully-read", "sampled", "inventory-only"]},
+              "files_read": {"type": "array", "items": {"type": "string"}},
+              "rationale": {"type": "string"}
+            }
+          }
+        },
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "description", "severity_badge"],
+        "properties": {
+          "path": {"type": "string"},
+          "description": {"type": "string", "minLength": 1},
+          "severity_badge": {"enum": ["critical", "high", "medium", "low", "none"]}
+        }
+      }
+    },
+    "business_rules": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/businessRule"}
+    },
+    "findings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/finding"}
+    },
+    "components": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/component"}
+    },
+    "test_cases": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/testCase"}
+    },
+    "traceability": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["business_rule", "test_case"],
+        "properties": {
+          "business_rule": {"type": "string", "pattern": "^BR-[0-9]{3}$"},
+          "test_case": {"type": "string", "pattern": "^TC-[0-9]{3}$"}
+        }
+      }
+    },
+    "severity_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["critical", "high", "medium", "low"],
+      "properties": {
+        "critical": {"type": "integer", "minimum": 0},
+        "high": {"type": "integer", "minimum": 0},
+        "medium": {"type": "integer", "minimum": 0},
+        "low": {"type": "integer", "minimum": 0}
+      }
+    },
+    "delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior_manifest_loaded", "new", "resolved", "regressed", "persisted"],
+      "properties": {
+        "prior_manifest_loaded": {"type": "boolean"},
+        "new": {"type": "array", "items": {"$ref": "#/$defs/canonicalKey"}},
+        "resolved": {"type": "array", "items": {"$ref": "#/$defs/canonicalKey"}},
+        "regressed": {"type": "array", "items": {"$ref": "#/$defs/canonicalKey"}},
+        "persisted": {"type": "array", "items": {"$ref": "#/$defs/canonicalKey"}}
+      }
+    }
+  },
+  "$defs": {
+    "canonicalKey": {
+      "type": "string",
+      "pattern": "^(br|td|v|tc|cmp):[A-Za-z0-9._%/-]+:[a-z0-9][a-z0-9-]*:[a-z0-9][a-z0-9._-]*$"
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "line_start", "line_end"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "line_start": {"type": ["integer", "null"], "minimum": 1},
+        "line_end": {"type": ["integer", "null"], "minimum": 1}
+      }
+    },
+    "businessRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonical_key", "alias", "rule", "confidence", "evidence", "coverage_status"],
+      "properties": {
+        "canonical_key": {"$ref": "#/$defs/canonicalKey"},
+        "alias": {"type": "string", "pattern": "^BR-[0-9]{3}$"},
+        "rule": {"type": "string", "minLength": 1},
+        "confidence": {"enum": ["verified", "inferred", "assumption"]},
+        "evidence": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/evidence"}},
+        "coverage_status": {"enum": ["covered", "untested"]}
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonical_key", "alias", "registry", "title", "kind", "severity", "confidence", "status", "evidence"],
+      "properties": {
+        "canonical_key": {"$ref": "#/$defs/canonicalKey"},
+        "alias": {"type": "string", "pattern": "^(TD|V)-[0-9]{3}$"},
+        "registry": {"enum": ["td", "v"]},
+        "title": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+        "severity": {"enum": ["critical", "high", "medium", "low"]},
+        "confidence": {"enum": ["verified", "inferred", "assumption"]},
+        "status": {"enum": ["open", "accepted", "remediated"]},
+        "evidence": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/evidence"}}
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonical_key", "alias", "name", "path", "namespace"],
+      "properties": {
+        "canonical_key": {"$ref": "#/$defs/canonicalKey"},
+        "alias": {"type": "string", "pattern": "^CMP-[0-9]{3}$"},
+        "name": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
+        "namespace": {"type": ["string", "null"]}
+      }
+    },
+    "testCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonical_key", "alias", "category", "title", "source_refs", "status"],
+      "properties": {
+        "canonical_key": {"$ref": "#/$defs/canonicalKey"},
+        "alias": {"type": "string", "pattern": "^TC-[0-9]{3}$"},
+        "category": {"enum": ["behavioral", "security", "infrastructure"]},
+        "title": {"type": "string", "minLength": 1},
+        "source_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^(BR|V|TD|CMP)-[0-9]{3}$"}},
+        "status": {"enum": ["specification", "existing"]}
+      }
+    }
+  }
+}

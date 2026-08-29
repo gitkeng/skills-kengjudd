@@ -13,6 +13,7 @@
   ],
   "skills": [
     "./skills/creating-skills",
-    "./skills/business-rules-extraction"
+    "./skills/business-rules-extraction",
+    "./skills/comprehensive-codebase-analysis"
   ]
 }
