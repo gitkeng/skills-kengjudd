@@ -2,6 +2,20 @@
 
 ## 2026-08-29
 
+- **Creation** of /skill-authoring/importing-skills.md alongside the first skill
+  import (repo v0.4.0): `business-rules-extraction`,
+  `comprehensive-codebase-analysis`, and `codebase-analysis-report` imported from
+  `gitkeng/aws-kiro-atx-lab` (`.kiro/skills/`). Records what an import actually
+  requires — `metadata.upstream` provenance including a dirty source working
+  tree, renumbering to 1.0.0 with the upstream number preserved only in
+  metadata, the two-channel `## Updating` section, re-anchoring skill-relative
+  script paths that symlink installs break, replacing Kiro-specific README
+  install instructions, and keeping a bundled LICENSE that a `license:` field
+  refers to. Also documents the hard v2-output data contract that makes
+  `codebase-analysis-report` and `comprehensive-codebase-analysis` a pair, and
+  carries an import-status table for the deferred inventory in
+  /decisions/2026-08-29-repo-design.md (3 of 23 imported; the other 20 rows
+  stand).
 - **Update** from the final review round (repo v0.3.0), per binding rule 7:
   brought /skill-authoring/update-mechanism.md, /skill-authoring/best-practices.md
   and /decisions/2026-08-29-repo-design.md back in line with the revised

@@ -7,6 +7,53 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.4.0] - 2026-08-29
+
+First skill import: the three codebase-analysis skills from
+`gitkeng/aws-kiro-atx-lab` (`.kiro/skills/`). All three start at
+`metadata.version` 1.0.0 per the import rule; their upstream repository, path,
+commit, and upstream version are recorded in `metadata.upstream`.
+
+### Added
+
+- **business-rules-extraction 1.0.0** — static, read-only extraction of business
+  rules from any codebase into domain-decomposed catalogs with line-level
+  evidence, coverage accounting, and a Python validator. Imported from
+  `aws-kiro-atx-lab@595f830` (upstream version 1.1.0). MIT-licensed, ships its
+  own LICENSE.
+- **comprehensive-codebase-analysis 1.0.0** — offline, evidence-backed
+  architecture, behavior, security, tech-debt, migration, and onboarding
+  analysis with a resumable phase model and machine-auditable manifest.
+  Imported from `aws-kiro-atx-lab@7423a91`.
+- **codebase-analysis-report 1.0.0** — renders a completed
+  `comprehensive-codebase-analysis` **v2** output tree into a single offline,
+  accessible HTML report (pinned local Mermaid v11). Imported from
+  `aws-kiro-atx-lab@4320cce` plus the source's uncommitted working-tree changes.
+  Hard input dependency on `comprehensive-codebase-analysis`, recorded in
+  `metadata.requires` — the two are a pair.
+
+### Changed
+
+- All three imported SKILL.md files gained the required two-channel
+  `## Updating` section and an explicit statement that their `scripts/` and
+  `references/` paths resolve against the skill directory (`readlink -f`), not
+  the analyzed repository — the copy-the-directory assumption breaks under this
+  repo's symlink install.
+- `README.md` is now bilingual (English then Thai in every section). Commands
+  and tables are stated once and shared by both languages so the two versions
+  cannot drift apart.
+- `business-rules-extraction/README.md`: Kiro-specific `cp -r` install table
+  replaced with `./scripts/install.sh --tool <agent>` and the plugin channel;
+  version line and CI example corrected to this repo's numbering and layout.
+
+### Knowledge
+
+- `knowledge/skill-authoring/importing-skills.md` (Playbook) — what an import
+  actually requires (provenance, renumbering, updating section, path
+  re-anchoring, host-specific READMEs, bundled licenses), how to record a dirty
+  source working tree, why paired skills ship together, and an import-status
+  table over the 23-skill deferred inventory.
+
 ## [0.3.0] - 2026-08-29
 
 Final expert-review round: regression fixes, two script bugs, and consolidation

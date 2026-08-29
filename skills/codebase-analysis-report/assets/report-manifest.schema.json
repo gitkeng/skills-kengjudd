@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/codebase-analysis-report/report-manifest.schema.json",
+  "title": "Codebase analysis report manifest",
+  "description": "Integrity and provenance manifest for a generated report. Records the consumed source contract, generation timestamps, incomplete-source state, included Markdown documents, source registry/severity counts, the pinned Mermaid asset checksum, and SHA-256 of generated files. It never hashes itself.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "report_generated_at",
+    "source_schema_version",
+    "source_generated_at",
+    "source_incomplete",
+    "source_prior_manifest_loaded",
+    "documents",
+    "counts",
+    "mermaid_sha256",
+    "generated_files"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "report_generated_at": {"type": "string", "minLength": 1},
+    "source_schema_version": {"const": "2.0"},
+    "source_generated_at": {"type": "string", "minLength": 1},
+    "source_incomplete": {"type": "boolean"},
+    "source_prior_manifest_loaded": {
+      "type": "boolean",
+      "description": "The source delta.prior_manifest_loaded flag, preserved exactly."
+    },
+    "documents": {
+      "type": "array",
+      "description": "Relative POSIX paths of Markdown documents rendered into the report, in source declaration order.",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "business_rules", "findings", "components", "test_cases", "traceability_links"],
+      "properties": {
+        "severity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["critical", "high", "medium", "low"],
+          "properties": {
+            "critical": {"type": "integer", "minimum": 0},
+            "high": {"type": "integer", "minimum": 0},
+            "medium": {"type": "integer", "minimum": 0},
+            "low": {"type": "integer", "minimum": 0}
+          }
+        },
+        "business_rules": {"type": "integer", "minimum": 0},
+        "findings": {"type": "integer", "minimum": 0},
+        "components": {"type": "integer", "minimum": 0},
+        "test_cases": {"type": "integer", "minimum": 0},
+        "traceability_links": {"type": "integer", "minimum": 0}
+      }
+    },
+    "mermaid_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "generated_files": {
+      "type": "object",
+      "description": "Map of report-relative POSIX path to SHA-256 hex digest for each generated/copied file except this manifest.",
+      "minProperties": 1,
+      "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    }
+  }
+}

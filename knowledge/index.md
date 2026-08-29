@@ -22,6 +22,7 @@ Project knowledge bundle in OKF format. Canonical spec:
 
 * [Best practices](skill-authoring/best-practices.md) - how to write skills that trigger correctly and work across agents
 * [Update mechanism](skill-authoring/update-mechanism.md) - how per-skill updates work in this repo
+* [Importing skills](skill-authoring/importing-skills.md) - what must change when a skill is imported from another project, and the import status of the deferred inventory
 
 # Decisions
 
