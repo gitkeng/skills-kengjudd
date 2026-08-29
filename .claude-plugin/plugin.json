@@ -12,6 +12,7 @@
     "okf"
   ],
   "skills": [
-    "./skills/creating-skills"
+    "./skills/creating-skills",
+    "./skills/business-rules-extraction"
   ]
 }

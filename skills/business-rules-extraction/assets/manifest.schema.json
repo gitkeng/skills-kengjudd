@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Business Rules Extraction Manifest",
+  "type": "object",
+  "required": ["schema_version", "project", "domains", "shared_entities", "entity_inventory", "exclusion_policy"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "project": {
+      "type": "object",
+      "required": ["name", "primary_languages", "total_source_files", "total_loc", "extraction_date"],
+      "properties": {
+        "name": { "type": "string" },
+        "repository_root": { "type": "string" },
+        "monorepo_scope": { "type": ["string", "null"] },
+        "primary_languages": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "total_source_files": { "type": "integer" },
+        "total_loc": { "type": "integer" },
+        "extraction_date": { "type": "string" }
+      }
+    },
+    "entity_inventory": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["slug", "name", "description", "source_paths", "owned_entities", "dependencies", "extraction_order", "rule_count"],
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "source_paths": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "owned_entities": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "dependencies": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "extraction_order": { "type": "integer" },
+          "rule_count": { "type": "integer" }
+        }
+      }
+    },
+    "shared_entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entity", "owning_domains", "sharing_reason"],
+        "properties": {
+          "entity": { "type": "string" },
+          "owning_domains": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "sharing_reason": { "type": "string" }
+        }
+      }
+    },
+    "exclusion_policy": {
+      "type": "object",
+      "required": ["binary", "generated", "vendored", "test", "out_of_scope"],
+      "properties": {
+        "binary": { "type": "string" },
+        "generated": { "type": "string" },
+        "vendored": { "type": "string" },
+        "test": { "type": "string" },
+        "out_of_scope": { "type": "string" }
+      }
+    }
+  }
+}

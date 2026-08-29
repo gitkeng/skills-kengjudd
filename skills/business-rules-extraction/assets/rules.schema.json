@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Business Rules Domain Catalog",
+  "type": "object",
+  "required": ["schema_version", "domain", "rules"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "domain": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "statement", "rule_type", "acceptance_criteria", "evidence", "business_context", "data_elements", "relationships", "confidence", "review"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^BR-[a-z0-9-]+-[0-9]{3}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "statement": {
+            "type": "string"
+          },
+          "rule_type": {
+            "type": "string",
+            "enum": ["fact", "constraint", "action_enabler", "inference", "computation"]
+          },
+          "category": {
+            "type": ["string", "null"],
+            "enum": ["validation", "calculation", "decision", "process_workflow", "data_integrity", "access_control", null]
+          },
+          "acceptance_criteria": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["given", "when", "then"],
+              "properties": {
+                "given": { "type": "string" },
+                "when": { "type": "string" },
+                "then": { "type": "string" }
+              }
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["file", "line_start", "line_end", "snippet", "layer"],
+              "properties": {
+                "file": { "type": "string" },
+                "line_start": { "type": "integer" },
+                "line_end": { "type": "integer" },
+                "snippet": { "type": "string" },
+                "layer": {
+                  "type": "string",
+                  "enum": ["code", "sql", "db_constraint", "batch", "workflow", "ui", "config", "rules_engine"]
+                }
+              }
+            }
+          },
+          "business_context": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["file", "anchor", "kind"],
+              "properties": {
+                "file": { "type": "string" },
+                "anchor": { "type": "string" },
+                "kind": {
+                  "type": "string",
+                  "enum": ["feature", "workflow"]
+                }
+              }
+            }
+          },
+          "data_elements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["term", "glossary_anchor"],
+              "properties": {
+                "term": { "type": "string" },
+                "glossary_anchor": { "type": "string" }
+              }
+            }
+          },
+          "relationships": {
+            "type": "object",
+            "required": ["related_rule_ids", "duplicate_rule_ids", "conflicting_rule_ids"],
+            "properties": {
+              "related_rule_ids": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "duplicate_rule_ids": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "conflicting_rule_ids": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "confidence": {
+            "type": "object",
+            "required": ["level", "justification"],
+            "properties": {
+              "level": {
+                "type": "string",
+                "enum": ["high", "medium", "low"]
+              },
+              "justification": { "type": "string" }
+            }
+          },
+          "review": {
+            "type": "object",
+            "required": ["status", "reviewer", "reviewed_on"],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["extracted", "needs_review", "validated", "rejected", "obsolete"]
+              },
+              "reviewer": { "type": ["string", "null"] },
+              "reviewed_on": { "type": ["string", "null"] }
+            }
+          },
+          "criticality": {
+            "type": ["object", "null"],
+            "properties": {
+              "level": {
+                "type": "string",
+                "enum": ["core", "supporting", "peripheral"]
+              },
+              "basis": { "type": "string" }
+            }
+          },
+          "applicability": {
+            "type": ["object", "null"],
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["active", "dead", "uncertain"]
+              },
+              "justification": { "type": "string" }
+            }
+          },
+          "open_questions": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
