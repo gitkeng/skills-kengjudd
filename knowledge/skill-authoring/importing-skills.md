@@ -23,6 +23,8 @@ sources:
     title: Upstream repository of the imported trio (private)
   - resource: file:///Users/keng/Coding/gitkeng/skills-kengjudd/scripts/install.sh
     title: scripts/install.sh — symlink install model that breaks skill-relative command paths
+  - resource: file:///Users/keng/.claude/skills/doc-to-markdown
+    title: Import source of doc2markdown — machine-local skill, no git history (verified by local inspection 2026-08-29)
 generated:
   by: claude-code/claude-opus-5
   at: 2026-08-29T11:49:01Z
@@ -79,6 +81,28 @@ would then be false: the imported bytes are not that commit. Check
 `codebase-analysis-report` was imported at `@4320cce plus uncommitted
 working-tree changes`.
 
+## Sources with no git history
+
+Not every source is a repository. `doc2markdown` was imported from the
+machine-local `~/.claude/skills/doc-to-markdown`, which has no `.git` at all —
+there is no commit to cite and no upstream version to preserve. The honest
+`metadata.upstream` then records the local path and says so:
+`"local ~/.claude/skills/doc-to-markdown (no git repo, no upstream version;
+imported 2026-08-29)"`. Do not invent a commit or a version number to fill the
+field.
+
+## Rename on import
+
+An import may take a new name (`doc-to-markdown` → `doc2markdown`, at the
+user's request). Two consequences:
+
+- The frontmatter `name` must match the new directory — rename it in the copied
+  SKILL.md, and sweep the skill's own files for the old name (a docstring in
+  `scripts/_common.py` still said `doc-to-markdown`).
+- The original skill usually stays installed where it was. Two skills with
+  near-identical descriptions compete on description-match for the same
+  triggers; tell the user, and let them decide whether to remove the original.
+
 ## Paired skills
 
 `codebase-analysis-report` consumes a `comprehensive-codebase-analysis` **v2**
@@ -97,7 +121,8 @@ initialization. Imported since then:
 | business-rules-extraction | aws-kiro-atx-lab | 2026-08-29 | 0.4.0 |
 | comprehensive-codebase-analysis | aws-kiro-atx-lab | 2026-08-29 | 0.4.0 |
 | codebase-analysis-report | aws-kiro-atx-lab | 2026-08-29 | 0.4.0 |
+| doc2markdown | ~/.claude/skills (renamed from doc-to-markdown; no git history) | 2026-08-29 | 0.5.0 |
 
-The remaining 20 rows of that inventory are still accurate as deferred
+The remaining 19 rows of that inventory are still accurate as deferred
 candidates. Related: /skill-authoring/best-practices.md,
 /skill-authoring/update-mechanism.md.

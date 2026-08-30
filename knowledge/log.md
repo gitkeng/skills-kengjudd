@@ -2,6 +2,24 @@
 
 ## 2026-08-29
 
+- **Update** of /skill-authoring/importing-skills.md alongside the import of
+  `doc2markdown` (repo v0.5.0), renamed on import from the machine-local
+  `~/.claude/skills/doc-to-markdown` (deferred-inventory row U1). Two new cases
+  recorded: sources with no git history (record the local path and say so —
+  never invent a commit or version for `metadata.upstream`) and rename on
+  import (frontmatter `name` must match the new directory, sweep the skill's
+  files for the old name, and warn that the original stays installed and
+  competes on description-match). Import-status table: 4 of 23 imported.
+- **Extension** of `doc2markdown` in the same v0.5.0 release: the import
+  landed at 1.0.0 (the source has PDF/DOCX/XLSX only), then PPTX support was
+  added in the working tree before the first commit — new
+  `scripts/extract_pptx.py`, pptx fidelity rules (slide headings, speaker
+  notes, page furniture), pptx manifest summary keys
+  (`slides_needing_ocr`, `slides_with_overlay_text`, `slides_render_unavailable`,
+  …), and the Thai "แปลงสไลด์"/"พาวเวอร์พอยต์" trigger words, taking the
+  skill to 1.1.0. Recorded here because the changelog entry alone would hide
+  that the PPTX half of this skill is new work in this repo, not part of the
+  imported source.
 - **Creation** of /skill-authoring/importing-skills.md alongside the first skill
   import (repo v0.4.0): `business-rules-extraction`,
   `comprehensive-codebase-analysis`, and `codebase-analysis-report` imported from

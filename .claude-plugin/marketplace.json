@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Private marketplace for kengjudd's skills",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "plugins": [
     {
       "name": "skills-kengjudd",
       "source": "./",
       "description": "Central multi-agent skills collection with an OKF knowledge base",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "author": {
         "name": "kengjudd"
       },

@@ -7,6 +7,34 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.5.0] - 2026-08-29
+
+### Added
+
+- **doc2markdown 1.1.0** — convert a PDF, DOCX, XLSX, or PPTX into faithful
+  Markdown with images extracted and tables preserved, including Thai OCR
+  font-corruption repair (SARA AM recomposition, SARA AA collapse detection).
+  Imported at 1.0.0 from the user's machine-local
+  `~/.claude/skills/doc-to-markdown` and **renamed on import** — the first
+  import from a source with no git history, and the first rename
+  (`metadata.upstream` records the local origin accordingly) — then extended
+  in the same release to 1.1.0 with PPTX support: `extract_pptx.py` (shape
+  and group reading-order via the `chOff`/`chExt` transform, run coalescing,
+  full-page-picture scan vs background detection, speaker notes,
+  unreadable-chart placeholders, low-res render flags), pptx rules in the
+  SKILL.md body, and the "แปลงสไลด์"/"พาวเวอร์พอยต์" trigger words. Eight
+  Python scripts with PEP 723 inline dependencies (`uv` on PATH),
+  subagent-based page/slide transcription, and a merge-time audit
+  (`missing_parts`, `broken_image_links`, `unreferenced_assets`, …).
+
+### Knowledge
+
+- `knowledge/skill-authoring/importing-skills.md` — extended with the two new
+  cases this import surfaced: provenance for local sources with no git
+  repository, and rename-on-import (frontmatter `name` must match the new
+  directory; the original stays installed and competes on description-match).
+  Import-status table now covers 4 of the 23 deferred skills.
+
 ## [0.4.0] - 2026-08-29
 
 First skill import: the three codebase-analysis skills from
