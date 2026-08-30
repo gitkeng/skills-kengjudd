@@ -21,11 +21,32 @@ counts, confirms the pinned Mermaid digest, and asserts the generated HTML:
   Image`);
 - every manifest Markdown document is present.
 
-Neutrality is enforced on skill-authored assets only (`report.css`,
-`report.js`, and the render template chrome), with word-boundary matching so
-CSS properties like `text-transform` are not false positives. Observed source
-content (finding titles, document panels, repository paths) passes through
-unchanged.
+Neutrality is enforced in two tiers, both with word-boundary matching so CSS
+properties like `text-transform` are not false positives. Observed source
+content (finding titles, document panels, repository paths) is never scanned
+and passes through unchanged.
+
+- **Publication gate** — `scan_emitted_assets()`, run by `validate_report.py`
+  on every render, covers only what reaches `index.html`: `report.css`,
+  `report.js`, and the authored chrome in `render_report.py`. Chrome is read by
+  walking the module's AST, so every string literal is covered no matter how it
+  is quoted — a triple-quote regex used to miss the ordinary literals that carry
+  much of the visible prose.
+- **Self-test only** — `scan_authored_docs()`, run by `test_report.py`, covers
+  `SKILL.md`, `README.md`, and `references/*.md`. These steer how the agent
+  words the report but are never inlined into it, so a defect here must not
+  block publishing an otherwise valid report. The `metadata.upstream` value is
+  exempt: it records this skill's honest source repository as required by the
+  distributing repository, and is provenance rather than report wording. The
+  exemption covers every YAML form the value can take (quoted, folded `>`,
+  literal `|`, CRLF files); `name:` and `description:` in the same frontmatter
+  remain in scope, as does any `upstream:` in the body.
+
+Both tiers run together, without a report directory or a fixture, via
+`python3 scripts/validate_report.py --self-check` — the check to run after
+editing this skill. Neutrality paths are relative to the skill root (printed on
+failure), never to the report being validated; each hit reports its line number
+and the offending text.
 
 ## Publication semantics
 
@@ -54,7 +75,7 @@ Covers, at minimum:
   unknown keys/version fail-closed, incomplete approval and banner;
 - JSON excluded from Markdown; every declared Markdown included exactly once;
 - full/focused/sampled coverage; covered and untested rules; coverage
-  disagreement rejection; non-empty new/resolved/regressed delta;
+  disagreement rejection; all four delta states non-empty;
 - raw HTML and angle-bracket escaping; active-link neutralization; remote
   images produce no loading element; relative-image containment; oversize
   placeholder; SVG script/event/external-ref rejection and clean-SVG embed;
@@ -74,14 +95,21 @@ Covers, at minimum:
   mutation failures (tampered index, removed document, corrupted Mermaid);
 - output-collision refusal; approved backup/publish/restore; temp sibling on the
   same filesystem;
-- authored-asset neutrality scan; source provider-name passthrough; overview
-  severity cards equal to manifest counts; absence of external scripts/styles/
-  fonts/images/network calls.
+- emitted-asset and authored-doc neutrality scans; the publication gate
+  covering only emitted assets; chrome outside triple quotes still scanned;
+  `metadata.upstream` exemption in every YAML form, without exempting
+  `description`, body prose, or a top-level `upstream:`; hits reported with file,
+  line, and text; `--self-check` runnable without a report directory; source
+  provider-name passthrough; overview severity cards equal to manifest counts;
+  absence of external scripts/styles/fonts/images/network calls.
 
 ## Acceptance fixture
 
 The test suite accepts any valid, completed v2 output tree via `--fixture`
-(typically the analysis root being reported). Never place test input or output
-inside the shipped skill. When the sibling analyzer's validator is available,
-its result on the fixture may be recorded separately from this skill's
-self-contained preflight.
+(typically the analysis root being reported). "Any" is literal: the suite never
+assumes a particular alias, and synthesizes into its temp copy whatever shape a
+case needs, keeping the renderer's cross-manifest invariants intact. A fixture
+with no vulnerabilities, no tests, no components — or none of them at all —
+is accepted. Never place test input or output inside the shipped skill. When the
+sibling analyzer's validator is available, its result on the fixture may be
+recorded separately from this skill's self-contained preflight.

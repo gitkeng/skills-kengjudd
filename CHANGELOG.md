@@ -7,6 +7,58 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.8.0] - 2026-08-30
+
+### codebase-analysis-report (1.0.1 → 1.1.0)
+
+**Fixed — every render failed.** The vendor-neutrality scanner scanned this
+skill's own `SKILL.md`, whose `metadata.upstream` names the repository the skill
+was imported from (`gitkeng/aws-kiro-atx-lab`) as `CLAUDE.md` requires. The
+substrings `aws` and `atx` matched the denylist, so the publication gate rejected
+every report. Present since 0.4.0.
+
+- Neutrality is now split by blast radius. `scan_emitted_assets()` guards
+  publication and covers only what reaches `index.html` (`report.css`,
+  `report.js`, the renderer's chrome). `scan_authored_docs()` covers `SKILL.md`,
+  `README.md`, and `references/*.md` and runs in the test suite only — a
+  documentation defect no longer blocks publishing a valid report.
+- `metadata.upstream` is exempt from the scan in every YAML form it can take
+  (quoted, folded `>`, literal `|`, CRLF files). `name`, `description`, body
+  prose, and a top-level `upstream:` key remain in scope.
+- Closed two pre-existing holes in the publication gate that the over-broad doc
+  scan had been masking: the renderer's chrome was checked against a narrower
+  second denylist, so the bare tokens `aws`, `amazon`, `azure`, `gcp`, and `atx`
+  were never checked against it; and chrome was extracted with a triple-quote
+  regex, so wording in ordinary quoted literals escaped entirely. Chrome is now
+  walked via the module AST against a single denylist.
+- Neutrality failures now report the file, the line number, the offending text,
+  and the skill root — report directories have an `assets/` directory of their
+  own, so the paths were ambiguous.
+- On validation failure the renderer keeps the unpublished temp output and prints
+  its path plus the command to list every error. The workflow had always
+  instructed the agent to report that path, but a `finally: rmtree` deleted it
+  first. Nothing is published either way.
+
+**Added.** `python3 scripts/validate_report.py --self-check` runs both neutrality
+tiers with no report directory and no fixture — the check to run after editing
+the skill's own files.
+
+**Fixed — the self-test suite could not pass on a valid fixture.** Cases
+hardcoded `BR-007`, `TC-008`, `CMP-001`, and the literal `"AWS SDK"` from one
+finding's title, contradicting the documented promise that any completed v2
+output tree is a valid fixture. Cases now synthesize the shape they need into
+their temp copy, preserving the renderer's cross-manifest invariants. Verified on
+four fixtures, including trees with no vulnerabilities, with no tests, and with
+no registries populated at all: 100 tests pass on each.
+
+### Knowledge
+
+- New concept `knowledge/skill-authoring/imported-self-checks.md` (`Playbook`):
+  what goes wrong when an imported skill ships its own validation gate — it can
+  reject the provenance this repo mandates, over-reach past the artifact it
+  guards, and encode the shape of one fixture — plus the checklist for the next
+  such import.
+
 ## [0.7.0] - 2026-08-30
 
 **BREAKING — plugin channel only.** The Claude Code plugin is renamed

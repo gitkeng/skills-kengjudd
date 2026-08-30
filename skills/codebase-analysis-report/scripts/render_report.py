@@ -1328,16 +1328,30 @@ def main(argv):
 
         temp_dir = unique_sibling(dest, "tmp")
         temp_dir.mkdir(parents=True, exist_ok=False)
+        keep_temp = False
         try:
             write_report_tree(temp_dir, index_html, report_manifest)
             # Validate temp output before publishing.
             from validate_report import validate_report_dir  # local import; same dir
             errors = validate_report_dir(temp_dir)
             if errors:
-                raise ReportError("temp report failed validation: %s" % "; ".join(errors[:5]))
+                # Keep the unpublished output so the failure can be adjudicated;
+                # nothing is published either way. The caller is told where it is
+                # and how many errors were elided.
+                keep_temp = True
+                shown = "; ".join(errors[:5])
+                if len(errors) > 5:
+                    shown += " (+%d more)" % (len(errors) - 5)
+                raise ReportError(
+                    "temp report failed validation: %s\n"
+                    "  unpublished output kept at: %s\n"
+                    "  full list: python3 %s %s"
+                    % (shown, temp_dir, Path(__file__).resolve().parent / "validate_report.py",
+                       temp_dir)
+                )
             publish(temp_dir, dest, args.replace)
         finally:
-            if temp_dir.exists():
+            if not keep_temp and temp_dir.exists():
                 shutil.rmtree(str(temp_dir), ignore_errors=True)
     except ReportError as exc:
         print("ERROR: %s" % exc, file=sys.stderr)

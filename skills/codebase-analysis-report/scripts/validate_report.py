@@ -14,6 +14,7 @@ Checks:
 """
 
 import argparse
+import ast
 import hashlib
 import json
 import re
@@ -49,15 +50,14 @@ REQUIRED_SECTIONS = [
 # registries) is rendered as evidence and is explicitly OUT OF SCOPE for this
 # scan. Matching is word-boundary based to avoid false substrings such as the
 # CSS property "text-transform".
+# One list for every target. Entries containing a space or hyphen are matched as
+# substrings (no benign collisions); bare tokens are matched on word boundaries.
+# There is deliberately no second, narrower list: a split denylist previously let
+# the bare provider tokens go unchecked against the render chrome.
 BRAND_DENYLIST = [
     "aws", "amazon", "azure", "gcp", "google cloud", "atx",
     "well-architected", "readiness score", "estimated cost", "migration cost",
-    "aws-logo", "execution time", "tokens used",
-]
-# Multi-word prohibited phrases (substring match is fine; no benign collisions).
-PHRASE_DENYLIST = [
-    "well-architected", "readiness score", "estimated cost", "migration cost",
-    "roadmap to", "aws-logo", "execution time", "tokens used", "google cloud",
+    "roadmap to", "aws-logo", "execution time", "tokens used",
 ]
 
 
@@ -161,7 +161,7 @@ def validate_report_dir(report_dir):
 
     html = index.read_text(encoding="utf-8")
     errors.extend(validate_index_html(html, rm))
-    errors.extend(scan_authored_assets())
+    errors.extend(scan_emitted_assets())
     return errors
 
 
@@ -242,9 +242,10 @@ def validate_index_html(html, rm):
         elif "\\" in raw:
             errors.append("index.html: anchor href contains backslash (should be inert) %r" % raw)
 
-    # Neutrality is enforced on SKILL-AUTHORED ASSETS (see scan_authored_assets),
-    # not on rendered source content. Here we only assert the shipped chrome does
-    # not embed a placeholder that failed substitution in template skeletons.
+    # Neutrality is enforced on SKILL-AUTHORED files (see scan_emitted_assets and
+    # scan_authored_docs), not on rendered source content. Here we only assert the
+    # shipped chrome does not embed a placeholder that failed substitution in
+    # template skeletons.
 
     # All manifest Markdown documents referenced.
     for doc in rm.get("documents", []):
@@ -261,14 +262,134 @@ def _word_present(text, word):
     return re.search(r"(?<![a-z])" + re.escape(word) + r"(?![a-z])", text) is not None
 
 
-def scan_authored_assets():
-    """Neutrality/placeholder scan over shipped, skill-authored files only:
-    report.css, report.js, and the render template (render_report.py chrome
-    strings). Observed source content is never scanned. Returns error list."""
+SNIPPET_MAX = 80
+
+
+def _hit(low_line_or_text, word):
+    if " " in word or "-" in word:
+        return word in low_line_or_text
+    return _word_present(low_line_or_text, word)
+
+
+def _locate(text, word, line_offset):
+    """Best-effort (line number, snippet) for a denylist hit, so a failure can be
+    adjudicated from the message alone without opening this scanner's source.
+    Returns (None, None) when the hit spans a line break — the whole-text scan
+    still reports it, only the pointer is unavailable."""
+    for lineno, line in enumerate(text.splitlines(), 1):
+        if _hit(line.lower(), word):
+            snippet = line.strip()
+            if len(snippet) > SNIPPET_MAX:
+                snippet = snippet[:SNIPPET_MAX - 1] + "…"
+            return lineno + line_offset, snippet
+    return None, None
+
+
+def _scan_text(name, text, errors, line_offset=0):
+    """Append one error per denylist word present in `text`. The decision is made
+    on the whole text (so a phrase wrapped across lines is still caught); the
+    line number and snippet are a locating aid layered on top."""
+    low = text.lower()
+    for word in BRAND_DENYLIST:
+        if not _hit(low, word):
+            continue
+        kind = "prohibited phrase" if (" " in word or "-" in word) else "branded token"
+        lineno, snippet = _locate(text, word, line_offset)
+        where = "%s:%d" % (name, lineno) if lineno else name
+        detail = (" in: %s" % snippet) if snippet else " (spans a line break)"
+        errors.append("neutrality: %s contains %s %r%s" % (where, kind, word, detail))
+
+
+def _strip_provenance(text):
+    """Blank out the `metadata.upstream` entry of a YAML frontmatter block.
+
+    The repository requires each imported skill to record its honest upstream
+    repository, path, and commit in `metadata.upstream`. That string is
+    provenance about where this skill came from, not report wording, and it may
+    legitimately contain a source repository's brand name.
+
+    Scope is deliberately narrow: only an indented `upstream:` inside the
+    frontmatter block, together with the deeper-indented continuation lines of a
+    folded (`>`) or literal (`|`) scalar. `name:` and `description:` stay in
+    scope, and so does every `upstream:` in the body. Removed lines are replaced
+    by empty ones so reported line numbers still match the file. Flow-style
+    frontmatter (`metadata: {upstream: ...}`) is not recognised and would be
+    scanned — failing closed, which is the safe direction."""
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    if not normalized.startswith("---\n"):
+        return normalized
+    end = normalized.find("\n---", 3)
+    if end == -1:
+        return normalized
+    head, rest = normalized[:end], normalized[end:]
+    kept, skipping, key_indent = [], False, 0
+    for line in head.split("\n"):
+        stripped = line.lstrip(" \t")
+        indent = len(line) - len(stripped)
+        if skipping:
+            # A scalar continues while lines are indented deeper than its key;
+            # a blank line inside the scalar continues it too.
+            if not stripped or indent > key_indent:
+                kept.append("")
+                continue
+            skipping = False
+        if indent > 0 and stripped.startswith("upstream:"):
+            skipping, key_indent = True, indent
+            kept.append("")
+            continue
+        kept.append(line)
+    return "\n".join(kept) + rest
+
+
+def _scan_python_chrome(name, path, errors):
+    """Scan every string literal in a Python source file, each at its real line.
+
+    Authored report wording is not confined to triple-quoted skeletons — plenty
+    of it lives in ordinary quoted literals (`"<p>Prior manifest loaded: ...")`.
+    Walking the AST reaches all of them regardless of how they are quoted, so no
+    chrome escapes the publication gate by accident. Adjacent literals are folded
+    by the parser; wording split across a runtime `+` or `%` is a known limit."""
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, SyntaxError) as exc:
+        errors.append("neutrality: %s could not be parsed: %s" % (name, exc))
+        return
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            _scan_text(name, node.value, errors, line_offset=node.lineno - 1)
+
+
+def scan_emitted_assets():
+    """Neutrality scan over files whose text reaches the generated report:
+    assets/report.css, assets/report.js, and the authored chrome inside
+    render_report.py. This is a PUBLICATION gate — a hit here means the
+    index.html about to be shipped is not vendor-neutral. Every target is checked
+    against the full BRAND_DENYLIST. Observed source content is never scanned.
+    Returns error list."""
+    errors = []
+    for name in ("assets/report.css", "assets/report.js"):
+        path = SKILL_ROOT / name
+        if not path.is_file():
+            errors.append("neutrality: missing emitted asset %s" % name)
+            continue
+        _scan_text(name, path.read_text(encoding="utf-8"), errors)
+    rr_path = SKILL_ROOT / "scripts" / "render_report.py"
+    if not rr_path.is_file():
+        errors.append("neutrality: missing emitted asset scripts/render_report.py")
+        return errors
+    _scan_python_chrome("scripts/render_report.py", rr_path, errors)
+    return errors
+
+
+def scan_authored_docs():
+    """Neutrality scan over skill-authored documentation: SKILL.md, README.md,
+    and references/*.md. None of these is inlined into the report — they steer
+    how the agent words it — so the self-test suite enforces them and the
+    per-render publication gate deliberately does not: a documentation defect
+    must not block publishing an otherwise valid report. `metadata.upstream` is
+    exempt (see _strip_provenance). Observed source content is never scanned."""
     errors = []
     targets = {
-        "assets/report.css": (SKILL_ROOT / "assets" / "report.css"),
-        "assets/report.js": (SKILL_ROOT / "assets" / "report.js"),
         "SKILL.md": (SKILL_ROOT / "SKILL.md"),
         "README.md": (SKILL_ROOT / "README.md"),
     }
@@ -276,42 +397,46 @@ def scan_authored_assets():
         targets["references/" + ref.name] = ref
     for name, path in targets.items():
         if not path.is_file():
-            errors.append("neutrality: missing authored asset %s" % name)
+            errors.append("neutrality: missing authored doc %s" % name)
             continue
-        low = path.read_text(encoding="utf-8").lower()
-        for word in BRAND_DENYLIST:
-            if " " in word or "-" in word:
-                if word in low:
-                    errors.append("neutrality: %s contains prohibited phrase %r" % (name, word))
-            elif _word_present(low, word):
-                errors.append("neutrality: %s contains branded token %r" % (name, word))
-    # Scan the authored chrome strings inside render_report.py (skeleton/head/nav).
-    rr = (SKILL_ROOT / "scripts" / "render_report.py").read_text(encoding="utf-8")
-    # Only the static HTML skeleton constants; extract triple-quoted templates.
-    chrome_strings = re.findall(r'"""(.*?)"""', rr, flags=re.DOTALL)
-    chrome = "\n".join(chrome_strings).lower()
-    for phrase in PHRASE_DENYLIST:
-        if phrase in chrome:
-            errors.append("neutrality: render template contains prohibited phrase %r" % phrase)
+        _scan_text(name, _strip_provenance(path.read_text(encoding="utf-8")), errors)
     return errors
+
+
+def _report(label, errors):
+    if errors:
+        print("FAIL: %s (%d issue(s))" % (label, len(errors)))
+        # Neutrality paths are relative to the skill itself, not to the report
+        # being validated (both contain an assets/ directory), so say which root.
+        if any(e.startswith("neutrality:") for e in errors):
+            print("  skill root: %s" % SKILL_ROOT)
+        for e in errors:
+            print("  - %s" % e)
+        return 1
+    print("PASS: %s" % label)
+    return 0
 
 
 def main(argv):
     parser = argparse.ArgumentParser(description="Validate a generated report directory.")
-    parser.add_argument("report_dir", help="path to the generated report directory")
+    parser.add_argument("report_dir", nargs="?",
+                        help="path to the generated report directory")
+    parser.add_argument("--self-check", action="store_true",
+                        help="run both neutrality scans over this skill's own files "
+                             "and exit; needs no report directory and no fixture")
     args = parser.parse_args(argv[1:])
+    if args.self_check:
+        if args.report_dir:
+            print("ERROR: --self-check takes no report directory", file=sys.stderr)
+            return 2
+        return _report("skill self-check", scan_emitted_assets() + scan_authored_docs())
+    if not args.report_dir:
+        parser.error("report_dir is required unless --self-check is given")
     report_dir = Path(args.report_dir).resolve()
     if not report_dir.is_dir():
         print("ERROR: not a directory: %s" % report_dir, file=sys.stderr)
         return 2
-    errors = validate_report_dir(report_dir)
-    if errors:
-        print("FAIL: report validation (%d issue(s))" % len(errors))
-        for e in errors:
-            print("  - %s" % e)
-        return 1
-    print("PASS: report validation")
-    return 0
+    return _report("report validation", validate_report_dir(report_dir))
 
 
 if __name__ == "__main__":

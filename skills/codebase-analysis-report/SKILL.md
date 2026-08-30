@@ -2,7 +2,7 @@
 name: codebase-analysis-report
 description: Generate a portable, offline, accessible HTML report from a comprehensive-codebase-analysis v2 output tree. Use to visualize evidence-backed findings, business rules, components, test traceability, coverage, migration analysis, operations, and Mermaid diagrams without choosing a vendor platform.
 metadata:
-  version: "1.0.1"
+  version: "1.1.0"
   updated: "2026-08-30"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/codebase-analysis-report @4320cce plus uncommitted working-tree changes as of 2026-08-29"
   requires: "comprehensive-codebase-analysis v2 output tree as input"
@@ -30,15 +30,19 @@ path with the resolved directory.
 - Treat all Markdown/JSON as untrusted: escape everything, sanitize links and
   images, render Mermaid strictly with an always-visible source fallback.
 - The skill's own UI, defaults, and wording stay vendor-neutral. Provider names
-  appear only when present in the source as observed evidence.
+  appear only when present in the source as observed evidence. Provenance is
+  exempt: `metadata.upstream` records the honest source repository this skill was
+  imported from, not report wording, so a brand name there is correct and must
+  not be edited away. `name` and `description` are not exempt.
 - Publish only output that passed validation. Never silently overwrite.
 
 ## Workflow (gates)
 
 Gates 2–6 are enforced by `scripts/render_report.py`,
 `scripts/validate_report.py`, and `scripts/test_report.py`: run the commands
-rather than reading source documents into context. Read source files only to adjudicate a reported
-validation failure.
+rather than reading source documents into context. Read the analysis source tree
+only to adjudicate a reported validation failure; reading this skill's own
+scripts and references to adjudicate is always allowed.
 
 1. **Resolve roots.** If the analysis root or the output root is absent, ask
    the user; never infer the analysis root from the working directory. State
@@ -61,12 +65,14 @@ validation failure.
    accessibility, or diagram behavior.
 5. **Validate** the temp output and run the self-test suite
    (`test_report.py --fixture <analysis-root>`; any completed v2 output tree is
-   a valid fixture — typically the analysis root being reported. For a
-   user-approved incomplete source, pass another completed v2 tree if one is
-   available; otherwise skip the suite, rely on `validate_report.py`, and say
-   so in the final report). On any
-   validation or test failure, do not publish; report the failing check and the
-   temp path to the user.
+   a valid fixture — typically the analysis root being reported. The suite
+   synthesizes whatever shape it needs, so a fixture with no findings, no tests,
+   or no components is still valid. For a user-approved incomplete source, pass
+   another completed v2 tree if one is available; otherwise skip the suite, rely
+   on `validate_report.py`, and say so in the final report). On any validation
+   or test failure, do not publish; report the failing check and the retained
+   temp path (the renderer prints both, and keeps the unpublished output for
+   inspection) to the user.
    → `references/validation.md`.
 6. **Publish** by rename. When replacing, back up the prior output, move the
    validated temp into place, and restore the backup if publication fails.
@@ -82,6 +88,10 @@ python3 scripts/render_report.py --source <analysis-root> --output <report-dir> 
 
 # Validate a generated report independently:
 python3 scripts/validate_report.py <report-dir>
+
+# Check this skill's own neutrality (no report dir, no fixture needed) — use
+# after editing SKILL.md, README.md, references/, report.css/js, or the renderer:
+python3 scripts/validate_report.py --self-check
 
 # Run the full self-test suite (uses temp dirs only; the fixture is any
 # completed v2 output tree, typically the analysis root being reported):

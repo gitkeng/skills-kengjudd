@@ -78,6 +78,102 @@ class Base(unittest.TestCase):
     def read_index(self, out):
         return (Path(out) / "index.html").read_text(encoding="utf-8")
 
+    # ------------------------------------------------------------------ #
+    # Fixture-shape helpers.
+    #
+    # The accepted fixture is ANY valid, completed v2 output tree, so no test may
+    # assume a particular alias — or even that a registry is populated. A repo
+    # with no vulnerabilities has no V finding; a legacy repo with no tests has
+    # no covered rule and possibly no traceability at all. Both are valid input
+    # that must render. Each helper therefore returns the entry a test needs,
+    # synthesizing it into the temp manifest when the fixture lacks it, keeping
+    # every cross-manifest invariant the renderer enforces intact.
+    # ------------------------------------------------------------------ #
+    def ensure_rule(self, m):
+        if not m["business_rules"]:
+            m["business_rules"].append({
+                "canonical_key": "br:synthetic/rule.go:synthesized-rule:suite",
+                "alias": "BR-900",
+                "rule": "Synthesized by the test suite because the fixture has none.",
+                "confidence": "low",
+                "evidence": [],
+                "coverage_status": "untested",
+            })
+        return m["business_rules"][0]
+
+    def ensure_finding(self, m):
+        if not m["findings"]:
+            m["findings"].append({
+                "canonical_key": "td:synthetic/debt.go:synthesized-finding:suite",
+                "alias": "TD-900",
+                "registry": "td",
+                "title": "Synthesized by the test suite because the fixture has none.",
+                "kind": "technical-debt",
+                "severity": "low",
+                "confidence": "low",
+                "status": "open",
+                "evidence": [],
+            })
+            m["severity_counts"]["low"] = m["severity_counts"].get("low", 0) + 1
+        return m["findings"][0]
+
+    def ensure_component(self, m):
+        if not m["components"]:
+            m["components"].append({
+                "canonical_key": "cmp:synthetic:synthesized-component:suite",
+                "alias": "CMP-900",
+                "name": "Synthesized component",
+                "path": "synthetic/",
+                "namespace": None,
+            })
+            # coverage.components must equal the components alias set exactly.
+            m["coverage"].setdefault("components", []).append({
+                "component_alias": "CMP-900",
+                "depth": "not-read",
+                "files_read": [],
+                "rationale": "synthesized by the test suite",
+            })
+        return m["components"][0]
+
+    def ensure_test_case(self, m, category="behavioral"):
+        for tc in m["test_cases"]:
+            if tc.get("category") == category:
+                return tc
+        if not m["test_cases"]:
+            m["test_cases"].append({
+                "canonical_key": "tc:synthetic/test.go:synthesized-case:suite",
+                "alias": "TC-900",
+                "category": "behavioral",
+                "title": "Synthesized by the test suite because the fixture has none.",
+                "source_refs": [self.ensure_rule(m)["alias"]],
+                "status": "specification",
+            })
+        tc = m["test_cases"][0]
+        # Re-category the first case and give it refs its new category permits.
+        tc["category"] = category
+        tc["source_refs"] = [
+            self.ensure_rule(m)["alias"] if category == "behavioral"
+            else self.ensure_component(m)["alias"]
+        ]
+        return tc
+
+    def ensure_covered_rule(self, m):
+        """Alias of a business rule that is `covered` and linked, synthesizing
+        that state when the fixture carries no covered rule."""
+        for r in m["business_rules"]:
+            if r.get("coverage_status") == "covered":
+                return r["alias"]
+        rule = self.ensure_rule(m)
+        tc = self.ensure_test_case(m)
+        rule["coverage_status"] = "covered"
+        m["traceability"].append({"business_rule": rule["alias"], "test_case": tc["alias"]})
+        return rule["alias"]
+
+    def ensure_traceability_link(self, m):
+        if not m["traceability"]:
+            self.ensure_covered_rule(m)
+        return m["traceability"][0]
+
 
 # --------------------------------------------------------------------------- #
 class TestContract(Base):
@@ -151,7 +247,10 @@ class TestContract(Base):
         src = self.fresh_source()
         m = load_manifest(src)
         # Mark a covered rule as untested while a link still exists.
-        m["business_rules"][0]["coverage_status"] = "untested"
+        br = self.ensure_covered_rule(m)
+        for r in m["business_rules"]:
+            if r["alias"] == br:
+                r["coverage_status"] = "untested"
         write_manifest(src, m)
         code, o, e = render(src, self.tmp / "o7")
         self.assertEqual(code, 1)
@@ -195,29 +294,38 @@ class TestCoverageModes(Base):
             self.assertIn(mode, self.read_index(out))
 
     def test_untested_rule_and_nonempty_delta(self):
+        # The shape under test (an untested rule; four non-empty delta states) is
+        # synthesized in temp rather than assumed of the fixture, because any
+        # completed v2 tree is an accepted fixture.
         src = self.fresh_source()
         m = load_manifest(src)
-        # Convert BR-007 to untested: remove its traceability link and its TC.
-        m["traceability"] = [t for t in m["traceability"] if t["business_rule"] != "BR-007"]
-        m["test_cases"] = [t for t in m["test_cases"] if "BR-007" not in t["source_refs"]]
+        br = self.ensure_covered_rule(m)
+        # Convert it to untested: drop its traceability links, flip the status.
+        # Its test cases stay declared; source_refs still resolve to a live BR.
+        m["traceability"] = [t for t in m["traceability"] if t["business_rule"] != br]
         for r in m["business_rules"]:
-            if r["alias"] == "BR-007":
+            if r["alias"] == br:
                 r["coverage_status"] = "untested"
-        # Non-empty delta states (move one persisted key to new, one to resolved-ish).
-        # resolved keys need not be current findings; keep them out of current set.
-        persisted = m["delta"]["persisted"]
-        moved_new = persisted[0]
-        m["delta"]["new"] = [moved_new]
-        m["delta"]["persisted"] = persisted[1:]
-        m["delta"]["regressed"] = [persisted[1]]
-        m["delta"]["persisted"] = persisted[2:]
+        # Non-empty delta states. Delta entries are canonical keys; resolved keys
+        # need not be current findings, so they are free-form.
+        key = self.ensure_finding(m)["canonical_key"]
+        m["delta"] = {
+            "prior_manifest_loaded": True,
+            "new": [key],
+            "persisted": ["td:still/here:synthetic-persisted:test"],
+            "regressed": ["v:back/again:synthetic-regressed:test"],
+            "resolved": ["v:gone/in/this/run:synthetic-resolved:test"],
+        }
         write_manifest(src, m)
         out = self.tmp / "out"
         code, o, e = render(src, out)
         self.assertEqual(code, 0, e)
         html = self.read_index(out)
         # Untested rule listed.
-        self.assertRegex(html, r"(?s)Untested business rules.*BR-007")
+        self.assertRegex(html, r"(?s)Untested business rules.*" + re.escape(br))
+        # Every delta state carries its synthesized count.
+        for state in ("new", "resolved", "regressed", "persisted"):
+            self.assertIn('<tr><td>%s</td><td data-sort="1">1</td></tr>' % state, html)
 
 
 # --------------------------------------------------------------------------- #
@@ -707,8 +815,84 @@ class TestPublication(Base):
 
 # --------------------------------------------------------------------------- #
 class TestNeutrality(Base):
-    def test_authored_assets_neutral(self):
-        self.assertEqual(V.scan_authored_assets(), [])
+    def test_emitted_assets_neutral(self):
+        self.assertEqual(V.scan_emitted_assets(), [])
+
+    def test_authored_docs_neutral(self):
+        self.assertEqual(V.scan_authored_docs(), [])
+
+    def skill_copy_with_branded_doc(self):
+        """A working copy of the skill whose references/ carry a branded phrase.
+        Returns the copy root; V.SKILL_ROOT is repointed at it for the test."""
+        root = self.tmp / "skill-copy"
+        shutil.copytree(R.SKILL_ROOT, root, symlinks=True)
+        ref = root / "references" / "validation.md"
+        ref.write_text(ref.read_text(encoding="utf-8")
+                       + "\n\nThis report follows the AWS Well-Architected review.\n",
+                       encoding="utf-8")
+        original = V.SKILL_ROOT
+        V.SKILL_ROOT = root
+        self.addCleanup(lambda: setattr(V, "SKILL_ROOT", original))
+        return root
+
+    def test_publication_gate_ignores_authored_docs(self):
+        # Behavioral, not structural: a branded phrase in references/ must be
+        # caught by scan_authored_docs and must NOT block a render, because those
+        # files contribute no byte to index.html.
+        self.skill_copy_with_branded_doc()
+        self.assertTrue(any("well-architected" in e for e in V.scan_authored_docs()))
+        self.assertEqual(V.scan_emitted_assets(), [])
+        out = self.tmp / "out"
+        code, o, e = render(self.fresh_source(), out)
+        self.assertEqual(code, 0, e)
+        self.assertEqual(V.validate_report_dir(out), [])
+
+    def test_emitted_chrome_scanned_outside_triple_quotes(self):
+        # Authored wording in an ordinary quoted literal is emitted into the
+        # report just like a triple-quoted skeleton, so the publication gate must
+        # see it. Guards the AST-based chrome scan against a regex regression.
+        root = self.tmp / "skill-chrome"
+        shutil.copytree(R.SKILL_ROOT, root, symlinks=True)
+        rr = root / "scripts" / "render_report.py"
+        src = rr.read_text(encoding="utf-8")
+        anchor = '"<p>Prior manifest loaded: <strong>yes</strong>.</p>"'
+        self.assertIn(anchor, src)
+        rr.write_text(src.replace(anchor, '"<p>AWS readiness score pending.</p>"'),
+                      encoding="utf-8")
+        original = V.SKILL_ROOT
+        V.SKILL_ROOT = root
+        self.addCleanup(lambda: setattr(V, "SKILL_ROOT", original))
+        errs = V.scan_emitted_assets()
+        self.assertTrue(any("'aws'" in e for e in errs), errs)
+        self.assertTrue(any("readiness score" in e for e in errs), errs)
+        # The message locates the hit precisely enough to act on.
+        self.assertTrue(any(re.search(r"render_report\.py:\d+ contains", e) for e in errs), errs)
+
+    def test_upstream_provenance_exempt(self):
+        # metadata.upstream records the honest source repository and may carry a
+        # brand name; name/description in the same frontmatter stay in scope.
+        # Every YAML form the value can legally take must be exempt, or the
+        # self-hit returns the first time someone reformats the frontmatter.
+        exempt = {
+            "double-quoted": '---\nname: x\nmetadata:\n  upstream: "gitkeng/aws-atx-lab @abc"\n---\n\nbody\n',
+            "folded": '---\nname: x\nmetadata:\n  upstream: >-\n    gitkeng/aws-atx-lab\n    @abc\n---\n\nbody\n',
+            "literal": '---\nname: x\nmetadata:\n  upstream: |\n    gitkeng/aws-atx-lab\n---\n\nbody\n',
+            "crlf": '---\r\nname: x\r\nmetadata:\r\n  upstream: "gitkeng/aws-atx-lab"\r\n---\r\n\r\nbody\r\n',
+        }
+        for label, doc in exempt.items():
+            errs = []
+            V._scan_text("SKILL.md", V._strip_provenance(doc), errs)
+            self.assertEqual(errs, [], "%s form leaked" % label)
+        # Not exempt: description, body prose, and a top-level upstream key.
+        scanned = {
+            "description": '---\nname: x\ndescription: built for AWS\n---\n\nbody\n',
+            "body": '---\nname: x\n---\n\nsee upstream: gitkeng/aws-lab\n',
+            "top-level": '---\nupstream: gitkeng/aws-lab\n---\n\nbody\n',
+        }
+        for label, doc in scanned.items():
+            errs = []
+            V._scan_text("SKILL.md", V._strip_provenance(doc), errs)
+            self.assertTrue(any("'aws'" in e for e in errs), "%s not scanned" % label)
 
     def test_denylist_catches_injection(self):
         # Simulate a branded token in a copied asset within temp; scan that copy.
@@ -718,12 +902,36 @@ class TestNeutrality(Base):
         self.assertTrue(V._word_present("built for aws customers", "aws"))
         self.assertFalse(V._word_present("awssome typo", "aws"))
 
+    def test_error_message_locates_the_hit(self):
+        # The failure a user sees must name the file, the line, and the text, so
+        # it can be adjudicated without reading this scanner's source.
+        errs = []
+        V._scan_text("SKILL.md", "ok\nbuilt for AWS customers\n", errs)
+        self.assertEqual(
+            errs, ["neutrality: SKILL.md:2 contains branded token 'aws' "
+                   "in: built for AWS customers"])
+
+    def test_self_check_needs_no_report_dir(self):
+        # Authoring loop: neutrality must be checkable without a v2 fixture.
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = V.main(["validate_report.py", "--self-check"])
+        self.assertEqual(code, 0, buf.getvalue())
+        self.assertIn("PASS: skill self-check", buf.getvalue())
+
     def test_source_provider_names_pass_through(self):
-        # 'AWS' in a finding title is observed evidence and must appear in output.
+        # A provider name in a finding title is observed evidence and must reach
+        # the output unchanged: the denylist governs skill-authored chrome only.
+        # The branded title is injected rather than assumed of the fixture.
+        marker = "AWS SDK client left on an unsupported major version"
+        src = self.fresh_source()
+        m = load_manifest(src)
+        self.ensure_finding(m)["title"] = marker
+        write_manifest(src, m)
         out = self.tmp / "out"
-        self.assertEqual(render(self.fresh_source(), out)[0], 0)
-        html = self.read_index(out)
-        self.assertIn("AWS SDK", html)  # from TD-001 title, evidence passthrough
+        code, o, e = render(src, out)
+        self.assertEqual(code, 0, e)
+        self.assertIn(marker, self.read_index(out))
 
 
 # --------------------------------------------------------------------------- #
@@ -828,18 +1036,18 @@ class TestEvidenceFormatter(Base):
         return self.read_index(out)
 
     def test_mixed_null_evidence_in_findings_and_rules(self):
-        # Set BR-001 evidence to only-start, and V-001 (finding) to both-null,
+        # Give one rule only-start evidence and one finding both-null evidence,
         # then assert the rendered evidence cells follow the contract exactly and
-        # never emit the old ":N-None" defect.
+        # never emit the old ":N-None" defect. Whichever rule/finding the fixture
+        # happens to declare first will do; a repo with no vulnerabilities still
+        # has findings in the td registry, and an empty registry is synthesized.
         def mutate(m):
-            for r in m["business_rules"]:
-                if r["alias"] == "BR-001":
-                    r["evidence"] = [{"path": "Controllers/RideController.cs",
-                                      "line_start": 61, "line_end": None}]
-            for f in m["findings"]:
-                if f["alias"] == "V-001":
-                    f["evidence"] = [{"path": "Controllers/RideController.cs",
-                                      "line_start": None, "line_end": None}]
+            self.ensure_rule(m)["evidence"] = [
+                {"path": "Controllers/RideController.cs",
+                 "line_start": 61, "line_end": None}]
+            self.ensure_finding(m)["evidence"] = [
+                {"path": "Controllers/RideController.cs",
+                 "line_start": None, "line_end": None}]
         html = self._mutate_and_render(mutate)
         self.assertNotIn("-None", html)
         self.assertNotIn(":None", html)
@@ -866,6 +1074,7 @@ class TestInputContractMappings(Base):
     def test_coverage_alias_missing_fails_closed(self):
         # Drop a coverage.components entry so the set no longer equals components.
         def mutate(m):
+            self.ensure_component(m)  # guarantees at least one entry to drop
             m["coverage"]["components"] = m["coverage"]["components"][:-1]
         code, o, e = self._render_mutated(mutate, "cov1")
         self.assertEqual(code, 1)
@@ -893,66 +1102,74 @@ class TestInputContractMappings(Base):
             # Append a link to a non-existent BR alias. This does not disturb any
             # real BR's covered/untested invariant, so the traceability-mapping
             # check is the one that must fire (fail closed).
-            m["traceability"].append({"business_rule": "BR-999", "test_case": "TC-001"})
+            m["traceability"].append({
+                "business_rule": "BR-999",  # unresolved on purpose
+                "test_case": self.ensure_test_case(m)["alias"]})
         code, o, e = self._render_mutated(mutate, "tr1")
         self.assertEqual(code, 1)
         self.assertIn("traceability-mapping", e)
 
     def test_traceability_br_ref_to_nonbr_fails_closed(self):
         def mutate(m):
-            # A finding alias is not a business rule; must fail closed. Appended so
-            # the BR coverage cross-check is not perturbed first.
-            m["traceability"].append({"business_rule": "V-001", "test_case": "TC-001"})
+            # A finding alias is not a business rule; must fail closed. Both
+            # aliases resolve, so the failure can only come from the kind check —
+            # a hardcoded alias would have failed for the wrong reason. Appended
+            # so the BR coverage cross-check is not perturbed first.
+            m["traceability"].append({
+                "business_rule": self.ensure_finding(m)["alias"],
+                "test_case": self.ensure_test_case(m)["alias"]})
         code, o, e = self._render_mutated(mutate, "tr2")
         self.assertEqual(code, 1)
         self.assertIn("traceability-mapping", e)
 
     def test_traceability_unresolved_tc_fails_closed(self):
         def mutate(m):
-            m["traceability"][0]["test_case"] = "TC-999"
+            self.ensure_traceability_link(m)["test_case"] = "TC-999"
         code, o, e = self._render_mutated(mutate, "tr3")
         self.assertEqual(code, 1)
         self.assertIn("traceability-mapping", e)
 
     def test_source_ref_unresolved_fails_closed(self):
         def mutate(m):
-            m["test_cases"][0]["source_refs"] = ["BR-999"]
+            self.ensure_test_case(m)["source_refs"] = ["BR-999"]
         code, o, e = self._render_mutated(mutate, "sr1")
         self.assertEqual(code, 1)
         self.assertIn("source-ref-mapping", e)
 
     def test_behavioral_source_ref_must_be_br(self):
-        # TC-001 is behavioral; pointing it at a finding (V/TD) must fail closed.
+        # A behavioral case pointing at a finding must fail closed. The finding
+        # alias resolves, so only the kind check can produce the failure.
         def mutate(m):
-            m["test_cases"][0]["source_refs"] = ["V-001"]
+            self.ensure_test_case(m, "behavioral")["source_refs"] = [
+                self.ensure_finding(m)["alias"]]
         code, o, e = self._render_mutated(mutate, "sr2")
         self.assertEqual(code, 1)
         self.assertIn("source-ref-mapping", e)
 
     def test_security_source_ref_must_be_v_td_cmp(self):
-        # TC-008 is security; pointing it at a BR must fail closed.
+        # A security test case pointing at a BR must fail closed. The security
+        # category is synthesized so the check is exercised on any fixture.
         def mutate(m):
-            for tc in m["test_cases"]:
-                if tc["alias"] == "TC-008":
-                    tc["source_refs"] = ["BR-001"]
+            self.ensure_test_case(m, "security")["source_refs"] = [
+                self.ensure_rule(m)["alias"]]
         code, o, e = self._render_mutated(mutate, "sr3")
         self.assertEqual(code, 1)
         self.assertIn("source-ref-mapping", e)
 
     def test_security_source_ref_component_allowed(self):
-        # A CMP alias is a valid security/infrastructure source (upstream semantics).
+        # A CMP alias is a valid security/infrastructure source (upstream
+        # semantics). Only source_refs change, so the BR covered/linked
+        # invariants stay intact (they are driven by traceability, not by
+        # source_refs).
         def mutate(m):
-            for tc in m["test_cases"]:
-                if tc["alias"] == "TC-008":
-                    tc["source_refs"] = ["CMP-001"]
-                    # Keep BR-002 covered/linked invariants intact; V-002 no longer
-                    # referenced is fine (coverage_status checks apply only to BRs).
+            self.ensure_test_case(m, "security")["source_refs"] = [
+                self.ensure_component(m)["alias"]]
         code, o, e = self._render_mutated(mutate, "sr4")
         self.assertEqual(code, 0, e)
 
     def test_empty_source_refs_fails_closed(self):
         def mutate(m):
-            m["test_cases"][0]["source_refs"] = []
+            self.ensure_test_case(m)["source_refs"] = []
         code, o, e = self._render_mutated(mutate, "sr5")
         self.assertEqual(code, 1)
         self.assertIn("source-ref-mapping", e)

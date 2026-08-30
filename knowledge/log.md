@@ -2,6 +2,47 @@
 
 ## 2026-08-30
 
+- **codebase-analysis-report 1.1.0** — repaired an imported self-check that
+  rejected the skill itself. The vendor-neutrality scanner (inherited from
+  `aws-kiro-atx-lab` at import, repo v0.4.0) scanned this skill's own
+  `SKILL.md`, whose `metadata.upstream` names the source repository as
+  `CLAUDE.md` requires — so `aws`/`atx` matched the denylist and every render
+  failed at the publication gate. Present since commit `dea8c66`; unnoticed
+  because the imported test suite had never been run (it failed 31 of 94 for the
+  same reason). Split the scan by blast radius — `scan_emitted_assets()` guards
+  publication (only what reaches `index.html`), `scan_authored_docs()` runs in
+  the suite — and exempted `metadata.upstream` in every YAML form while keeping
+  `name`/`description` in scope. Removing the doc scan from the gate exposed two
+  pre-existing holes in the surviving gate, both closed: chrome was matched
+  against a narrower second denylist (bare provider tokens never checked against
+  it) and extracted by a triple-quote regex (wording in ordinary literals
+  escaped); chrome is now walked via AST against a single denylist. Also: gate
+  messages now carry file, line, text, and skill root; the renderer retains and
+  prints the unpublished temp directory on validation failure, which SKILL.md
+  gate 5 had always instructed but a `finally: rmtree` made impossible; and a
+  new `validate_report.py --self-check` runs both tiers with no fixture, so
+  documentation edits are checkable in the authoring loop. Separately, the suite
+  hardcoded `BR-007`/`TC-008`/`CMP-001`/`"AWS SDK"` while the skill promised
+  "any completed v2 output tree is a valid fixture"; cases now synthesize the
+  shape they need into the temp copy, preserving the renderer's cross-manifest
+  invariants. Verified: 100 tests pass on four fixtures, including trees with no
+  vulnerabilities, with no tests, and with no registries populated at all.
+  Concept: `/skill-authoring/imported-self-checks.md`.
+
+- **Review round** on the codebase-analysis-report neutrality fix, on a frozen
+  working tree: three-domain expert review (prompt engineering, context
+  engineering, business analysis — parallel subagents), following the 0.7.0
+  precedent. Six findings overlapped across two or more reviewers and were
+  applied. Two were raised by a single reviewer and applied only after
+  independent verification by execution: the publication-gate holes (proved by
+  planting a branded literal outside a triple-quoted string and observing the
+  gate return no error) and the unfollowable temp-path instruction (proved by
+  reading the `finally` block). One reviewer claim was checked and confirmed by
+  running the exemption against folded, literal, and CRLF frontmatter forms —
+  all three leaked before the fix. Reinforces the standing rule: overlapping
+  findings are a truth signal, single-reviewer findings need verification
+  against the files or a run before they are acted on.
+
 - **Review round** on the creating-skills 1.2.0 prefix work, before its
   first commit: three-domain expert review (skill authoring, prompt
   engineering, context engineering — parallel subagents on a frozen
