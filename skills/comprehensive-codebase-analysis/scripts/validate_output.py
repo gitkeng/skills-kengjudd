@@ -6,6 +6,12 @@ import re
 import sys
 from pathlib import Path
 
+# The portable Agent Skills frontmatter fields (https://agentskills.io/specification).
+# `allowed-tools` is one of the six and so is accepted here as *portable*, then
+# rejected separately by its own rule — this skill forbids tool restrictions.
+ALLOWED_FRONTMATTER_FIELDS = {
+    "name", "description", "license", "compatibility", "metadata", "allowed-tools",
+}
 SEVERITIES = {"critical", "high", "medium", "low"}
 CONFIDENCE = {"verified", "inferred", "assumption"}
 CANONICAL_RE = re.compile(r"^(br|td|v|tc|cmp):[A-Za-z0-9._%/-]+:[a-z0-9][a-z0-9-]*:[a-z0-9][a-z0-9._-]*$")
@@ -108,17 +114,50 @@ def check_skill_frontmatter(skill_root):
         end = lines.index("---", 1)
     except ValueError:
         return ["SKILL.md: missing closing frontmatter delimiter"]
-    fields = {}
+    # Top-level keys and the nested `metadata` map are read separately: the
+    # Agent Skills specification allows six top-level fields and makes
+    # `metadata` a free-form string map, which distributing repositories use to
+    # carry version and provenance. Flattening the block would read
+    # `metadata.version` as a top-level key and reject a conforming skill.
+    fields, metadata, in_metadata = {}, {}, False
     for line in lines[1:end]:
         if not line.strip():
             continue
+        indented = line[:1] in (" ", "\t")
         if ":" not in line:
             errors.append(f"SKILL.md frontmatter: malformed line {line!r}")
             continue
         key, value = line.split(":", 1)
-        fields[key.strip()] = value.strip()
-    if set(fields) != {"name", "description"}:
-        errors.append("SKILL.md frontmatter must contain only name and description")
+        key, value = key.strip(), value.strip()
+        if indented:
+            if in_metadata:
+                metadata[key] = value
+            else:
+                errors.append(f"SKILL.md frontmatter: unexpected indented key {key!r}")
+            continue
+        in_metadata = key == "metadata"
+        fields[key] = value
+    unknown = set(fields) - ALLOWED_FRONTMATTER_FIELDS
+    if unknown:
+        errors.append(
+            "SKILL.md frontmatter has non-portable field(s) "
+            + ", ".join(sorted(unknown))
+            + "; allowed: " + ", ".join(sorted(ALLOWED_FRONTMATTER_FIELDS))
+        )
+    for required in ("name", "description"):
+        if required not in fields:
+            errors.append(f"SKILL.md frontmatter is missing {required}")
+    # A distributed skill must say which version it is and when it changed.
+    if "metadata" in fields:
+        for required in ("version", "updated"):
+            if required not in metadata:
+                errors.append(f"SKILL.md metadata is missing {required}")
+        version = metadata.get("version", "").strip('"')
+        if version and not re.fullmatch(r"\d+\.\d+\.\d+", version):
+            errors.append(f"SKILL.md metadata.version {version!r} is not SemVer")
+        updated = metadata.get("updated", "").strip('"')
+        if updated and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", updated):
+            errors.append(f"SKILL.md metadata.updated {updated!r} is not YYYY-MM-DD")
     name = fields.get("name", "")
     desc = fields.get("description", "")
     if name != "comprehensive-codebase-analysis" or not re.fullmatch(r"[a-z0-9-]{1,64}", name):

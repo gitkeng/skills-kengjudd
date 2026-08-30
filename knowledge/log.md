@@ -2,6 +2,21 @@
 
 ## 2026-08-30
 
+- **comprehensive-codebase-analysis 1.1.1** — the skill's validator rejected its
+  own `SKILL.md`: `check_skill_frontmatter` flattened the frontmatter block, so
+  `metadata.version` counted as a top-level key and the "only name and
+  description" rule failed on every run. **Third instance of the same class in
+  two days** (after the neutrality self-hit in codebase-analysis-report 1.1.0):
+  a check inherited at import enforcing the source repository's conventions
+  against a destination that mandates different ones. Fixed by parsing the
+  nested `metadata` map separately, checking top-level keys against the six
+  portable Agent Skills fields by name, and adding SemVer/date checks on
+  `metadata.version` and `metadata.updated`, which had never been validated.
+  Confirms the checklist in `/skill-authoring/imported-self-checks.md` — grep an
+  imported skill's checks against this repo's mandated conventions *before* the
+  import commit — and that the cost of skipping it is one silent broken gate per
+  imported skill.
+
 - **comprehensive-codebase-analysis 1.1.0** — Mermaid diagrams the skill
   produced sometimes failed to render. Root cause: the shipped check was a
   bracket-balance matcher plus a first-token test, so it reported

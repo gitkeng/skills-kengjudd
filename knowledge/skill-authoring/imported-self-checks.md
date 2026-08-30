@@ -54,6 +54,14 @@ hard rules declaring it — because an agent reading only `SKILL.md` otherwise s
 a neutrality rule contradicted by line 7 of the same file, and "fixes" it by
 deleting the provenance, violating the no-invented-facts rule.
 
+**This is not a one-off.** The sibling skill `comprehensive-codebase-analysis`
+carried the same class of defect from the same import: its
+`check_skill_frontmatter` flattened the YAML block, read `metadata.version` as a
+top-level key, and failed its own `SKILL.md` against a rule that frontmatter
+"must contain only name and description". Two skills, two different checks, one
+cause — the source repository did not require `metadata`, and the destination
+does.
+
 **Rule of thumb.** When importing a skill that validates anything, grep its
 denylists, required-key sets, and path assumptions against this repo's mandated
 conventions *before* the first commit. Then run its test suite — the neutrality

@@ -7,6 +7,32 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.9.1] - 2026-08-30
+
+### comprehensive-codebase-analysis (1.1.0 → 1.1.1)
+
+**Fixed — the validator rejected its own SKILL.md.** `check_skill_frontmatter`
+flattened the frontmatter block, so `metadata.version` was read as a top-level
+key and the "only name and description" rule failed every run with
+`FAIL: skill frontmatter and limits`. The `metadata` map is one of the six
+portable Agent Skills fields and is where this repository requires version and
+provenance to live. Same class of defect as the neutrality self-hit fixed in
+0.8.0: a check inherited at import did not know the distributing repository's
+rules.
+
+- Top-level keys and the nested `metadata` map are now parsed separately.
+  Top-level keys are checked against the six portable fields by name, so a
+  Claude-only field such as `model:` is still rejected — and with a message that
+  names the offending field instead of a blanket "must contain only name and
+  description".
+- `allowed-tools` remains prohibited, but now reports its own reason rather than
+  being mislabelled non-portable: it *is* one of the six portable fields; this
+  skill forbids tool restrictions separately.
+- `metadata.version` must be SemVer and `metadata.updated` must be `YYYY-MM-DD`
+  when a `metadata` map is present — previously unchecked.
+- A stray indented key outside a `metadata` block is reported instead of being
+  silently absorbed.
+
 ## [0.9.0] - 2026-08-30
 
 ### comprehensive-codebase-analysis (1.0.1 → 1.1.0)
