@@ -2,7 +2,7 @@
 name: comprehensive-codebase-analysis
 description: Analyze any repository offline to produce hierarchical, evidence-backed architecture documentation, behavior and API references, security and technical-debt findings, migration readiness, onboarding, and machine-auditable traceability. Use for codebase analysis, architecture docs, tech-debt reports, legacy-system understanding, security review, onboarding, or migration-readiness assessment.
 metadata:
-  version: "1.0.1"
+  version: "1.1.0"
   updated: "2026-08-30"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/comprehensive-codebase-analysis @7423a91"
 ---
@@ -118,7 +118,7 @@ Load only `references/scale-and-resume.md`, `references/languages.md`, `referenc
 
 ## Phase 2 — Architecture
 
-Load only `references/playbook-architecture.md` and `references/template-architecture.md`.
+Load only `references/playbook-architecture.md`, `references/template-architecture.md`, and `references/mermaid-syntax.md`.
 
 1. Produce all four architecture documents.
 2. Reconstruct C4 views, deployment, constraints, components, interactions, dependencies, patterns, anti-patterns, and ADR-lite decisions from evidence.
@@ -126,7 +126,7 @@ Load only `references/playbook-architecture.md` and `references/template-archite
 
 ## Phase 3 — Behavior
 
-Load only `references/playbook-behavior.md` and `references/template-behavior.md`.
+Load only `references/playbook-behavior.md`, `references/template-behavior.md`, and `references/mermaid-syntax.md`.
 
 1. Organize prose by business capability or user journey; use code units only as evidence anchors.
 2. Register business rules before tests; preserve `BR-NNN` aliases.
@@ -135,7 +135,7 @@ Load only `references/playbook-behavior.md` and `references/template-behavior.md
 
 ## Phase 4 — Reference and analysis
 
-Load only `references/playbook-reference.md`, `references/template-reference.md`, `references/playbook-analysis.md`, and `references/template-analysis.md`.
+Load only `references/playbook-reference.md`, `references/template-reference.md`, `references/playbook-analysis.md`, `references/template-analysis.md`, and `references/mermaid-syntax.md`.
 
 1. Produce all five reference and all five analysis documents.
 2. Label complexity, coupling, duplication, and maintainability calculations as estimates when tools or complete reads are unavailable.
@@ -153,7 +153,7 @@ Load only `references/playbook-technical-debt.md`, `references/template-technica
 
 ## Phase 6 — Operations and diagrams
 
-Load only `references/playbook-operations.md`, `references/template-operations.md`, `references/playbook-diagrams.md`, and `references/template-diagrams.md`.
+Load only `references/playbook-operations.md`, `references/template-operations.md`, `references/playbook-diagrams.md`, `references/template-diagrams.md`, and `references/mermaid-syntax.md`.
 
 1. Produce both operations documents from file-observable evidence only.
 2. Produce `diagrams/structural/component-diagrams.md`, `diagrams/behavioral/sequence-diagrams.md`, and `diagrams/architecture/system-context.md` with Mermaid v11.
@@ -189,7 +189,7 @@ Load only `references/neutrality.md`, `references/template-root.md`, and `assets
 - Every finding has canonical identity, severity, confidence, and evidence.
 - Every alias and canonical key is unique and referentially valid.
 - Every inference-heavy behavior document has its confidence banner.
-- Every required Mermaid artifact passes the shipped lint.
+- Every Mermaid block in the tree renders. The shipped lint catches the common fatal mistakes but is a heuristic, not a parser — a passing lint is necessary, not sufficient. Follow `references/playbook-diagrams.md` § Syntax discipline.
 - Re-run aliases and deltas follow membership-and-severity semantics.
 - Neutrality and redaction rules pass.
 - `progress.json` is completed and the validator exits zero.

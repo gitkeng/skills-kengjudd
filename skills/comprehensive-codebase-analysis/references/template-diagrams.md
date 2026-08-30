@@ -50,9 +50,13 @@ stateDiagram-v2
 
 ```mermaid
 flowchart LR
-  actor["External actor"] -->|"request"| trustA["Trust boundary A"]
+  externalUser["External actor"] -->|"request"| trustA["Trust boundary A"]
   trustA --> system["Analyzed system"]
   system -->|"integration"| trustB["Trust boundary B"]
 ```
+
+In a flowchart an actor is an ordinary node — do not write `actor externalUser["…"]`.
+`actor` is a `sequenceDiagram` keyword and is a parse error here (see the sequence
+templates above for its legitimate use).
 
 Replace placeholders with evidence-backed names. Add an evidence table after every block.

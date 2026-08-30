@@ -26,6 +26,7 @@ Project knowledge bundle in OKF format. Canonical spec:
 * [Command to skill](skill-authoring/command-to-skill.md) - what must change when a slash command is promoted into a portable skill
 * [Skill prefixes](skill-authoring/skill-prefixes.md) - where an invocation prefix comes from (the plugin name, never the skill name), and the reuse-or-ask flow when creating skills
 * [Self-checks inside imported skills](skill-authoring/imported-self-checks.md) - when an imported skill's own validation gate rejects this repo's mandated provenance, over-reaches past the artifact it guards, or encodes one fixture's shape
+* [Validating generated artifacts](skill-authoring/validating-generated-artifacts.md) - why a hand-written checker drifts from "will the consumer accept this", how to calibrate it against the real parser, and how progressive disclosure starves cross-cutting rules
 
 # Decisions
 

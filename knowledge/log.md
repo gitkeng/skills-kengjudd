@@ -2,6 +2,49 @@
 
 ## 2026-08-30
 
+- **comprehensive-codebase-analysis 1.1.0** — Mermaid diagrams the skill
+  produced sometimes failed to render. Root cause: the shipped check was a
+  bracket-balance matcher plus a first-token test, so it reported
+  `PASS: Mermaid v11 syntax` on a real output tree carrying three diagrams that
+  render nothing. All three had balanced brackets — a node shape attached to an
+  edge instead of an id (`docugent -->[("MongoDB")]`), a `sequenceDiagram`
+  keyword used in a flowchart (`actor caller["…"]`), and a `;` inside a sequence
+  message, which is a statement separator and truncates the text. A Mermaid
+  parse error blanks the entire block, so each cost a whole diagram. Added a
+  type-aware heuristic linter (6 rules, stdlib only, offline), extended the scan
+  from the six files where a diagram is *required* to every Mermaid block in the
+  tree (`architecture/dependencies.md` had never been checked despite a template
+  asking for a diagram there), and rewrote the acceptance criterion from "passes
+  the shipped lint" — circular — to "every Mermaid block renders", with the lint
+  named as partial evidence. Verified against mermaid 11.17.2 as oracle: 26/26
+  agreement, **zero false positives**, all 6 offending lines caught, silent on
+  the skill's own 11 template blocks; applying the suggested fixes to a copy of
+  the failing tree made 14/14 blocks parse.
+  Concept: `/skill-authoring/validating-generated-artifacts.md`.
+
+- **Progressive disclosure starves cross-cutting rules** — found while fixing
+  the above, and not reported by the expert review. Four phases write Mermaid
+  (architecture, behavior, reference-analysis, operations-diagrams) but the
+  syntax guidance sat in `playbook-diagrams.md`, which only the last of them
+  loads; three phases never saw it, and the first real bug came from one of
+  those three. `Load only <files>` is what keeps context lean and is exactly
+  what hides a concern spanning phases. Extracted the rules into
+  `references/mermaid-syntax.md` and added it to all four phase load lists.
+  Also fixed the example that taught the mistake: templates used `actor` as a
+  flowchart node id in one place and as a sequence keyword in another, while the
+  playbook asked for several actors in one view — a node id cannot be reused, so
+  the agent reached for the declaration form and produced a parse error.
+
+- **Review round** on the Mermaid defect: one domain expert (Mermaid v11),
+  scoped explicitly to Mermaid-related files at the user's instruction. The
+  expert disclosed on its own that it had read a vendored `mermaid.min.js` from
+  a sibling skill to use as a parser oracle, which exceeded the scope it was
+  given — disclosed to the user rather than buried. Its diagnosis matched an
+  independent parser run done here with the npm `mermaid` package; the
+  cross-phase loading gap above was found outside the review and verified
+  directly. Reinforces: give a scoped reviewer the scope in writing, and expect
+  to verify its factual claims yourself.
+
 - **codebase-analysis-report 1.1.0** — repaired an imported self-check that
   rejected the skill itself. The vendor-neutrality scanner (inherited from
   `aws-kiro-atx-lab` at import, repo v0.4.0) scanned this skill's own

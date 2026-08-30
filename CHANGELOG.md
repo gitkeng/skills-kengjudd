@@ -7,6 +7,57 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.9.0] - 2026-08-30
+
+### comprehensive-codebase-analysis (1.0.1 → 1.1.0)
+
+**Fixed — generated Mermaid diagrams sometimes did not render.** The shipped
+check was a bracket-balance matcher plus a first-token test, so it reported
+`PASS: Mermaid v11 syntax` on an output tree containing three diagrams that
+render nothing at all. A Mermaid parse error blanks the whole block, so each one
+cost an entire diagram. All three had balanced brackets:
+
+- a node shape attached to an edge instead of an id — `docugent -->[("MongoDB")]`
+  instead of `docugent --> mongo[("MongoDB")]`;
+- a `sequenceDiagram` keyword used inside a flowchart — `actor caller["…"]`,
+  where an actor is an ordinary node;
+- a `;` inside a sequence message, which is a statement separator and silently
+  truncates the message text.
+
+- Added a type-aware heuristic linter (6 rules, stdlib only, offline). Rules are
+  keyed by diagram type because the same token differs in meaning between them:
+  `loop["Per page"]` is a node in a flowchart and a block opener in a sequence
+  diagram. Calibrated against mermaid 11.17.2: 26/26 agreement on a valid/invalid
+  suite with **zero false positives**, so a correct diagram is never rejected.
+- Every Mermaid block in the tree is now linted, not only the six files where a
+  diagram is required — `architecture/dependencies.md` had never been checked
+  despite a template asking for a diagram there.
+- Acceptance criterion changed from "passes the shipped lint" — circular, since
+  the bar was whatever the weakest tool measured — to "every Mermaid block
+  renders", with the lint named as partial evidence.
+
+**Fixed — three of the four diagram-producing phases never saw the syntax
+rules.** Mermaid is written in the architecture, behavior, reference-analysis,
+and operations-diagrams phases, but the guidance lived in
+`playbook-diagrams.md`, which only the last of those loads. Rules moved to a new
+`references/mermaid-syntax.md`, added to all four phase load lists, and expanded
+to cover the constructs that actually break rendering.
+
+**Fixed — a template example that taught the mistake.** `actor` was used as a
+flowchart node id in `template-architecture.md` and `template-diagrams.md`, and
+as a sequence keyword elsewhere in the same skill, while the playbook asks for
+several actors in one system-context view. A node id cannot be reused, so the
+agent reached for the declaration form and produced a parse error. Example ids
+are now `client` and `externalUser`.
+
+### Knowledge
+
+- New concept `knowledge/skill-authoring/validating-generated-artifacts.md`
+  (`Playbook`): why a hand-written checker drifts away from "will the consumer
+  accept this", how to calibrate one against the real parser without introducing
+  false positives, and how progressive disclosure starves rules that cut across
+  phases.
+
 ## [0.8.0] - 2026-08-30
 
 ### codebase-analysis-report (1.0.1 → 1.1.0)

@@ -473,6 +473,138 @@ def balanced(block):
     return not stack and not in_quote
 
 
+# --------------------------------------------------------------------------- #
+# Mermaid syntax rules beyond bracket balance.
+#
+# balanced() answers "are the brackets paired", which is not the same question
+# as "will this render". Every rule below encodes a construct that Mermaid v11
+# rejects outright — a parse error blanks the WHOLE block, not one line — while
+# the brackets stay perfectly balanced. Rules are keyed by diagram type because
+# the same token is legal in one and fatal in another: `loop["Per page"]` is an
+# ordinary node in a flowchart but a block opener in a sequenceDiagram, and
+# `actor` is a declaration keyword in a sequenceDiagram but only a node name in
+# a flowchart.
+#
+# This is a heuristic, not a grammar; it cannot be complete. It is calibrated
+# against the real parser to raise no false positives, so a report is never
+# blocked over syntax Mermaid actually accepts.
+# --------------------------------------------------------------------------- #
+FLOWCHART_TYPES = {"flowchart", "graph"}
+FLOWCHART_DIRECTIONS = {"TB", "TD", "BT", "RL", "LR"}
+# Declaration keywords that only exist in a sequenceDiagram.
+SEQUENCE_ONLY_KEYWORDS = {"actor", "participant", "autonumber", "activate", "deactivate"}
+# Block openers closed by `end`, per diagram type.
+SEQUENCE_BLOCK_OPENERS = {"loop", "alt", "opt", "par", "critical", "rect", "break", "box"}
+# A flowchart edge, ending right where the target node id must begin.
+ARROW_TAIL_RE = re.compile(r"(?:-{2,}[->ox]|-{2,}|-\.-*>?|={2,}>?|~~~)\s*(?=[\[({])")
+SEQ_MESSAGE_RE = re.compile(r"^[^:]*?(?:-{1,2}>>?|-{1,2}[)x])[+-]?[^:]*:(?P<text>.*)$")
+
+
+def strip_quoted(line):
+    """Replace double-quoted spans with same-length filler so rules below never
+    match punctuation that Mermaid treats as literal label text."""
+    out, in_quote, escaped = [], False, False
+    for char in line:
+        if escaped:
+            out.append("_"); escaped = False; continue
+        if char == "\\" and in_quote:
+            out.append("_"); escaped = True; continue
+        if char == '"':
+            in_quote = not in_quote; out.append('"'); continue
+        out.append("_" if in_quote else char)
+    return "".join(out)
+
+
+def significant_lines(block):
+    """(1-based index, line) pairs, skipping blanks and %% comment lines."""
+    for number, line in enumerate(block.splitlines(), 1):
+        stripped = line.strip()
+        if stripped and not stripped.startswith("%%"):
+            yield number, line
+
+
+def lint_mermaid_block(block):
+    """Return a list of human-readable syntax problems in one Mermaid block."""
+    problems = []
+    body = block.strip()
+    if not body:
+        return ["empty block"]
+    tokens = body.split()
+    diagram_type = tokens[0]
+    is_flowchart = diagram_type in FLOWCHART_TYPES
+    is_sequence = diagram_type == "sequenceDiagram"
+
+    # R6 — flowchart direction must be one Mermaid knows.
+    if is_flowchart and len(tokens) > 1:
+        direction = tokens[1].rstrip(";")
+        if direction not in FLOWCHART_DIRECTIONS and not direction.startswith("%%"):
+            problems.append(
+                f"line 1: {diagram_type} direction {direction!r} is not one of "
+                + "/".join(sorted(FLOWCHART_DIRECTIONS))
+            )
+
+    depth = 0
+    for number, raw in significant_lines(block):
+        line = strip_quoted(raw)
+        stripped = line.strip()
+        first = stripped.split()[0] if stripped.split() else ""
+
+        # R1 — a shape token belongs to a node id; it may not follow an edge.
+        if is_flowchart and ARROW_TAIL_RE.search(line):
+            problems.append(
+                f"line {number}: edge is followed by a node shape with no node id "
+                f"(write `--> id[\"label\"]`, not `-->[\"label\"]`)"
+            )
+
+        # R2 — sequenceDiagram declaration keywords are fatal inside a flowchart.
+        if is_flowchart and first in SEQUENCE_ONLY_KEYWORDS and len(stripped.split()) > 1:
+            problems.append(
+                f"line {number}: {first!r} is a sequenceDiagram keyword and cannot "
+                f"declare a node in a {diagram_type} (drop it and write the node alone)"
+            )
+
+        # R3 — `;` ends a statement; a sequence message is not quoted, so a `;`
+        # inside the message text truncates it and orphans the remainder.
+        if is_sequence:
+            match = SEQ_MESSAGE_RE.match(line)
+            if match and ";" in match.group("text").rstrip().rstrip(";"):
+                problems.append(
+                    f"line {number}: ';' inside a sequence message ends the statement "
+                    f"and orphans the rest of the text (use ',' instead)"
+                )
+
+        # R4 — block openers must be closed by `end`.
+        if is_flowchart and first == "subgraph":
+            depth += 1
+        elif is_sequence and first in SEQUENCE_BLOCK_OPENERS:
+            depth += 1
+        elif first == "end" and (is_flowchart or is_sequence):
+            depth -= 1
+            if depth < 0:
+                problems.append(f"line {number}: `end` without a matching block opener")
+                depth = 0
+
+        # R5 — flowchart edge labels are delimited by a pair of pipes.
+        if is_flowchart and stripped.count("|") % 2:
+            problems.append(f"line {number}: odd number of '|' — an edge label is not closed")
+
+    if depth > 0:
+        problems.append(f"{depth} unclosed block(s): every subgraph/loop/alt/opt needs an `end`")
+    return problems
+
+
+def lint_block(rel, index, block, errors):
+    tokens = block.strip().split()
+    diagram_type = tokens[0] if tokens else ""
+    if diagram_type not in MERMAID_TYPES:
+        errors.append(f"{rel} block {index}: invalid Mermaid v11 first token {diagram_type!r}")
+    if not balanced(block):
+        errors.append(f"{rel} block {index}: unbalanced brackets or quotes")
+    for problem in lint_mermaid_block(block):
+        errors.append(f"{rel} block {index}: {problem}")
+    return diagram_type
+
+
 def check_mermaid(root):
     errors = []
     types_by_file = {}
@@ -483,11 +615,17 @@ def check_mermaid(root):
             errors.append(f"{rel}: required Mermaid fenced block missing"); continue
         types_by_file[rel] = []
         for index, block in enumerate(blocks, 1):
-            tokens = block.strip().split()
-            diagram_type = tokens[0] if tokens else ""
-            types_by_file[rel].append(diagram_type)
-            if diagram_type not in MERMAID_TYPES: errors.append(f"{rel} block {index}: invalid Mermaid v11 first token {diagram_type!r}")
-            if not balanced(block): errors.append(f"{rel} block {index}: unbalanced brackets or quotes")
+            types_by_file[rel].append(lint_block(rel, index, block, errors))
+    # MERMAID_FILES lists where a diagram is REQUIRED. Diagrams also appear
+    # wherever a template asks for one (architecture/dependencies.md among
+    # them), and a broken diagram is just as broken there — so every Mermaid
+    # block in the tree is linted, while only these files must contain one.
+    for path in sorted(root.rglob("*.md")):
+        rel = path.relative_to(root).as_posix()
+        if rel in MERMAID_FILES:
+            continue
+        for index, block in enumerate(mermaid_blocks(path.read_text(encoding="utf-8")), 1):
+            lint_block(rel, index, block, errors)
     if "erDiagram" not in types_by_file.get("reference/data-models.md", []): errors.append("reference/data-models.md: erDiagram required")
     if "flowchart" not in types_by_file.get("behavior/workflows.md", []): errors.append("behavior/workflows.md: flowchart required")
     structural = types_by_file.get("diagrams/structural/component-diagrams.md", [])

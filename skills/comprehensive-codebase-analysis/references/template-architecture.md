@@ -8,7 +8,7 @@ System context:
 
 ```mermaid
 flowchart LR
-  actor["Actor"] -->|"protocol"| boundary["System boundary"]
+  client["Actor"] -->|"protocol"| boundary["System boundary"]
   boundary --> component["Component"]
   component --> store[("Data store")]
 ```

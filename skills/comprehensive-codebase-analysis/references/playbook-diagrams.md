@@ -1,6 +1,6 @@
 # Diagram playbook
 
-Mermaid source: https://mermaid.js.org/. Use Mermaid v11 fenced blocks and stable, readable node IDs. Every diagram statement is backed by source evidence in nearby prose or an evidence table.
+Mermaid source: https://mermaid.js.org/. Use Mermaid v11 fenced blocks and stable, readable node IDs, following `references/mermaid-syntax.md`. Every diagram statement is backed by source evidence in nearby prose or an evidence table.
 
 ## Structural
 
@@ -16,4 +16,4 @@ Mermaid source: https://mermaid.js.org/. Use Mermaid v11 fenced blocks and stabl
 
 ## Syntax discipline
 
-The first nonblank token is a valid v11 diagram type. Balance `[]`, `()`, and `{}` outside quoted labels. Quote labels containing punctuation. Keep one diagram purpose per block and do not use ASCII art as a substitute.
+Rules live in `references/mermaid-syntax.md`, which every diagram-producing phase loads. Follow it; a parse error blanks the whole block.
