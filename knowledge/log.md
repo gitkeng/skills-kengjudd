@@ -1,5 +1,21 @@
 # Knowledge Base Log
 
+## 2026-08-30
+
+- **Creation** of /skill-authoring/command-to-skill.md alongside the
+  promotion of the `/commit` slash command (`~/.claude/commands/commit.md`)
+  into the `git-commit` skill (repo v0.6.0). Recorded: a command's
+  `description` is help text for humans while a skill's description is the
+  model-matched trigger; `!`-injected command context must become an explicit
+  survey step the agent runs; `allowed-tools` permission syntax carries over
+  verbatim; and both the scope widening (staged-only → whole working tree)
+  and deleting the source command afterwards are owner decisions to ask
+  about, not defaults. This was also the first skill authored through
+  two-domain expert review (git expert + senior developer subagents on a
+  frozen draft; 20 findings applied in a single pass; overlapping findings
+  from the independent reviewers treated as a truth signal, single-reviewer
+  claims verified against real git behaviour before applying).
+
 ## 2026-08-29
 
 - **Update** of /skill-authoring/importing-skills.md alongside the import of

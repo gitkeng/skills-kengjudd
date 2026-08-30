@@ -7,6 +7,30 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.6.0] - 2026-08-30
+
+### Added
+
+- **git-commit 1.0.0** — Gitmoji + Conventional Commits messages from the
+  whole working tree (staged + unstaged + untracked), grouped into
+  one-commit-per-concern and committed only after explicit approval.
+  Promoted from the user-level slash command `/commit`
+  (`~/.claude/commands/commit.md`, no git history — first command-to-skill
+  conversion, recorded in `metadata.upstream`). Beyond the source command:
+  full-tree survey with safety preconditions (stops on unfinished
+  merge/rebase, detached HEAD, unborn branch), secrets/artifact exclusion
+  before grouping, whole-path-only staging with a clean-index reset and
+  per-group verification, hook-failure handling, and a closed final-state
+  check. First skill authored through two-domain expert review (git expert
+  + senior developer subagents; 20 findings applied in one pass).
+
+### Knowledge
+
+- `knowledge/skill-authoring/command-to-skill.md` — new playbook: command
+  `description` is help text while a skill description is the trigger,
+  `!`-injected context becomes an explicit survey step, `allowed-tools`
+  syntax carries over, and scope/source-deletion are owner decisions.
+
 ## [0.5.0] - 2026-08-29
 
 ### Added
