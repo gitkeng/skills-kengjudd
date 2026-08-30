@@ -62,8 +62,14 @@ cd skills-kengjudd
 
 ```text
 /plugin marketplace add gitkeng/skills-kengjudd
-/plugin install skills-kengjudd@kengjudd
+/plugin install kengjudd@kengjudd
 ```
+
+**EN** — Plugin skills are namespaced by the plugin name, so this channel
+invokes the skills as `kengjudd:<skill-name>` (e.g. `/kengjudd:git-commit`).
+
+**TH** — skill ที่ติดตั้งผ่าน plugin จะมี namespace ตามชื่อ plugin เรียกใช้เป็น
+`kengjudd:<ชื่อ skill>` (เช่น `/kengjudd:git-commit`)
 
 **EN** — Because the repo is private, the marketplace add needs working git
 auth. The `owner/repo` shorthand clones over SSH by default; for HTTPS-only
@@ -93,7 +99,7 @@ HTTPS ให้กำหนด `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` หรือ�
 ```bash
 # Claude Code plugin installs (the plugin cache has no .git)
 # ติดตั้งแบบ plugin ของ Claude Code (แคชของ plugin ไม่มี .git จึงใช้ update.sh ไม่ได้)
-claude plugin update skills-kengjudd@kengjudd
+claude plugin update kengjudd@kengjudd
 ```
 
 ## Creating a new skill / การสร้าง skill ใหม่
@@ -111,9 +117,9 @@ naming, frontmatter, structure, registration, knowledge capture, and versioning.
 
 | Skill | Version | Description / คำอธิบาย |
 |---|---|---|
-| [creating-skills](skills/creating-skills/SKILL.md) | 1.1.0 | Meta-skill: create, update, and register skills in this repo.<br>skill แม่แบบ: สร้าง อัปเดต และลงทะเบียน skill ในรีโปนี้ |
-| [business-rules-extraction](skills/business-rules-extraction/SKILL.md) | 1.0.0 | Statically extract, document, and verify business rules from any codebase, with line-level evidence and a mechanical validator.<br>สกัด จัดทำเอกสาร และตรวจสอบ business rule จากโค้ดเบสใด ๆ แบบอ่านอย่างเดียว พร้อมหลักฐานระดับบรรทัดและตัวตรวจสอบอัตโนมัติ |
-| [comprehensive-codebase-analysis](skills/comprehensive-codebase-analysis/SKILL.md) | 1.0.0 | Offline, evidence-backed analysis of any repo: architecture, behavior, security, tech debt, migration readiness, onboarding. Resumable.<br>วิเคราะห์รีโปแบบออฟไลน์โดยอ้างอิงหลักฐานจากโค้ด: สถาปัตยกรรม พฤติกรรม ความปลอดภัย หนี้ทางเทคนิค ความพร้อมย้ายระบบ และเอกสารรับคนเข้าทีม ทำต่อจากจุดที่ค้างไว้ได้ |
-| [codebase-analysis-report](skills/codebase-analysis-report/SKILL.md) | 1.0.0 | Render a `comprehensive-codebase-analysis` v2 output tree into one portable, offline, accessible HTML report. Requires that skill's output as input.<br>แปลงผลลัพธ์ v2 ของ `comprehensive-codebase-analysis` เป็นรายงาน HTML ไฟล์เดียว เปิดออฟไลน์ได้ และรองรับการเข้าถึง ต้องใช้ผลลัพธ์ของ skill ตัวนั้นเป็นอินพุต |
-| [doc2markdown](skills/doc2markdown/SKILL.md) | 1.1.0 | Convert a PDF, DOCX, XLSX, or PPTX into faithful Markdown with images and tables preserved, including Thai OCR font-corruption repair. `uv`-run scripts with inline dependencies.<br>แปลง PDF, DOCX, XLSX หรือ PPTX เป็น Markdown ที่ตรงต้นฉบับ เก็บรูปและตารางครบ พร้อมซ่อมตัวอักษรไทยที่เสียจาก OCR สคริปต์รันผ่าน `uv` มี dependencies ในตัว |
-| [git-commit](skills/git-commit/SKILL.md) | 1.0.0 | Create Gitmoji + Conventional Commits messages from the whole working tree (staged + unstaged + untracked), split into one commit per concern, committed only after user approval. Guards against mid-merge state, pre-staged leakage, secrets, and hook failures.<br>สร้าง commit แบบ Gitmoji + Conventional Commits จากทุกการเปลี่ยนแปลงใน working tree แยกเป็น commit ต่อหนึ่งเรื่อง คอมมิตเฉพาะหลังผู้ใช้อนุมัติ |
+| [creating-skills](skills/creating-skills/SKILL.md) | 1.2.0 | Meta-skill: create, update, and register skills in this repo.<br>skill แม่แบบ: สร้าง อัปเดต และลงทะเบียน skill ในรีโปนี้ |
+| [business-rules-extraction](skills/business-rules-extraction/SKILL.md) | 1.0.1 | Statically extract, document, and verify business rules from any codebase, with line-level evidence and a mechanical validator.<br>สกัด จัดทำเอกสาร และตรวจสอบ business rule จากโค้ดเบสใด ๆ แบบอ่านอย่างเดียว พร้อมหลักฐานระดับบรรทัดและตัวตรวจสอบอัตโนมัติ |
+| [comprehensive-codebase-analysis](skills/comprehensive-codebase-analysis/SKILL.md) | 1.0.1 | Offline, evidence-backed analysis of any repo: architecture, behavior, security, tech debt, migration readiness, onboarding. Resumable.<br>วิเคราะห์รีโปแบบออฟไลน์โดยอ้างอิงหลักฐานจากโค้ด: สถาปัตยกรรม พฤติกรรม ความปลอดภัย หนี้ทางเทคนิค ความพร้อมย้ายระบบ และเอกสารรับคนเข้าทีม ทำต่อจากจุดที่ค้างไว้ได้ |
+| [codebase-analysis-report](skills/codebase-analysis-report/SKILL.md) | 1.0.1 | Render a `comprehensive-codebase-analysis` v2 output tree into one portable, offline, accessible HTML report. Requires that skill's output as input.<br>แปลงผลลัพธ์ v2 ของ `comprehensive-codebase-analysis` เป็นรายงาน HTML ไฟล์เดียว เปิดออฟไลน์ได้ และรองรับการเข้าถึง ต้องใช้ผลลัพธ์ของ skill ตัวนั้นเป็นอินพุต |
+| [doc2markdown](skills/doc2markdown/SKILL.md) | 1.1.1 | Convert a PDF, DOCX, XLSX, or PPTX into faithful Markdown with images and tables preserved, including Thai OCR font-corruption repair. `uv`-run scripts with inline dependencies.<br>แปลง PDF, DOCX, XLSX หรือ PPTX เป็น Markdown ที่ตรงต้นฉบับ เก็บรูปและตารางครบ พร้อมซ่อมตัวอักษรไทยที่เสียจาก OCR สคริปต์รันผ่าน `uv` มี dependencies ในตัว |
+| [git-commit](skills/git-commit/SKILL.md) | 1.0.1 | Create Gitmoji + Conventional Commits messages from the whole working tree (staged + unstaged + untracked), split into one commit per concern, committed only after user approval. Guards against mid-merge state, pre-staged leakage, secrets, and hook failures.<br>สร้าง commit แบบ Gitmoji + Conventional Commits จากทุกการเปลี่ยนแปลงใน working tree แยกเป็น commit ต่อหนึ่งเรื่อง คอมมิตเฉพาะหลังผู้ใช้อนุมัติ |

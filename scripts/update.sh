@@ -109,5 +109,5 @@ git pull origin main
 echo ""
 echo "Updated. Reload reminders:"
 echo "  - Claude Code: start a new session (symlinked SKILL.md edits load on next use)."
-echo "  - Claude Code plugin install: run 'claude plugin update skills-kengjudd@kengjudd'."
+echo "  - Claude Code plugin install: run 'claude plugin update kengjudd@kengjudd'."
 echo "  - Codex: run /skills to refresh. Other agents: restart the session."

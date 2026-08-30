@@ -11,7 +11,7 @@ description: >-
   Not for pushing, rebasing, or explaining git itself; amends only the
   message of the most recent commit on request.
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
   updated: "2026-08-30"
   upstream: "local ~/.claude/commands/commit.md (slash command /commit, no git repo, no upstream version; imported 2026-08-30)"
 allowed-tools:
@@ -268,7 +268,7 @@ shows this skill's pending commits, and pulls after confirmation.
 `update.sh` cannot run there:
 
 ```bash
-claude plugin update skills-kengjudd@kengjudd
+claude plugin update kengjudd@kengjudd
 ```
 
 After updating, restart the agent session so the new version loads.

@@ -6,7 +6,9 @@ sources live in the repo knowledge base: `knowledge/skill-authoring/best-practic
 ## Frontmatter
 
 - [ ] `name` equals the directory name; lowercase `a-z0-9-`; 1-64 chars; no
-      leading/trailing/consecutive hyphens; does not contain "anthropic" or "claude".
+      leading/trailing/consecutive hyphens; does not contain "anthropic" or "claude";
+      unique among skills already installed on the machine (check the
+      directories `install.sh` targets and `claude plugin list`).
 - [ ] `description` is 1-1024 chars, third person, states BOTH what the skill
       does and when to use it, and contains the concrete trigger words a user
       would type. No XML tags.
@@ -42,13 +44,19 @@ Check the final version:
 - [ ] Workflows with more than ~3 steps are numbered checklists.
 - [ ] `## Updating` section present, names this skill in the
       `./scripts/update.sh <skill-name>` command, AND gives the plugin-channel
-      alternative `claude plugin update skills-kengjudd@kengjudd` (the plugin
+      alternative `claude plugin update kengjudd@kengjudd` (the plugin
       cache has no `.git`, so `update.sh` fails there).
 
 ## Repo integration
 
 - [ ] Registered in `.claude-plugin/plugin.json` `skills` array as
       `"./skills/<skill-name>"`.
+- [ ] Prefix handled per the **Skill prefixes** rule in SKILL.md: the repo
+      already ships a plugin (here `kengjudd`) → the skill is registered
+      there and inherits `kengjudd:<skill-name>`; no plugin packaging → the
+      user was asked *before* creation whether they want a prefix, and the
+      answer — and the plugin name, if one was created — is recorded in
+      `knowledge/`.
 - [ ] `knowledge/` concept added/updated with `type:`, `sources:`, `generated:`.
 - [ ] `knowledge/log.md` entry appended under today's date.
 - [ ] New/changed concept listed in `knowledge/index.md` under the right

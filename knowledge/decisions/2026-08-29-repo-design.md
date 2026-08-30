@@ -91,7 +91,7 @@ so a future session can act without re-scanning the source projects.
    `git fetch` → compare local vs `origin/main` skill version → show changelog
    delta → confirm → `git pull` → print per-agent reload reminders. That script
    serves the git-clone/symlink channel only; plugin-marketplace installs
-   update with `claude plugin update skills-kengjudd@kengjudd`, since the
+   update with `claude plugin update kengjudd@kengjudd`, since the
    plugin cache has no `.git` and `update.sh` exits 1 there. CLAUDE.md rule 3
    requires each `## Updating` section to name **both**. Mechanism details:
    /skill-authoring/update-mechanism.md.
@@ -230,7 +230,7 @@ Import-session notes:
 - Any import must follow the `creating-skills` lifecycle (CLAUDE.md rules 3–4):
   add an `## Updating` section covering both install channels
   (`./scripts/update.sh <skill-name>` and
-  `claude plugin update skills-kengjudd@kengjudd`) plus `metadata.version`,
+  `claude plugin update kengjudd@kengjudd`) plus `metadata.version`,
   register in `.claude-plugin/plugin.json`, capture knowledge, and bump all
   four repo-level version fields with `./scripts/bump-version.sh <semver>`.
   Names must not collide with the 40+ `act-*` and other skills already

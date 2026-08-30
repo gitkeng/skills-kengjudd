@@ -27,7 +27,7 @@ overrides your personal defaults for this repo.
   If your agent is not listed, symlink `skills/<name>/` into its own discovery
   directory manually (`.agents/skills/` is the de facto convention).
 - `scripts/update.sh <skill-name>` updates one skill (git-clone installs only;
-  Claude Code plugin installs use `claude plugin update skills-kengjudd@kengjudd`).
+  Claude Code plugin installs use `claude plugin update kengjudd@kengjudd`).
 
 ## Four invariants you must not break
 

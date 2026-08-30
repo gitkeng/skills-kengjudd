@@ -2,8 +2,8 @@
 name: doc2markdown
 description: Convert a PDF, DOCX, XLSX, or PPTX into faithful Markdown, with images extracted and tables preserved. Use when asked to convert, extract, transcribe, read into markdown, or "make a .md out of" a document — including Thai documents, scans needing OCR, slide decks, RFPs, TORs, meeting minutes, and cost breakdown spreadsheets. Triggers on .pdf/.docx/.xlsx/.pptx paths and on "แปลงเอกสาร", "อ่านไฟล์เป็น markdown", "ถอดเอกสาร", "แปลงสไลด์", "พาวเวอร์พอยต์".
 metadata:
-  version: "1.1.0"
-  updated: "2026-08-29"
+  version: "1.1.1"
+  updated: "2026-08-30"
   upstream: "local ~/.claude/skills/doc-to-markdown (no git repo, no upstream version; imported 2026-08-29)"
 ---
 
@@ -318,7 +318,7 @@ shows this skill's pending commits, and pulls after confirmation.
 `update.sh` cannot run there:
 
 ```bash
-claude plugin update skills-kengjudd@kengjudd
+claude plugin update kengjudd@kengjudd
 ```
 
 After updating, restart the agent session so the new version loads.

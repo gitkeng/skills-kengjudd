@@ -82,6 +82,11 @@ Anti-patterns:
   directories to check is the **Skill naming** rule in the repo-root
   `CLAUDE.md` — follow it there rather than a copy kept here, so there is one
   place to maintain when `install.sh` gains a target.
+- Invocation prefixes are orthogonal to the name: a prefix comes from plugin
+  packaging — Claude Code namespaces plugin skills by the plugin name — and
+  never from the skill's own `name`, which the spec limits to `a-z0-9-`. See
+  /skill-authoring/skill-prefixes.md for the reuse-or-ask flow when creating
+  skills.
 
 ## 3. Respect progressive disclosure — budget every level
 
@@ -137,7 +142,7 @@ drift, and they remove a whole class of transcription errors. (In this repo the
 mandatory `## Updating` section follows this rule by naming commands instead of
 describing steps. It must cover **both** install channels — CLAUDE.md binding
 rule 3: `./scripts/update.sh <skill-name>`, run from the repo root, for
-git-clone/symlink installs; and `claude plugin update skills-kengjudd@kengjudd`
+git-clone/symlink installs; and `claude plugin update kengjudd@kengjudd`
 for plugin-marketplace installs, where `update.sh` cannot work because the
 plugin cache has no `.git` directory and the script exits 1. See
 [/skill-authoring/update-mechanism.md](/skill-authoring/update-mechanism.md).)

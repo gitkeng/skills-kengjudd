@@ -69,7 +69,7 @@ Every `skills/<name>/SKILL.md` MUST contain (CLAUDE.md binding rule 3):
    - *Claude Code plugin-marketplace install*:
 
      ```bash
-     claude plugin update skills-kengjudd@kengjudd
+     claude plugin update kengjudd@kengjudd
      ```
 
    The plugin cache is not a git clone (it has no `.git` directory), so
@@ -103,7 +103,7 @@ section and both metadata keys; keep them when creating new skills (see
 `scripts/update.sh` (at `/Users/keng/Coding/gitkeng/skills-kengjudd/scripts/update.sh`)
 is the single implementation behind the git-clone/symlink half of every skill's
 `## Updating` section. (The other half, `claude plugin update
-skills-kengjudd@kengjudd`, is handled entirely by Claude Code — see
+kengjudd@kengjudd`, is handled entirely by Claude Code — see
 /specs/claude-code-plugins.md.)
 
 Usage:
@@ -123,7 +123,7 @@ Step-by-step flow:
    (`git clone git@github.com:gitkeng/skills-kengjudd.git`) and exits 1. This
    is exactly the guard a plugin-marketplace install trips: the plugin cache
    holds a copy of the skills with no `.git`, so those users must run
-   `claude plugin update skills-kengjudd@kengjudd` instead.
+   `claude plugin update kengjudd@kengjudd` instead.
 3. **Guard: branch.** `git branch --show-current` must be `main`; otherwise
    errors and exits.
 4. **Guard: clean tree.** `git status --porcelain` must be empty; otherwise
@@ -151,7 +151,7 @@ Step-by-step flow:
 10. **Reload reminders.** Prints how to make each agent pick up the change:
     - Claude Code (symlink install): start a new session — symlinked SKILL.md
       edits load on next use;
-    - Claude Code plugin install: `claude plugin update skills-kengjudd@kengjudd`;
+    - Claude Code plugin install: `claude plugin update kengjudd@kengjudd`;
     - Codex: `/skills` to refresh; other agents: restart the session.
 
 The version-extraction helper (`skill_version`) reads only the `metadata:`

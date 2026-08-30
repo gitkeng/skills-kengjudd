@@ -4,10 +4,11 @@ description: >-
   Guide for creating, updating, and registering skills in the skills-kengjudd
   repository. Use when creating a new skill, modifying an existing skill's
   content or version, importing a skill from another project, or asking how
-  skills in this repo are structured, versioned, installed, or updated.
+  skills in this repo are named, prefixed, structured, versioned, installed,
+  or updated.
 metadata:
-  version: "1.1.0"
-  updated: "2026-08-29"
+  version: "1.2.0"
+  updated: "2026-08-30"
 ---
 
 # Creating Skills in skills-kengjudd
@@ -24,6 +25,10 @@ multiple agents, and always carries its own update command.
 - Locate the repository root. If this skill directory is a symlink (the normal
   install), resolve it: `readlink -f <this-skill-dir>` points into
   `<repo>/skills/creating-skills`. All paths below are relative to `<repo>`.
+- If the resolved path is not inside a clone of this repository (it resolves
+  into `~/.claude/plugins/cache/...`, a plugin install), the repository is
+  not on this machine and every workflow below dead-ends there — ask the
+  user to clone `gitkeng/skills-kengjudd` and work from the clone.
 - Read `<repo>/CLAUDE.md` for the repository's binding rules. Do not proceed
   from memory of an older version of the rules.
 - **No guessing.** If a design question cannot be answered from this repo's
@@ -34,10 +39,16 @@ multiple agents, and always carries its own update command.
 0. **Run the spec freshness gate.** `./scripts/check-spec-versions.sh`
    (CLAUDE.md rule 5). On exit 1, migrate the knowledge base before continuing.
 1. **Clarify scope.** One skill = one capability with clear triggers. If the
-   idea spans several independent capabilities, split it.
+   idea spans several independent capabilities, split it. Then run the
+   [Skill prefixes](#skill-prefixes) decision — the user is asked only when
+   the repo has no plugin packaging (no `.claude-plugin/plugin.json` with a
+   `name`) — before anything is scaffolded.
 2. **Name it.** Lowercase `a-z0-9-`, 1-64 chars, no leading/trailing/consecutive
    hyphens. Prefer gerund form (`creating-skills`) or noun phrases
    (`pdf-processing`). The directory name and frontmatter `name` MUST match.
+   The name must also be unique among skills already installed on the
+   machine — check the discovery directories `install.sh` targets and
+   `claude plugin list` (CLAUDE.md → "Skill naming") before settling.
 3. **Scaffold from the template.**
    ```bash
    cp -R templates/skill-template skills/<skill-name>
@@ -58,7 +69,11 @@ multiple agents, and always carries its own update command.
    skill's own name in the `./scripts/update.sh <skill-name>` command.
 8. **Register the skill** in `.claude-plugin/plugin.json` → `skills` array as
    `"./skills/<skill-name>"` (the `./` prefix and directory path are required
-   for Claude Code plugin discovery).
+   for Claude Code plugin discovery). This is mandatory for every skill; the
+   only exception is the explicit no-plugin branch of
+   [Skill prefixes](#skill-prefixes). Registration places the skill under
+   the plugin's invocation prefix on the Claude Code plugin channel — the
+   prefix's value comes from the plugin `name`.
 9. **Capture knowledge (mandatory).** Add or update an OKF concept describing
    what was learned or decided while building the skill. Default destination:
    `knowledge/skill-authoring/<topic>.md` with `type: Playbook` — or
@@ -66,16 +81,17 @@ multiple agents, and always carries its own update command.
    skill encodes a lasting decision. Include `generated:` and `sources:` for
    any external claim. Then list it in `knowledge/index.md` (plain relative
    path form) and append an entry to `knowledge/log.md` under today's date.
-10. **Version bookkeeping.** Run `./scripts/bump-version.sh <semver>` (new skill
-    = minor bump) — it sets all four repo-level version fields. Then add a
-    `CHANGELOG.md` entry under the skill's name and a row in the README
-    `## Skills` table (name, version, description).
-11. **Validate.** Run the checklist in
+10. **Validate.** Run the checklist in
     [references/authoring-checklist.md](references/authoring-checklist.md).
     Then install the repo so the skill is discoverable —
     `./scripts/install.sh --tool claude --project .` — and in a fresh session
     test that it triggers on its intended prompts and does NOT trigger on
     near-miss prompts.
+11. **Version bookkeeping.** Run `./scripts/bump-version.sh <semver>` (new skill
+    = minor bump) — it sets all four repo-level version fields. Then add a
+    `CHANGELOG.md` entry under the skill's name and a row in the README
+    `## Skills` table (name, version, description). Validation comes first so
+    a failed trigger test never forces a second version bump.
 
 ## Workflow: updating an existing skill
 
@@ -85,6 +101,10 @@ multiple agents, and always carries its own update command.
 3. Run `./scripts/bump-version.sh <semver>`; add a CHANGELOG.md entry under the
    skill's name; update the skill's version in the README `## Skills` table.
 4. Update the related `knowledge/` concept and `knowledge/log.md`.
+5. Re-run the checklist in
+   [references/authoring-checklist.md](references/authoring-checklist.md) —
+   at minimum the portability gate, and repeat the trigger and anti-trigger
+   tests in a fresh session whenever the `description` changed.
 
 ## Workflow: importing a skill from another project
 
@@ -97,14 +117,65 @@ multiple agents, and always carries its own update command.
    in `metadata.upstream` and in its knowledge/ concept so it can be re-synced.
 5. Imported skills start at `metadata.version: "1.0.0"` regardless of any
    upstream numbering; record the upstream version or commit in
-   `metadata.upstream`. If the user asks for a different number, confirm the
+   `metadata.upstream`, combined with the URL into a single string (e.g.
+   `"<url> @<version-or-commit>"`) — metadata values are always strings,
+   never objects. If the user asks for a different number, confirm the
    intent before deviating.
-6. Then follow steps 4-11 of "creating a new skill".
+6. Then follow steps 4-11 of "creating a new skill". The
+   [Skill prefixes](#skill-prefixes) decision applies to imports too — when
+   the repo has no plugin packaging, ask before copying anything (step 1's
+   gate is not inside the 4-11 range).
 
 If asked to update a skill that is not in `skills/` yet, say so and offer to
 import it — do not invent a version history. The deferred-import inventory of
 skills from older projects (with source paths, readiness, and dependencies)
 lives in `knowledge/decisions/2026-08-29-repo-design.md`.
+
+## Skill prefixes
+
+Claude Code namespaces plugin skills by the **plugin name**: a skill
+registered in the plugin named `kengjudd` invokes as `kengjudd:<skill-name>`
+on the plugin channel (`kengjudd:git-commit`). The prefix never lives in the
+skill itself — directory name and frontmatter `name` stay bare `a-z0-9-`
+(Agent Skills spec) — and on the git-clone/symlink channel every skill
+invokes by its bare name, with no prefix, on every agent. Handle this
+explicitly for **every** skill you create or import:
+
+- **The repo already ships a plugin** — `.claude-plugin/plugin.json` with a
+  `name` (this repo: `kengjudd`). Reuse it: registering the new skill in
+  that plugin's `skills` array (step 8) is all it takes; the skill inherits
+  the existing prefix. Never create a second plugin or a second prefix
+  alongside it.
+- **The repo has no plugin packaging** — ask the user *before* scaffolding,
+  in words they can answer without knowing the mechanism (substitute the
+  real skill name):
+
+  > This repo has no Claude Code plugin yet. Without one, the skill invokes
+  > by its bare name everywhere (`<skill-name>`). With one, it also invokes
+  > namespaced on the Claude Code plugin channel — the plugin name becomes
+  > the prefix (`<prefix>:<skill-name>`) — and renaming a plugin later is a
+  > breaking change. Create a plugin? If yes, which name?
+
+  The **user** picks the name — it becomes the prefix everyone types, so it
+  should be short, lowercase, and owner-recognizable (this repo: `kengjudd`,
+  not `skills-kengjudd`). Never derive it silently from the repository name.
+
+  - *Yes* → create `.claude-plugin/plugin.json` with the user's name. Add
+    `marketplace.json` only when distribution to other machines is wanted.
+    Field formats and pitfalls: `knowledge/specs/claude-code-plugins.md`.
+  - *No* → plain skills directory; the skill invokes by its bare name
+    everywhere, and step 8's registration does not apply — the one
+    exception to this repo's register-every-skill default (CLAUDE.md),
+    taken only on the user's explicit instruction.
+
+  Record the answer — and the plugin name, if one was created — in the
+  skill's knowledge concept so later sessions don't re-ask.
+
+Renaming a plugin later changes every skill's prefix and orphans existing
+installs — a breaking change (see
+`knowledge/decisions/2026-08-30-plugin-name-kengjudd.md`). Choose the name
+once, early. Full decision flow, naming rationale, and sources:
+`knowledge/skill-authoring/skill-prefixes.md`.
 
 ## Multi-agent compatibility rules
 
@@ -137,7 +208,7 @@ shows this skill's pending commits, and pulls after confirmation.
 `update.sh` cannot run there:
 
 ```bash
-claude plugin update skills-kengjudd@kengjudd
+claude plugin update kengjudd@kengjudd
 ```
 
 After updating, restart the agent session so the new version loads.

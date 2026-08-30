@@ -65,7 +65,7 @@ shows this skill's pending commits, and pulls after confirmation.
 `update.sh` cannot run there:
 
 ```bash
-claude plugin update skills-kengjudd@kengjudd
+claude plugin update kengjudd@kengjudd
 ```
 
 After updating, restart the agent session so the new version loads.

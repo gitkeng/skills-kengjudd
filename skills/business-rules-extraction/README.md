@@ -4,7 +4,7 @@ Statically extracts, documents, and verifies business rules from any codebase. P
 domain-decomposed rule catalogs with line-level evidence, acceptance criteria, and
 mechanical validation.
 
-Version: 1.0.0 (skills-kengjudd numbering; imported from `gitkeng/aws-kiro-atx-lab`
+Version: 1.0.1 (skills-kengjudd numbering; imported from `gitkeng/aws-kiro-atx-lab`
 where it was numbered 1.1.0 — see `metadata.upstream` in `SKILL.md`)  
 License: MIT
 
@@ -36,7 +36,7 @@ installer rather than copying the directory by hand — run from the repo root:
 
 `--tool` accepts `claude|codex|cursor|opencode|gemini|zed|goose|kimi|amp|kiro|zcode|all`.
 Claude Code users can instead install the whole collection as a plugin
-(`/plugin install skills-kengjudd@kengjudd`). Update commands for both channels
+(`/plugin install kengjudd@kengjudd`). Update commands for both channels
 are in `SKILL.md` § Updating.
 
 ## Usage

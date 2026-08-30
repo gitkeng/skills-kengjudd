@@ -2,8 +2,8 @@
 name: comprehensive-codebase-analysis
 description: Analyze any repository offline to produce hierarchical, evidence-backed architecture documentation, behavior and API references, security and technical-debt findings, migration readiness, onboarding, and machine-auditable traceability. Use for codebase analysis, architecture docs, tech-debt reports, legacy-system understanding, security review, onboarding, or migration-readiness assessment.
 metadata:
-  version: "1.0.0"
-  updated: "2026-08-29"
+  version: "1.0.1"
+  updated: "2026-08-30"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/comprehensive-codebase-analysis @7423a91"
 ---
 
@@ -217,7 +217,7 @@ shows this skill's pending commits, and pulls after confirmation.
 `update.sh` cannot run there:
 
 ```bash
-claude plugin update skills-kengjudd@kengjudd
+claude plugin update kengjudd@kengjudd
 ```
 
 After updating, restart the agent session so the new version loads.

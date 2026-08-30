@@ -26,7 +26,7 @@ reads); `GEMINI.md` does the same for Gemini CLI.
    `metadata.updated` (`"YYYY-MM-DD"`), both quoted strings. The section must
    cover **both install channels**: git-clone/symlink installs run
    `./scripts/update.sh <skill-name>` from the repo root; plugin-marketplace
-   installs run `claude plugin update skills-kengjudd@kengjudd` (the plugin
+   installs run `claude plugin update kengjudd@kengjudd` (the plugin
    cache has no `.git`, so `update.sh` exits 1 there). Skills without these
    are incomplete.
 4. **Every skill change produces knowledge.** Creating or updating a skill
@@ -178,8 +178,11 @@ Claude Code can alternatively install via the plugin marketplace:
 
 ```text
 /plugin marketplace add gitkeng/skills-kengjudd
-/plugin install skills-kengjudd@kengjudd
+/plugin install kengjudd@kengjudd
 ```
+
+Plugin skills are namespaced by the plugin name, so this channel invokes
+the skills as `kengjudd:<skill-name>` (e.g. `kengjudd:git-commit`).
 
 This repo is private, so the marketplace add needs working git auth. The
 `owner/repo` shorthand clones over **SSH** by default — the key must be loaded
@@ -190,7 +193,7 @@ marketplace by SSH URL: `/plugin marketplace add git@github.com:gitkeng/skills-k
 Background plugin auto-update disables credential helpers, so private HTTPS
 remotes only refresh on an explicit `/plugin marketplace update kengjudd`.
 
-Plugin-channel users update with `claude plugin update skills-kengjudd@kengjudd`
+Plugin-channel users update with `claude plugin update kengjudd@kengjudd`
 — `scripts/update.sh` does not work there because the plugin cache has no
 `.git` directory.
 

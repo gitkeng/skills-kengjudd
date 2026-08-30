@@ -32,6 +32,10 @@ sources:
     title: Local plugin cache inspection (v1.0.0 snapshot)
   - resource: https://github.com/anthropics/skills
     title: anthropics/skills (official marketplace example)
+  - resource: https://github.com/obra/superpowers
+    title: obra/superpowers — reference implementation of a short plugin name (skills invoke as superpowers:<skill>); verified 2026-08-30
+  - resource: https://raw.githubusercontent.com/obra/superpowers/main/.claude-plugin/plugin.json
+    title: Live plugin.json on main (superpowers) — "name": "superpowers"
 generated:
   by: claude-code/claude-fable-5
   at: 2026-08-29T10:45:09Z
@@ -93,15 +97,29 @@ The `@` suffix is the **marketplace name** (marketplace.json top-level
 - anthropics/skills: `/plugin marketplace add anthropics/skills` then
   `/plugin install document-skills@anthropic-agent-skills`.
 - This repo: `/plugin marketplace add gitkeng/skills-kengjudd` then
-  `/plugin install skills-kengjudd@kengjudd`.
+  `/plugin install kengjudd@kengjudd` (the plugin was renamed from
+  `skills-kengjudd` on 2026-08-30 so its skills invoke with the short
+  `kengjudd:` prefix — see /decisions/2026-08-30-plugin-name-kengjudd.md).
 
 `marketplace add` accepts `owner/repo`, a git URL, a local path, or a URL,
 and supports ref pinning via `#ref` (branch/tag), e.g.
 `/plugin marketplace add https://gitlab.com/company/plugins.git#v1.0.0`.
 
-Installed skills surface **namespaced** as `<plugin>:<skill>`
-(e.g. `andrej-karpathy-skills:karpathy-guidelines`), which differs from the
-bare `/skill` name of a directly-installed skill.
+Installed skills surface **namespaced** as `<plugin>:<skill>`, which differs
+from the bare `/skill` name of a directly-installed skill. The official docs
+state the rule directly: "Plugin skills are namespaced by the plugin name"
+(commit-commands provides `/commit-commands:commit`). Examples:
+`andrej-karpathy-skills:karpathy-guidelines`, `superpowers:brainstorming`
+(obra/superpowers names its plugin `superpowers`), and — since the
+2026-08-30 rename — `kengjudd:git-commit` in this repo.
+
+**Design consequence: the plugin `name` field is where you choose the
+invocation prefix.** This repo's plugin is named `kengjudd`, shorter than the
+repository name `skills-kengjudd`, precisely so plugin-channel skills invoke
+with a short `kengjudd:` prefix; the repository name, clone URLs, and the
+marketplace name are unaffected. The docs note that the identifier users type
+(`kengjudd@kengjudd`) is the marketplace entry's `name`, which *can* differ
+from plugin.json's `name` — keep the two identical here, as this repo does.
 
 ## Version pinning semantics
 

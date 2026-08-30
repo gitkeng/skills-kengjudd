@@ -2,6 +2,70 @@
 
 ## 2026-08-30
 
+- **Review round** on the creating-skills 1.2.0 prefix work, before its
+  first commit: three-domain expert review (skill authoring, prompt
+  engineering, context engineering — parallel subagents on a frozen
+  draft), mirroring the 0.6.0 two-domain precedent. Overlapping findings
+  treated as truth signal; single-reviewer findings verified against the
+  files before applying; one prompt-engineering suggestion (reduce the
+  checklist prefix item to a bare pointer) rejected 2:1 — both other
+  reviewers wanted the checklist self-contained. Applied: the no-plugin
+  branch is now executable (step 8 declares registration mandatory with
+  the no-plugin branch as its one exception); the exact user-facing
+  question is spelled out as a quotable block that explains the mechanism
+  (the old "do you want prefixed invocation?" presupposed the
+  plugin-name-is-the-prefix mechanism) and the **user** picks the plugin
+  name (never derived silently from the repo name); the import workflow is
+  routed through the prefix gate ("steps 4-11" skipped step 1, and import
+  step 1 *is* the copying); the SKILL.md section now links
+  /skill-authoring/skill-prefixes.md as its canonical expansion (the flow
+  lived in three places with no declared source of truth) and the concept
+  points back for the normative question wording; the update workflow
+  re-runs the checklist with trigger/anti-trigger tests whenever the
+  description changed (it was the only path that never validated); the
+  create workflow validates *before* version bookkeeping (a failed
+  trigger test after the bump would force a second bump across all four
+  repo-level fields); "Name it" and the checklist gained the
+  installed-name uniqueness check CLAUDE.md mandates; `metadata.upstream`
+  is recorded as one combined string (steps 4-5 wrote two values into one
+  string-only key); and "Before you start" guards against the skill being
+  loaded from the plugin cache with no clone on the machine. Description
+  trigger words extended with "named, prefixed".
+- **Creation** of /skill-authoring/skill-prefixes.md alongside
+  **creating-skills 1.2.0** (repo v0.7.0): the skill-creation workflow now
+  handles invocation prefixes explicitly for every new skill — a repo that
+  already ships a plugin reuses it (registration in
+  `.claude-plugin/plugin.json` makes the skill inherit
+  `kengjudd:<skill-name>`), and a repo with no plugin packaging must ask the
+  user "prefix or none?" *before* scaffolding, recording the answer in the
+  knowledge base. The playbook records where a prefix can and cannot come
+  from (the plugin name only; the skill's own `name` is spec-limited to
+  `a-z0-9-`, and symlink/skills-dir installs have no prefix on any agent),
+  how to choose a plugin name when creating one (it is the prefix users
+  type, and need not match the repository name), and that renaming a plugin
+  later is breaking (links /decisions/2026-08-30-plugin-name-kengjudd.md).
+  The authoring checklist gained the matching prefix check, and
+  /skill-authoring/best-practices.md §2 cross-links the playbook.
+- **Creation** of /decisions/2026-08-30-plugin-name-kengjudd.md alongside the
+  plugin rename in repo v0.7.0: the Claude Code plugin shipped from this repo
+  was renamed `skills-kengjudd` → `kengjudd` (plugin.json `name` +
+  marketplace `plugins[0].name`) so plugin-channel skills invoke with a short
+  prefix — `kengjudd:git-commit` — mirroring obra/superpowers
+  (`superpowers:<skill>`). Mechanism recorded with sources: the official docs
+  state "Plugin skills are namespaced by the plugin name". Also recorded:
+  what deliberately did not change (GitHub repo name, clone URLs, marketplace
+  name `kengjudd`, and the symlink channel, where personal skills have no
+  prefix on any agent — platform behavior, since the Agent Skills spec allows
+  only `a-z0-9-` in a skill's own name), and the one-time migration for
+  pre-rename installs (uninstall old id, then qualified install of
+  `kengjudd@kengjudd`, which refreshes the marketplace by itself).
+  /specs/claude-code-plugins.md gained the namespaced-by-plugin-name rule
+  with the superpowers sources, and the `kengjudd@kengjudd` command was
+  swept through /skill-authoring/update-mechanism.md,
+  /skill-authoring/best-practices.md, and the live-guidance passages of
+  /decisions/2026-08-29-repo-design.md (its two plugin-channel command
+  references state current mechanics, not 2026-08-29 history, so binding
+  rule 7 applies).
 - **Creation** of /skill-authoring/command-to-skill.md alongside the
   promotion of the `/commit` slash command (`~/.claude/commands/commit.md`)
   into the `git-commit` skill (repo v0.6.0). Recorded: a command's

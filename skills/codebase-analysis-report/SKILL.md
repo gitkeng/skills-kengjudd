@@ -2,8 +2,8 @@
 name: codebase-analysis-report
 description: Generate a portable, offline, accessible HTML report from a comprehensive-codebase-analysis v2 output tree. Use to visualize evidence-backed findings, business rules, components, test traceability, coverage, migration analysis, operations, and Mermaid diagrams without choosing a vendor platform.
 metadata:
-  version: "1.0.0"
-  updated: "2026-08-29"
+  version: "1.0.1"
+  updated: "2026-08-30"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/codebase-analysis-report @4320cce plus uncommitted working-tree changes as of 2026-08-29"
   requires: "comprehensive-codebase-analysis v2 output tree as input"
 ---
@@ -135,7 +135,7 @@ shows this skill's pending commits, and pulls after confirmation.
 `update.sh` cannot run there:
 
 ```bash
-claude plugin update skills-kengjudd@kengjudd
+claude plugin update kengjudd@kengjudd
 ```
 
 After updating, restart the agent session so the new version loads.

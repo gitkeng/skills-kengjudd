@@ -24,7 +24,9 @@ Project knowledge bundle in OKF format. Canonical spec:
 * [Update mechanism](skill-authoring/update-mechanism.md) - how per-skill updates work in this repo
 * [Importing skills](skill-authoring/importing-skills.md) - what must change when a skill is imported from another project, and the import status of the deferred inventory
 * [Command to skill](skill-authoring/command-to-skill.md) - what must change when a slash command is promoted into a portable skill
+* [Skill prefixes](skill-authoring/skill-prefixes.md) - where an invocation prefix comes from (the plugin name, never the skill name), and the reuse-or-ask flow when creating skills
 
 # Decisions
 
+* [2026-08-30 plugin name kengjudd](decisions/2026-08-30-plugin-name-kengjudd.md) - plugin renamed skills-kengjudd → kengjudd so skills invoke as kengjudd:<skill>; mechanism, unchanged parts, migration
 * [2026-08-29 repository design](decisions/2026-08-29-repo-design.md) - founding decisions, spec-conflict rationale, deferred imports inventory

@@ -7,6 +7,79 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.7.0] - 2026-08-30
+
+**BREAKING — plugin channel only.** The Claude Code plugin is renamed
+`skills-kengjudd` → `kengjudd` (`.claude-plugin/plugin.json` `name` and the
+marketplace entry's `name`). Plugin skills are namespaced by the plugin name,
+so every skill now invokes as `kengjudd:<skill-name>`
+(e.g. `kengjudd:git-commit`) — the same short-prefix pattern obra/superpowers
+uses for `superpowers:<skill>`. Nothing else moved: the GitHub repository
+name, clone URLs, the marketplace name (`kengjudd`), and the git-clone +
+symlink channel are all unchanged, and the symlink channel never had a prefix
+to begin with. No install of the old plugin id existed on this machine at
+rename time (checked `~/.claude/plugins/cache`); anyone who did install
+pre-rename runs `/plugin uninstall skills-kengjudd@kengjudd`, then
+`/plugin install kengjudd@kengjudd` (a qualified-name install refreshes the
+marketplace first, so no separate update step is needed). Pre-1.0 SemVer:
+breaking rides the minor line.
+
+### Added
+
+- **creating-skills 1.2.0** — the creation workflow now handles skill
+  prefixes explicitly for every new skill: a repo that already ships a
+  plugin (this repo: `kengjudd`) gets the skill registered there so it
+  inherits `kengjudd:<skill-name>`; a repo with no plugin packaging must
+  ask the user "prefix or none?" *before* scaffolding and record the
+  answer in `knowledge/`. New "Skill prefixes" section in SKILL.md, a
+  matching item in the authoring checklist, and the rule that the plugin
+  name is chosen once, early (renaming it later is breaking). Reviewed
+  before release by three domain experts (skill authoring, prompt
+  engineering, context engineering — parallel subagents, 0.6.0 precedent);
+  consensus and verified findings applied in one pass: the no-plugin
+  branch is executable (explicit registration exception to step 8), the
+  exact user-facing question is spelled out and the **user** picks the
+  plugin name, imports pass through the prefix gate, the section links
+  its knowledge concept, the update workflow re-runs the checklist
+  (trigger tests when the description changed), validation runs before
+  version bookkeeping on the create path, "Name it" checks installed-name
+  uniqueness, `metadata.upstream` stays one combined string, a plugin-
+  cache guard was added to "Before you start", and the description gained
+  the "named, prefixed" trigger words.
+
+### Changed
+
+- All six skills' `## Updating` sections now point at `kengjudd@kengjudd`, as
+  does every other mention of the plugin channel: CLAUDE.md, AGENTS.md,
+  README.md, the authoring checklist, the skill template,
+  `scripts/update.sh`'s reload reminder, and the business-rules-extraction
+  README (install command + version line). Patch bumps:
+  **creating-skills 1.2.0** (minor — new prefix workflow, see Added),
+  **business-rules-extraction 1.0.1**,
+  **comprehensive-codebase-analysis 1.0.1**, **codebase-analysis-report
+  1.0.1**, **doc2markdown 1.1.1**, **git-commit 1.0.1**.
+- README documents that plugin-channel skills invoke namespaced as
+  `kengjudd:<skill-name>` (bilingual note in the install section).
+
+### Knowledge
+
+- `knowledge/decisions/2026-08-30-plugin-name-kengjudd.md` — the rename
+  decision: mechanism (prefix = plugin name, sourced from the Claude Code
+  docs and obra/superpowers), what deliberately did not change, and the
+  migration path for pre-rename installs.
+- `knowledge/specs/claude-code-plugins.md` — namespacing section rewritten
+  around the verified docs quote ("Plugin skills are namespaced by the plugin
+  name"), with the design consequence spelled out (the plugin `name` field is
+  where you choose the invocation prefix) and obra/superpowers added as a
+  source; this repo's install example updated.
+- `knowledge/skill-authoring/update-mechanism.md` and
+  `knowledge/skill-authoring/best-practices.md` — plugin-channel command
+  updated to `kengjudd@kengjudd`.
+- `knowledge/skill-authoring/skill-prefixes.md` (Playbook) — where an
+  invocation prefix comes from (the plugin name, never the skill's own
+  name), the reuse-or-ask flow for new skills, how to choose a plugin name,
+  and why a late plugin rename is breaking.
+
 ## [0.6.0] - 2026-08-30
 
 ### Added
