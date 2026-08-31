@@ -208,7 +208,10 @@ named here are recorded as index/reference concepts per
 Update cadence and ownership are written into `AGENTS.md`'s knowledge-base
 section as the standing instruction agents follow afterward — by default,
 read the knowledge base first and update it after every completed piece of
-work.
+work. When the answer differs from that default it contradicts the verbatim
+standing-rules block, so write it with the explicit override line described
+in `context-file-guidelines.md` `## Standing rules block` rather than
+editing the block.
 
 ## Free-text task types
 

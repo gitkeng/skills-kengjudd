@@ -79,6 +79,18 @@ own canonical URL rather than pointing back at this guide.
   ignore the drift.
 ```
 
+The block's second bullet states the **default** knowledge-base update
+cadence. Keep the block verbatim regardless; never edit it to match an
+interview answer. When the interview's update-cadence/ownership answer
+(`task-type-presets.md` `## knowledge base`) differs from that default,
+reconcile it in `## Knowledge base` instead: record the agreed cadence and
+owner there, and add one explicit override line naming the bullet it
+supersedes — for example "Update cadence for this project: monthly, owned by
+<name>; this supersedes the per-work-cycle default in `## Working rules`."
+Without that line the generated file carries two conflicting rules and fails
+Phase 5's `## Checklist: prompt engineering` bar "No two rules conflict."
+When the answer matches the default, add nothing.
+
 ## Merge semantics
 
 Every pre-existing artifact is handled **per artifact, at the moment it is

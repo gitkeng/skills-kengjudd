@@ -37,12 +37,17 @@ otherwise, these win.
 
 - **Every consequential decision is asked, never assumed.** Recommendations
   are encouraged: recommend first, then ask, and wait for the answer.
-- **Every factual claim written into a knowledge base carries `sources:`**
-  with resolvable URLs from official/trusted origins. Nothing is written from
-  memory. (A `Decision` concept recording this project's own choice has no
-  external origin and needs no external source.) If research cannot settle a
-  question, ask the user; if the user cannot settle it either, record it as
-  an explicit gap instead of inventing an answer.
+- **Every factual claim written into a knowledge base carries `sources:`.**
+  An **external** fact cites a resolvable URL from an official/trusted
+  origin. A fact taken from the target project's own material — a README,
+  design docs, meeting notes, an existing docs folder, i.e. the seed sources
+  the `knowledge base` preset asks for — cites that file by
+  repository-relative path, which OKF 0.2 §5.1 accepts as a `resource:`
+  alongside URLs. Nothing is written from memory. (A `Decision` concept
+  recording this project's own choice has no external origin and needs no
+  external source.) If research cannot settle a question, ask the user; if
+  the user cannot settle it either, record it as an explicit gap instead of
+  inventing an answer.
 - **No bias toward any single agent.** Shared content lives only in the
   canonical `AGENTS.md`; agent-specific content lives only in that agent's
   adapter.

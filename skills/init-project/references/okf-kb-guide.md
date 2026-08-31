@@ -73,8 +73,12 @@ document. Start from `../assets/kb-skeleton/`.
      This is the only field OKF requires; everything below is what this
      skill additionally always writes.
    - `title:`, `description:` — short and factual.
-   - `sources:` — a list; every entry has a `resource:` (a resolvable
-     URL). Never write a concept whose factual claims lack a source — if
+   - `sources:` — a list; every entry has a `resource:`. OKF 0.2 §5.1
+     accepts an absolute URL, a bundle- or repository-relative path, or a
+     scope descriptor. Use a URL for external facts, and a
+     repository-relative path for facts taken from the target project's own
+     files (its README, design docs, meeting notes, an existing docs
+     folder). Never write a concept whose factual claims lack a source — if
      you cannot source a claim, ask the user or record it as a gap instead
      of inventing it.
    - `generated: { by: "<agent>/<model>", at: "<ISO 8601 UTC>" }` — `by`
