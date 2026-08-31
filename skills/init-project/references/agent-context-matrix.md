@@ -17,6 +17,22 @@ syntax, adapter rule, native init command, config locations, sources with
 verified date) and use the `## Fallback rule` decision procedure at the end
 of this file.
 
+## Contents
+
+- [Claude Code](#claude-code)
+- [Codex](#codex)
+- [Cursor](#cursor)
+- [opencode](#opencode)
+- [Gemini CLI](#gemini-cli)
+- [Zed](#zed)
+- [Kiro](#kiro)
+- [Kimi CLI](#kimi-cli)
+- [Amp](#amp)
+- [Goose](#goose)
+- [ZCode](#zcode)
+- [Antigravity](#antigravity)
+- [Fallback rule](#fallback-rule)
+
 ## Claude Code
 
 - **Context file(s) & precedence:** `CLAUDE.md`, never `AGENTS.md`. Broadest

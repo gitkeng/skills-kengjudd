@@ -16,6 +16,15 @@ an item counts as an open gap, how naming a new technology grows a checklist,
 and how deferred items are tracked — these rules apply to every preset and to
 confirmed free-text checklists alike.
 
+## Contents
+
+- [coding](#coding)
+- [frontend](#frontend)
+- [project management](#project-management)
+- [knowledge base](#knowledge-base)
+- [Free-text task types](#free-text-task-types)
+- [Gap rules](#gap-rules)
+
 ## coding
 
 - **Language(s) and runtime.** "Which programming language(s), and which

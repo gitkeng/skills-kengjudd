@@ -7,6 +7,15 @@ interview (default `knowledge-base`). This guide is written against **OKF
 0.2**; treat every rule below as scoped to that version unless the Version
 check step finds a newer one.
 
+## Contents
+
+- [Version check](#version-check)
+- [Creating the bundle](#creating-the-bundle)
+- [Migration](#migration)
+- [Type vocabulary](#type-vocabulary)
+- [Researched-technology template](#researched-technology-template)
+- [External knowledge bases](#external-knowledge-bases)
+
 ## Version check
 
 Run this check once per skill run, before creating or migrating anything.

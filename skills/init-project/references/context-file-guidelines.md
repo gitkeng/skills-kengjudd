@@ -11,6 +11,13 @@ file travels with the skill (including a bare symlink install); it makes no
 this-repo `knowledge/` references. Sibling references — `agent-context-matrix.md`,
 `okf-kb-guide.md` (its `## Migration` procedure) — are allowed and used below.
 
+## Contents
+
+- [Content budget](#content-budget)
+- [Context vs KB](#context-vs-kb)
+- [Standing rules block](#standing-rules-block)
+- [Merge semantics](#merge-semantics)
+
 ## Content budget
 
 - Canonical `AGENTS.md`: **≤ 150 lines and ≤ 10 KB**, both hard caps.

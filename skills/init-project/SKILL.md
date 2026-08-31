@@ -10,7 +10,8 @@ description: >-
   project for agents, bootstrap agent context files or a knowledge base —
   "init โปรเจกต์", "ตั้งต้นโครงการให้ agent", "สร้าง AGENTS.md/CLAUDE.md",
   "ตั้งค่า knowledge base". Not for scaffolding application code, running
-  git init, or analyzing an existing codebase in depth.
+  git init, the built-in `/init` slash command (writes a single CLAUDE.md
+  only), or analyzing an existing codebase in depth.
 license: MIT
 metadata:
   version: "1.0.0"
