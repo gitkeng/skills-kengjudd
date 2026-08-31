@@ -113,7 +113,11 @@ skill directory, not against the target project.
      one file backs the claim, cite that file. Check that every path
      resolves before writing it. Never write a concept whose factual claims
      lack a source — if you cannot source a claim, ask the user or record it
-     as a gap instead of inventing it.
+     as a gap instead of inventing it. A `Decision` concept's claim is the
+     choice itself, with no external origin to cite — record its provenance
+     the same way, as a scope descriptor naming the interview (for example
+     `this project's init-project interview, conducted 2026-08-31`), never
+     as an empty `sources:`.
    - `generated: { by: "<agent>/<model>", at: "<ISO 8601 UTC>" }` — `by`
      names *whatever agent and model is running this skill right now*
      (e.g. `claude-code/claude-sonnet-5`), never a fixed value copied from

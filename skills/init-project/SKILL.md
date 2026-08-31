@@ -57,9 +57,12 @@ otherwise, these win.
   [references/okf-kb-guide.md](references/okf-kb-guide.md)
   `## Creating the bundle` step 4. Nothing is written from memory. (A
   `Decision` concept recording this project's own choice has no external
-  origin and needs no external source.) If research cannot settle a
-  question, ask the user; if the user cannot settle it either, record it as
-  an explicit gap instead of inventing an answer.
+  origin and needs no external source — it records its interview
+  provenance instead, as the scope descriptor that same step describes,
+  e.g. "this project's init-project interview, conducted <date>".) If
+  research cannot settle a question, ask the user; if the user cannot
+  settle it either, record it as an explicit gap instead of inventing an
+  answer.
 - **No bias toward any single agent.** Shared content lives only in the
   canonical `AGENTS.md`; agent-specific content lives only in that agent's
   adapter.
@@ -101,7 +104,9 @@ the **Language of generated files** topic sets the language of the
 
 **Show the cost before you spend it.** As soon as the task types are known,
 count the checklist items you are about to ask — including the items each
-named technology adds — and tell the user that number before asking them.
+named technology adds — and tell the user that number before asking them
+(state it as an estimate when expansions are not yet known — e.g. "at least
+N" — since expansion depends on answers this run has not collected yet).
 Offer three ways forward: one question at a time, your recommendation for
 all of them with corrections afterwards, or defer a named subset to the gap
 list. **Hard ceiling: 25 questions in one run**, all topics included. On
@@ -222,7 +227,9 @@ rest, or defer the rest; everything deferred joins the running gap list.
    `## Migration` (propose the concrete changes, get approval, log it); a
    non-OKF docs/notes folder is left untouched and handled per
    [references/context-file-guidelines.md](references/context-file-guidelines.md)
-   `## Merge semantics`.
+   `## Merge semantics`. Finding one here makes it this run's **legacy
+   knowledge folder** — carry that forward like the running gap list
+   (Phase 1 topic 4), so it reaches step 4 below and Phase 4 step 2.
 3. Create `<kb>/` if it does not exist, then instantiate
    `assets/kb-skeleton/index.md` and `assets/kb-skeleton/log.md`
    **only for the files that are not already there**. Where `<kb>/index.md`
@@ -242,8 +249,10 @@ rest, or defer the rest; everything deferred joins the running gap list.
    technology using `## Researched-technology template`; one per domain and
    per seed source named under the `## knowledge base` preset, using
    `## Domain and seed-source concepts`; one index concept per external KB
-   per `## External knowledge bases`; and, if Karpathy was opted in, the
-   fuller guidelines as a `Reference` concept.
+   per `## External knowledge bases`; when step 2 found a pre-existing
+   non-OKF knowledge folder, one `type: Reference` concept indexing it per
+   `## Legacy knowledge folders`; and, if Karpathy was opted in, the fuller
+   guidelines as a `Reference` concept.
 5. Use only the four `type:` values in `## Type vocabulary`, and index every
    concept in `<kb>/index.md`, putting the bullets this run generates inside
    that file's `<!-- init-project:start -->` / `<!-- init-project:end -->`
@@ -270,7 +279,11 @@ This is a **draft** — Phase 5 reviews and corrects it before the report.
    `## Edge cases`); fill `## Commands` with the commands the interview's
    package-manager, test, lint, and build answers imply, deleting that
    section outright when the project has no toolchain yet and named none;
-   fill `## Project knowledge base` with the chosen `<kb>` folder;
+   fill `## Project knowledge base` with the chosen `<kb>` folder, plus —
+   when Phase 3 step 2 found a pre-existing non-OKF knowledge folder — one
+   line naming that folder as legacy and linking the index concept step 4
+   wrote for it, per [references/okf-kb-guide.md](references/okf-kb-guide.md)
+   `## Legacy knowledge folders`;
    fill `## Agent notes` per step 5. The template's `## Working rules`
    carries the **single source** of the standing-rules block —
    [references/context-file-guidelines.md](references/context-file-guidelines.md)

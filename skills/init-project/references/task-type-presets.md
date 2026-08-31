@@ -40,11 +40,11 @@ confirmed free-text checklists alike.
   recommend the ecosystem's current, most common choice and let the user
   confirm or pick another.
 - **Package manager / build tool.** "Which package manager or build tool
-  does, or will, this project use to install dependencies and build (for
-  example npm/pnpm/yarn, pip/uv/poetry, Cargo, Maven/Gradle)?" Recommend the
-  tool most idiomatic for the chosen language/framework (e.g. pnpm for a new
-  Next.js project, uv for a new Python project) if the user has no
-  preference.
+  does, or will, this project use to install dependencies, run the project
+  locally (the dev/run command), and build (for example npm/pnpm/yarn,
+  pip/uv/poetry, Cargo, Maven/Gradle)?" Recommend the tool most idiomatic
+  for the chosen language/framework (e.g. pnpm for a new Next.js project,
+  uv for a new Python project) if the user has no preference.
 - **Test framework.** "Which test framework will this project use (for
   example Jest or Vitest, pytest, JUnit, `go test`)?" Recommend the
   ecosystem-standard test framework for the chosen language if the user has
@@ -263,7 +263,9 @@ selected, no gaps remain — subject to the preview and ceiling below.
 
 Before asking the first checklist item, count what the selected task types
 imply — the preset items plus the items technology expansion will add — and
-tell the user that number. Then offer three ways forward:
+tell the user that number (state it as an estimate when expansions are not
+yet known — e.g. "at least N" — since expansion depends on answers this run
+has not collected yet). Then offer three ways forward:
 
 1. answer them one at a time;
 2. take your recommendation for every item, with corrections afterwards;
@@ -283,7 +285,11 @@ within both of these limits:
 - **Only project decisions expand.** A technology expands when the user
   chose it *as a project decision* — their answer to the framework,
   component-library, styling, state-management, design-source, tracker, or
-  CI question, or a technology they volunteered in free text. A technology
+  CI question, or a technology they volunteered in free text. **This holds
+  regardless of who first proposed it:** an enumerated question's answer
+  expands whether the user named the technology unprompted or accepted the
+  agent's recommendation for that same question — both count as the user's
+  project decision once confirmed. A technology
   that merely came along with a recommendation the user accepted — the
   ecosystem's default bundler, a transitive dependency, a peer library the
   framework ships with — does **not** expand. It still gets a knowledge-base

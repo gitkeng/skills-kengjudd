@@ -94,7 +94,7 @@ sources:
     title: "Antigravity docs — Getting started (product description, docs navigation)"
 generated:
   by: claude-code/claude-opus-5
-  at: 2026-08-31T02:50:48Z
+  at: "2026-08-31T02:50:48Z"
 status: stable
 ---
 

@@ -34,6 +34,11 @@ references. Sibling references — `agent-context-matrix.md`,
   is not an adapter in the sense above — it duplicates `AGENTS.md`'s content
   wholesale, so it inherits `AGENTS.md`'s own ≤ 150 lines / ≤ 10 KB budget
   instead of the 10-line cap.
+- **On merge into a pre-existing file** (`## Merge semantics` below), every
+  cap above scopes to the generated `<!-- init-project:start -->` /
+  `<!-- init-project:end -->` block this skill writes, not the file as a
+  whole: pre-existing user content outside the markers never counts against
+  the cap and is never cut to make room.
 - **Over budget:** do not trim facts silently and do not let the file grow
   past the cap. Apply this **cut order**, stopping as soon as the file fits:
   1. Per-technology detail → move into that technology's knowledge-base

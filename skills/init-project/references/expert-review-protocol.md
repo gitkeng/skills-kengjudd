@@ -12,6 +12,16 @@ references. Sibling references — `context-file-guidelines.md`,
 `okf-kb-guide.md`, `agent-context-matrix.md`, `task-type-presets.md` — are
 allowed and used below.
 
+## Contents
+
+- [Capability heuristic](#capability-heuristic)
+- [Reviewer roster](#reviewer-roster)
+- [Checklist: prompt engineering](#checklist-prompt-engineering)
+- [Checklist: context engineering](#checklist-context-engineering)
+- [Checklist: generic domain](#checklist-generic-domain)
+- [Applying findings](#applying-findings)
+- [Convergence](#convergence)
+
 ## Capability heuristic
 
 If your harness provides a subagent/task-spawning tool, run the reviewers
