@@ -9,15 +9,14 @@
 ## Commands
 
 <!-- The commands an agent runs directly, from the interview's package
-     manager / test / lint / build answers. Delete this whole section if
-     the project has no toolchain yet and no commands were named. -->
+     manager / test / lint / build answers. -->
 - `<install>` — install dependencies
 - `<dev>` — run locally
 - `<test>` — run the test suite
 - `<lint>` — lint and format check
 - `<build>` — production build
 
-## Knowledge base
+## Project knowledge base
 
 - **Folder:** `<knowledge-base-folder>/` — an OKF (Open Knowledge Format)
   bundle. Start at `<knowledge-base-folder>/index.md` for the concept
@@ -39,12 +38,13 @@
 - Keep this file and its adapters current every work cycle, but never let
   them bloat: once a detail stops being something you need on every turn,
   move it into the knowledge base and link it from here instead.
-- Watch the OKF spec version: fetch
+- Watch the OKF spec version: when you have web access, fetch
   `https://raw.githubusercontent.com/GoogleCloudPlatform/open-knowledge-format/main/SPEC.md`
   and read its `**Version X.Y**` line before knowledge-base work. When that
   version is newer than the `okf_version` recorded in the knowledge base's
   index, propose a migration to the user — never migrate silently and never
-  ignore the drift.
+  ignore the drift. With no web access, work against the recorded
+  `okf_version` and say that the check was skipped.
 
 <!-- karpathy:start -->
 ## Engineering guidelines (Karpathy)
@@ -61,6 +61,12 @@ Opt-out: delete this block.
 
 ## Agent notes
 
-<!-- One bullet per agent selected during the interview, filled from
-     references/agent-context-matrix.md. -->
-- **<Agent name>:** <adapter kind (native / import-adapter / full-copy) and the one quirk worth surfacing — e.g. "reads CLAUDE.md, never AGENTS.md">
+<!-- One bullet per agent selected during the interview, filled from the
+     matrix reference. Each bullet is an imperative constraint for the
+     agents that read this file later, not a note about the init run. For a
+     native agent the bullet also names ONE quirk from the closed list: the
+     file it reads, an init command that would overwrite this file (quote
+     the command and its create-vs-update behavior from the matrix — "do not
+     run <command> here"), or an import-expansion limit. For an adapter
+     agent the quirk lives in that agent's own file. -->
+- **<Agent name>:** <adapter kind (native / import-adapter / full-copy) and, for a native agent, the one quirk — e.g. "reads CLAUDE.md, never AGENTS.md"; "do not run /init here — it creates an AGENTS.md">

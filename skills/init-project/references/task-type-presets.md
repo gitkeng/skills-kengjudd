@@ -78,6 +78,12 @@ confirmed free-text checklists alike.
   is to include it. Keep the default, or opt out?" Default: include.
   Declining removes the marked Karpathy guidelines block from the generated
   AGENTS.md entirely, and the KB skips the corresponding reference concept.
+  **Gating:** this is the interview's single Karpathy question for any
+  project that involves **writing code**. When `frontend`, or a confirmed
+  code-flavored free-text checklist, is selected without `coding`, ask this
+  same item once there instead. Never ask it twice. When no code-writing
+  task type is selected at all it is never asked, and Phase 4 deletes the
+  marked block from the generated AGENTS.md.
 
 **Output delta:** the coding preset's answers populate `AGENTS.md`'s project
 stack description (language/runtime, framework, package manager/build tool,
@@ -205,8 +211,9 @@ determine which concepts get pre-seeded into the knowledge base during
 Phase 3, beyond the technology concepts every preset can add. External KBs
 named here are recorded as index/reference concepts per
 `okf-kb-guide.md`'s `## External knowledge bases`, not copied in full.
-Update cadence and ownership are written into `AGENTS.md`'s knowledge-base
-section as the standing instruction agents follow afterward — by default,
+Update cadence and ownership are written into `AGENTS.md`'s
+`## Project knowledge base` section as the standing instruction agents
+follow afterward — by default,
 read the knowledge base first and update it after every completed piece of
 work. When the answer differs from that default it contradicts the verbatim
 standing-rules block, so write it with the explicit override line described
@@ -250,23 +257,56 @@ A **gap** is any checklist item — from a preset above, or from a confirmed
 free-text checklist — that has not yet been answered and has not been
 explicitly deferred by the user. Keep asking (one gap at a time,
 recommendation first, per the iron rule) until, for every task type the user
-selected, no gaps remain.
+selected, no gaps remain — subject to the preview and ceiling below.
 
-Whenever a user's answer names a new, concrete technology not already
-covered by an existing checklist item (for example, answering the coding
-preset's framework question with "Next.js", or the frontend preset's
-component-library question with "shadcn/ui"), that technology adds its own
-items to the checklist:
+### Cost preview and question ceiling
 
-- Which version (or version range) of the technology does this project use?
-- What role does it play in the project (for example: the frontend
-  framework, the CI runner, the primary datastore)?
-- Where are its official docs located (a URL the skill can research from)?
+Before asking the first checklist item, count what the selected task types
+imply — the preset items plus the items technology expansion will add — and
+tell the user that number. Then offer three ways forward:
 
-These technology items are gaps like any other checklist item until
-answered. Once answered, each technology's answer set feeds one
-knowledge-base concept per `okf-kb-guide.md`'s `## Researched-technology
-template`.
+1. answer them one at a time;
+2. take your recommendation for every item, with corrections afterwards;
+3. defer a named subset to the gap list now.
+
+**Hard ceiling: 25 questions per run**, counting every question this skill
+puts to the user, not only checklist items. On reaching it, stop and ask
+whether to continue, take recommendations for what remains, or defer it.
+Everything deferred at the ceiling joins the running gap list and is treated
+exactly like any other deferral below.
+
+### Technology expansion — depth 1 only
+
+An answer that names a technology can add an item to the checklist, but only
+within both of these limits:
+
+- **Only project decisions expand.** A technology expands when the user
+  chose it *as a project decision* — their answer to the framework,
+  component-library, styling, state-management, datastore, tracker, or CI
+  question, or a technology they volunteered in free text. A technology that
+  merely came along with a recommendation the user accepted — the
+  ecosystem's default bundler, a transitive dependency, a peer library the
+  framework ships with — does **not** expand.
+- **Expansion is one level deep, and expansion items are terminal.** The
+  items an expansion adds never expand again. A second-order technology
+  named while answering them becomes a one-line mention inside the parent
+  technology's knowledge-base concept, or a gap — never its own checklist
+  branch.
+
+The expansion adds exactly one item:
+
+- **Role.** "What role does <technology> play in this project (for example:
+  the frontend framework, the CI runner, the primary datastore)?"
+
+Do **not** ask for the technology's version or its docs URL — Phase 2
+settles both from official sources. Ask about a version only when the
+project pins one that differs from current stable, when research cannot
+disambiguate which release is meant, or when there is no version to pin and
+the user has to say so.
+
+This item is a gap like any other until answered. Once answered, each
+expanded technology's answer set feeds one knowledge-base concept per
+`okf-kb-guide.md`'s `## Researched-technology template`.
 
 An item becomes **deferred**, not a gap, only when the user explicitly says
 to skip or postpone it (for example: "we don't know yet," "decide later,"

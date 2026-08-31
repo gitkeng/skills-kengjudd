@@ -32,11 +32,25 @@ Two standing reviewers run on every project, regardless of stack:
   budget compliance against `context-file-guidelines.md`, using `##
   Checklist: context engineering`.
 
-Beyond the two standing reviewers, add one **domain reviewer per technology
-or domain the user named during the interview** (the `task-type-presets.md`
-questions, plus any technology named in a free-text answer). For example, a user
-who named Next.js, shadcn, and Figma during the interview gets three domain
-reviewers — one per technology — in addition to the two standing reviewers.
+Beyond the two standing reviewers, add domain reviewers for the technologies
+and domains the user named during the interview (the `task-type-presets.md`
+questions, plus any technology named in a free-text answer) — **at most
+five**, however many were named. Build the roster like this:
+
+1. Give an individual reviewer to the technologies with the largest KB
+   footprint first — the ones whose concepts carry the most claims to
+   check.
+2. Group the remainder by **shared review surface**: technologies whose
+   concepts a single reviewer can check together (same ecosystem, same
+   concept, same subject). Every named knowledge *domain* gets one grouped
+   pass in total, never one pass per domain.
+3. Stop at five domain reviewers. A user who named eight technologies gets
+   five passes, not eight — and the Phase 6 report says how they were
+   grouped. **Never drop a technology silently:** every one named is
+   reviewed by exactly one reviewer, alone or in a group.
+
+Running sequentially (no subagent tool), the same cap applies: at most five
+domain passes plus the two standing passes.
 
 - If a bundled checklist exists for that technology or domain, the reviewer
   uses it.
@@ -87,6 +101,13 @@ Parameterized by technology X — the domain reviewer's assigned technology:
 Review output is never "report-only": accepted findings are applied before
 the report phase (Phase 6), not deferred to it or merely written down.
 
+**Adjudication.** The orchestrator running this skill — not the reviewer —
+decides each finding, and **accepts by default**. Reject a finding only
+when it contradicts an explicit decision the user made during the interview,
+breaks one of the skill's iron rules, or asserts something no source backs.
+A finding that conflicts with a user decision goes back to the *user* as a
+question, not into a rejection list. Everything else is applied.
+
 - **Accepted findings against context files:** context files amended in
   place — edit `AGENTS.md` or the affected adapter directly, then re-check
   the content budget (`context-file-guidelines.md` `## Content budget`)
@@ -94,6 +115,30 @@ the report phase (Phase 6), not deferred to it or merely written down.
 - **Accepted findings against KB concepts:** KB concepts corrected with the
   amendment logged in `<kb>/log.md` — edit the concept file in place and add
   a new dated entry (newest first), consistent with `okf-kb-guide.md`'s log
-  conventions.
+  conventions. When a finding requires a **new** concept, create it through
+  `okf-kb-guide.md` `## Creating the bundle` like any other: frontmatter,
+  an `<kb>/index.md` bullet, and a `<kb>/log.md` entry. Phase 3 step 5 has
+  already run, so nothing else will index it for you.
 - **Rejected findings:** recorded with a one-line reason rather than
-  silently dropped.
+  silently dropped, and reported in Phase 6.
+- **Gaps:** where a finding is accepted but cannot be applied inside this
+  run's budget or knowledge, record it as a gap rather than a rejection.
+
+## Convergence
+
+The review loop is bounded. It runs **one full pass and one re-check, never
+a third**:
+
+1. **Pass 1** — the roster reviews the artifacts and returns findings.
+   Adjudicate and apply them per `## Applying findings`.
+2. **Re-check** — re-review **only what the apply step changed**, not the
+   whole artifact set. Its job is to catch regressions the fixes introduced.
+3. A finding raised for the first time in the re-check is applied **only if
+   it is a regression from the apply step**. Anything else — a new
+   observation about content that pass 1 already saw and passed — is
+   recorded as a gap in the Phase 6 report and left for a future run.
+4. There is no third pass. If the re-check finds a regression, fix it and
+   verify that single fix directly; do not restart the loop.
+
+On a re-run of the skill (Phase 0 detected previous output), both steps look
+only at what this run wrote or changed.

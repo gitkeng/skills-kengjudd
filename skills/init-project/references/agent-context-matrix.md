@@ -176,7 +176,10 @@ Sources:
   `GEMINI.md`; the `context.fileName` setting takes a list and **can
   include `AGENTS.md`** (documented example:
   `["AGENTS.md", "CONTEXT.md", "GEMINI.md"]`). Gemini CLI does **not** read
-  `AGENTS.md` by default. Hierarchy: global `~/.gemini/GEMINI.md`, then
+  `AGENTS.md` by default, and the request to make that the default was
+  closed as not planned (issue #12345, cited below) — so treat the
+  `GEMINI.md` adapter, not a default-`AGENTS.md` change, as the supported
+  path. Hierarchy: global `~/.gemini/GEMINI.md`, then
   configured workspace directories and their parents, plus just-in-time
   scanning — when a tool touches a file or directory, the CLI scans that
   directory and its ancestors. All found files are **concatenated** and
@@ -266,7 +269,9 @@ Sources:
   `settings/mcp.json`, `settings/permissions.yaml`, `settings/cli.json`,
   `agents/`, `steering/`, `skills/`, `hooks/`, `powers/`. Project scope
   under `.kiro/`: `settings/mcp.json`, `agents/`, `steering/`, `skills/`,
-  `hooks/`, `specs/`. `KIRO_HOME` redirects the global `~/.kiro` directory.
+  `hooks/`, `specs/`. The **Agent > Project > Global** precedence recorded
+  above has one exception: for permissions, a **deny wins at any scope**.
+  `KIRO_HOME` redirects the global `~/.kiro` directory.
 
 Sources:
 - Kiro docs — Steering: https://kiro.dev/docs/steering/ (verified 2026-08-31)
@@ -398,8 +403,11 @@ Sources:
 - **Native init command:** **None.** ZCode Agent ships two built-in slash
   commands, `/goal` and `/compact`; there is no `/init` and no documented
   `AGENTS.md` generator.
-- **Config locations:** Two distinct user-scope files: `~/.zcode/v2/config.json`
-  holds model/provider connection settings, while `~/.zcode/cli/config.json`
+- **Config locations:** **Configuration is split across two user-scope
+  files, and no official page states the general rule for which keys belong
+  in which** — so neither is safe to treat as "the" ZCode config; check the
+  key you need before writing. `~/.zcode/v2/config.json` holds
+  model/provider connection settings, while `~/.zcode/cli/config.json`
   is the user-scope file for the `mcp.servers` key. Workspace equivalent:
   `<project root>/.zcode/config.json`. Custom commands are `.md` files under
   `~/.zcode/commands` (user) or the project directory (workspace).
