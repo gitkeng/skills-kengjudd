@@ -113,4 +113,5 @@ business-rules-output/
 10. No empty/stub files in required output tree
 11. Mermaid syntax — every ```mermaid block anywhere in the output tree is linted
     for constructs Mermaid v11 rejects, and each domain's `diagrams.md` carries
-    the three required diagram kinds (sequence, component, workflow/state)
+    the three required diagrams (sequence, component, workflow/state) as three
+    distinct blocks

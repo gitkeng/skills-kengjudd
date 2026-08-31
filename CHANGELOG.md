@@ -28,7 +28,12 @@ bad line loses an entire diagram.
   non-v11 first token, and bracket balance. It lints every ```mermaid block
   found anywhere under the output directory — not only the per-domain
   `diagrams.md` where a diagram is required — and additionally checks that each
-  declared domain's `diagrams.md` carries all three mandated diagram kinds.
+  declared domain's `diagrams.md` carries the three mandated diagrams as three
+  **distinct** blocks. The permitted type sets overlap (a `flowchart` is a valid
+  component diagram and a valid workflow diagram), so the slots are filled by
+  maximum bipartite matching, one block per slot: a domain shipping one sequence
+  diagram and one flowchart now fails with the workflow slot unfilled instead of
+  passing on two blocks.
 - **Calibrated against mermaid 11.17.2 as an oracle** on a 20-block fixture
   shaped like a real output tree: 20/20 agreement, 10/10 fatal constructs
   caught, zero false positives — including the traps that broke the sibling's
@@ -51,12 +56,25 @@ Unlike the sibling skill, this validator has no `check_skill_frontmatter`
 equivalent and reads nothing outside the output directory named on the command
 line, so the 0.9.1 self-scanning defect has no counterpart here.
 
+### comprehensive-codebase-analysis (1.1.1 → 1.1.2)
+
+**Fixed (documentation only) — the `;` guidance was incomplete in two ways.**
+`references/mermaid-syntax.md` implied that quoting protects a `;` inside a
+`sequenceDiagram` message and said nothing about notes; verified against mermaid
+11.17.2, `a->>b: "merge; skip"`, `note over a,b: …; …` and `note right of a: …; …`
+are all parse errors, and the shipped lint is silent on every one of them. The
+bullet now covers messages and notes, states that quoting rescues neither, and
+says outright that it is the only warning the author gets. No code change: the
+lint's blind spot is the intended trade (a missed case costs one diagram; a
+false positive blocks the deliverable), so it is documented rather than widened.
+
 ### Knowledge
 
 - `skill-authoring/validating-generated-artifacts.md` records the port, the
-  calibration result, and one delta the parser surfaced: a `;` inside a *quoted*
-  sequence message is still fatal, and the shipped heuristic is silent on it by
-  design (quoted spans are masked before the rules run).
+  calibration result, and the deltas the parser surfaced: a `;` inside a *quoted*
+  sequence message — and inside a sequence `note` in either form — is still
+  fatal, and the shipped heuristic is silent on all of them by design (quoted
+  spans are masked before the rules run, and notes are not messages).
 
 ## [0.10.0] - 2026-08-31
 

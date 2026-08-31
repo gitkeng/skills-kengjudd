@@ -708,6 +708,11 @@ COMPONENT_DIAGRAM_TYPES = {
     "flowchart", "graph", "classDiagram", "C4Component", "C4Container", "C4Context",
 }
 WORKFLOW_DIAGRAM_TYPES = {"flowchart", "graph", "stateDiagram", "stateDiagram-v2"}
+REQUIRED_DIAGRAM_SLOTS = (
+    ("sequence", SEQUENCE_DIAGRAM_TYPES),
+    ("component", COMPONENT_DIAGRAM_TYPES),
+    ("workflow/state", WORKFLOW_DIAGRAM_TYPES),
+)
 
 
 def _mermaid_blocks(text):
@@ -856,6 +861,38 @@ def lint_mermaid_block(block):
     return problems
 
 
+def _unmatched_diagram_slots(block_types):
+    """Return the required diagram slots that no *distinct* block can fill.
+
+    Three required diagrams means three blocks. The type sets overlap — a
+    `flowchart` is an acceptable component diagram *and* an acceptable workflow
+    diagram — so a domain with one sequence diagram and one flowchart must not
+    satisfy both the component and the workflow slot with that single flowchart.
+    Each block therefore counts for at most one slot.
+
+    This is a maximum bipartite matching between slots and blocks (Kuhn's
+    algorithm). Slots are tried in the declared order and blocks in document
+    order, so which flowchart ends up counted as the component and which as the
+    workflow is deterministic — and irrelevant, since only the unfilled slots
+    are reported.
+    """
+    slot_types = dict(REQUIRED_DIAGRAM_SLOTS)
+    assigned = {}  # block index -> slot label
+
+    def augment(label, seen):
+        for index, diagram_type in enumerate(block_types):
+            if index in seen or diagram_type not in slot_types[label]:
+                continue
+            seen.add(index)
+            holder = assigned.get(index)
+            if holder is None or augment(holder, seen):
+                assigned[index] = label
+                return True
+        return False
+
+    return [label for label, _ in REQUIRED_DIAGRAM_SLOTS if not augment(label, set())]
+
+
 def check_11_mermaid(output_dir, manifest, findings):
     """Class 11: every Mermaid block in the output renders; required diagrams exist.
 
@@ -867,7 +904,9 @@ def check_11_mermaid(output_dir, manifest, findings):
     scanned.
 
     Also verifies each declared domain's `diagrams.md` carries the three
-    mandated diagram kinds: sequence, component, and workflow/state.
+    mandated diagrams — sequence, component, and workflow/state — as three
+    distinct blocks: the type sets overlap, so one flowchart may fill the
+    component slot or the workflow slot, never both.
     """
     types_by_file = {}
     for path in sorted(output_dir.rglob("*.md")):
@@ -890,21 +929,19 @@ def check_11_mermaid(output_dir, manifest, findings):
         rel = f"domains/{slug}/diagrams.md"
         if not (output_dir / "domains" / slug / "diagrams.md").exists():
             continue  # class 10 reports the missing file
-        present = set(types_by_file.get(rel, []))
-        if not present:
+        block_types = types_by_file.get(rel, [])
+        if not block_types:
             findings.add(11, f"Domain '{slug}': diagrams.md contains no Mermaid block")
             continue
-        for label, expected in (
-            ("sequence", SEQUENCE_DIAGRAM_TYPES),
-            ("component", COMPONENT_DIAGRAM_TYPES),
-            ("workflow/state", WORKFLOW_DIAGRAM_TYPES),
-        ):
-            if not (present & expected):
-                findings.add(
-                    11,
-                    f"Domain '{slug}': diagrams.md has no {label} diagram "
-                    f"(expected one of {', '.join(sorted(expected))})",
-                )
+        slot_types = dict(REQUIRED_DIAGRAM_SLOTS)
+        for label in _unmatched_diagram_slots(block_types):
+            findings.add(
+                11,
+                f"Domain '{slug}': diagrams.md has no {label} diagram of its own — the "
+                f"three required diagrams need three separate blocks and each block "
+                f"counts for only one (expected a block of type "
+                f"{', '.join(sorted(slot_types[label]))})",
+            )
 
 
 # ---------------------------------------------------------------------------

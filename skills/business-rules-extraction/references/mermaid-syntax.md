@@ -28,12 +28,15 @@ and do not use ASCII art as a substitute.
   `activate`, and `deactivate` exist only in `sequenceDiagram`. In a `flowchart`
   an actor is an ordinary node — `client["Upstream service"]` — and writing
   `actor client["…"]` is a parse error. Conversely `subgraph` is flowchart-only.
-- **Never put `;` inside a `sequenceDiagram` message.** Message text after `:` is
-  read raw, so `;` is a statement separator: it truncates the message and orphans
-  the rest of the line. Use `,`. Quoting does **not** rescue it —
-  `a->>b: "merge; skip"` is still a parse error, and the lint does not catch that
-  form. Inside a quoted flowchart label such as `a["priced; then settled"]`, `;`
-  is safe.
+- **Never put `;` inside a `sequenceDiagram` message *or note*.** Text after `:`
+  is read raw, so `;` is a statement separator: it truncates the text and orphans
+  the rest of the line. Use `,`. This is fatal in all three positions —
+  `a->>b: merge; skip`, `note over a,b: merge; skip`, and
+  `note right of a: merge; skip` — and **quoting does not rescue any of them**:
+  `a->>b: "merge; skip"` is still a parse error. The lint is silent on every one
+  of these except the plain unquoted message, so this bullet is the only warning
+  you get. Inside a quoted *flowchart* label such as `a["priced; then settled"]`,
+  `;` is safe.
 - **Close every block.** Each `subgraph` (flowchart) and each
   `loop`/`alt`/`opt`/`par`/`critical`/`rect`/`break`/`box` (sequence) needs its
   own `end`.
@@ -52,6 +55,9 @@ declarations of the same id merge into one node, which silently changes the
 diagram's meaning rather than failing.
 
 ## The three required per-domain diagrams
+
+Three diagrams means three separate blocks. One `flowchart` may serve as the
+component diagram *or* as the workflow diagram, never as both.
 
 - **Sequence** — `sequenceDiagram`. Declare each side with `participant` (or
   `actor`) before the first message; keep message text free of `;`.

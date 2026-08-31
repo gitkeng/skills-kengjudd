@@ -24,10 +24,15 @@ and do not use ASCII art as a substitute.
   `activate`, and `deactivate` exist only in `sequenceDiagram`. In a `flowchart`
   an actor is an ordinary node — `client["Upstream service"]` — and writing
   `actor client["…"]` is a parse error. Conversely `subgraph` is flowchart-only.
-- **Never put `;` inside a `sequenceDiagram` message.** Message text after `:` is
-  unquoted, so `;` is read as a statement separator: it truncates the message and
-  orphans the rest of the line. Use `,`. Inside a quoted flowchart label such as
-  `a["foo; bar"]`, `;` is safe.
+- **Never put `;` inside a `sequenceDiagram` message *or note*.** Text after `:`
+  is read raw, so `;` is a statement separator: it truncates the text and orphans
+  the rest of the line. Use `,`. This is fatal in all three positions —
+  `a->>b: merge; skip`, `note over a,b: merge; skip`, and
+  `note right of a: merge; skip` — and **quoting does not rescue any of them**:
+  `a->>b: "merge; skip"` is still a parse error. The lint is silent on every one
+  of these except the plain unquoted message, so this bullet is the only warning
+  you get. Inside a quoted *flowchart* label such as `a["foo; bar"]`, `;` is
+  safe.
 - **Close every block.** Each `subgraph` (flowchart) and each
   `loop`/`alt`/`opt`/`par`/`critical`/`rect`/`break`/`box` (sequence) needs its
   own `end`.

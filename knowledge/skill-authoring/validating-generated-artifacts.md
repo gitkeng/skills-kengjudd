@@ -129,14 +129,28 @@ Three things the port confirmed or corrected:
   rules survived transplant intact, but the cost of *assuming* that is a broken
   gate in a second skill, which is exactly how the two imported-self-check
   defects reached production (see [imported-self-checks](/skill-authoring/imported-self-checks.md)).
-- **The heuristic has a documented blind spot.** `;` inside a `sequenceDiagram`
-  message is fatal *even when quoted* — verified against the parser. The lint
-  masks quoted spans before its rules run, so it is silent on that form. This is
-  the intended trade (a missed case costs one diagram; a false positive blocks
-  the deliverable), but a blind spot the tool cannot see must be written where
-  the *author* will: the ported `references/mermaid-syntax.md` states it
-  explicitly instead of leaving it implicit in the code. The sibling skill's
-  copy does not yet say so.
+- **The heuristic has documented blind spots, and review found more of them.**
+  `;` inside a `sequenceDiagram` message is fatal *even when quoted*, and `;`
+  inside a sequence `note` is fatal in both the `note over a,b:` and
+  `note right of a:` forms, quoted or not — all verified against the parser, all
+  invisible to the lint (quoted spans are masked before the rules run, and a
+  note is not a message). This is the intended trade (a missed case costs one
+  diagram; a false positive blocks the deliverable), but a blind spot the tool
+  cannot see must be written where the *author* will. Both skills'
+  `references/mermaid-syntax.md` now enumerate every fatal `;` position and say
+  plainly that the bullet is the only warning the author gets. The general
+  lesson: when you accept a false negative, the acceptance is only complete once
+  it is written in the producing guidance — and *enumerate* the positions,
+  because "message" quietly excluded notes for a full release.
+- **Overlapping requirement sets silently collapse.** The port added a check
+  that each domain carries the three mandated diagrams, with a set of acceptable
+  types per kind. Two of those sets share `flowchart`, so a domain with one
+  sequence diagram and one flowchart satisfied all three requirements with two
+  blocks, and the skill's own README claimed all three were verified. A
+  presence check over *kinds* is not a presence check over *artifacts*: match
+  each artifact to at most one requirement (a bipartite matching, exact and
+  small at this size) instead of asking each requirement independently whether
+  something somewhere satisfies it.
 - **"Never scan the skill's own files" is cheapest as a structural property.**
   The 0.9.1 defect existed because the sibling validator judges its own
   `SKILL.md`. This validator takes one output directory on the command line and

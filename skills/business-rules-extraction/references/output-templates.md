@@ -2,6 +2,26 @@
 
 Complete templates for every output file the extraction produces.
 
+## Contents
+
+- [manifest.json](#manifestjson) · [coverage.json](#coveragejson) ·
+  [00-index.md](#00-indexmd) · [glossary.md](#glossarymd) ·
+  [review-workbook.csv](#review-workbookcsv) ·
+  [open-questions.md (cross-domain)](#open-questionsmd-cross-domain) ·
+  [coverage-report.md](#coverage-reportmd)
+- Per domain: [rules.json](#domainsslugrulesjson) ·
+  [business-rules.md](#domainsslugbusiness-rulesmd) ·
+  [overview.md](#domainsslugoverviewmd) ·
+  [features.md](#domainsslugfeaturesmd) ·
+  [workflows.md](#domainsslugworkflowsmd) ·
+  [validations.md](#domainsslugvalidationsmd) ·
+  [integrations.md](#domainsslugintegrationsmd) ·
+  [open-questions.md](#domainsslugopen-questionsmd) ·
+  [diagrams.md](#domainsslugdiagramsmd) — Mermaid, read this one before writing
+  any diagram
+- [Optional Exports](#optional-exports): DMN decision tables, Gherkin features,
+  flat CSV catalog
+
 ## manifest.json
 
 ```json
@@ -193,7 +213,11 @@ Questions for business stakeholders. Each item cites the evidence that prompted 
 Read `references/mermaid-syntax.md` before writing any block here. A parse error
 blanks the entire diagram, not one line.
 
-Three required Mermaid diagram types per domain:
+Three required Mermaid diagram types per domain — **as three separate blocks**.
+The permitted types overlap, so a single `flowchart` may serve as the component
+diagram *or* as the workflow diagram, never as both; the validator matches each
+block to at most one of the three slots and reports whichever slot is left
+unfilled.
 
 1. **Sequence diagram** — key business interactions between actors/components.
 

@@ -2,8 +2,8 @@
 name: comprehensive-codebase-analysis
 description: Analyze any repository offline to produce hierarchical, evidence-backed architecture documentation, behavior and API references, security and technical-debt findings, migration readiness, onboarding, and machine-auditable traceability. Use for codebase analysis, architecture docs, tech-debt reports, legacy-system understanding, security review, onboarding, or migration-readiness assessment.
 metadata:
-  version: "1.1.1"
-  updated: "2026-08-30"
+  version: "1.1.2"
+  updated: "2026-08-31"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/comprehensive-codebase-analysis @7423a91"
 ---
 

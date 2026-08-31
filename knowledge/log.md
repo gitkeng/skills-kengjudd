@@ -22,7 +22,20 @@
   author rather than left implicit in the code), and that this validator reads
   nothing but the output directory named on its command line — so the 0.9.1
   self-scanning defect has no counterpart here and that property is worth
-  preserving deliberately as checks are added.
+  preserving deliberately as checks are added. **Review of the port found two
+  more:** the three-diagram presence check shared `flowchart` between its
+  component and workflow type sets, so two blocks satisfied three requirements —
+  now a one-block-per-slot bipartite matching (a two-block domain fails, a
+  three-block domain passes, both re-calibrated) — and `;` inside a sequence
+  `note` is fatal in both note forms while the lint is silent, a blind spot the
+  "message"-only wording had excluded for a release.
+
+- **comprehensive-codebase-analysis 1.1.2** (repo v0.11.0) — documentation-only
+  fix to `references/mermaid-syntax.md`: its `;` bullet implied quoting rescues a
+  `;` in a `sequenceDiagram` message and never mentioned notes. Verified against
+  mermaid 11.17.2 that quoting rescues nothing and both note forms are equally
+  fatal; both skills' references now enumerate all three positions and state that
+  the lint cannot see most of them.
 
 - **init-project 1.0.0** (repo v0.10.0) — the repo's first orchestrator-sized
   skill: it interviews the user, researches, writes an OKF knowledge base into a

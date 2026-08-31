@@ -37,7 +37,8 @@ skill is imported, that gate arrives carrying the *source* repository's
 assumptions and starts enforcing them against the *destination* repository. This
 playbook records the three failure modes seen in practice so a later import does
 not rediscover them. The import procedure itself is in
-[[importing-skills]]; this document covers what happens after the import lands.
+[importing-skills](/skill-authoring/importing-skills.md); this document covers
+what happens after the import lands.
 
 ## 1. The gate can reject the provenance this repo mandates
 
