@@ -73,14 +73,20 @@ document. Start from `../assets/kb-skeleton/`.
      This is the only field OKF requires; everything below is what this
      skill additionally always writes.
    - `title:`, `description:` — short and factual.
-   - `sources:` — a list; every entry has a `resource:`. OKF 0.2 §5.1
-     accepts an absolute URL, a bundle- or repository-relative path, or a
-     scope descriptor. Use a URL for external facts, and a
-     repository-relative path for facts taken from the target project's own
+   - `sources:` — a list; every entry has a `resource:`. Per OKF 0.2 §6.2 a
+     path-valued `resource:` takes exactly one of three forms: an absolute
+     URL, a bundle-relative path beginning with `/` (resolved from `<kb>/`),
+     or a relative path (resolved from the concept file that carries it).
+     §5.1 additionally allows a scope descriptor, which is not a path. Use a
+     URL for external facts. For a fact taken from the target project's own
      files (its README, design docs, meeting notes, an existing docs
-     folder). Never write a concept whose factual claims lack a source — if
-     you cannot source a claim, ask the user or record it as a gap instead
-     of inventing it.
+     folder), use a path that actually resolves **from the concept file**:
+     project material sitting beside `<kb>/` is `../README.md`, not a bare
+     `README.md` — that would resolve to `<kb>/README.md`, which does not
+     exist. Bundle-relative `/` paths cannot reach outside `<kb>/` at all.
+     Check that every path resolves before writing it. Never write a concept
+     whose factual claims lack a source — if you cannot source a claim, ask
+     the user or record it as a gap instead of inventing it.
    - `generated: { by: "<agent>/<model>", at: "<ISO 8601 UTC>" }` — `by`
      names *whatever agent and model is running this skill right now*
      (e.g. `claude-code/claude-sonnet-5`), never a fixed value copied from

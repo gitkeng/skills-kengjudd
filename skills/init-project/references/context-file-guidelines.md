@@ -79,15 +79,34 @@ own canonical URL rather than pointing back at this guide.
   ignore the drift.
 ```
 
-The block's second bullet states the **default** knowledge-base update
-cadence. Keep the block verbatim regardless; never edit it to match an
-interview answer. When the interview's update-cadence/ownership answer
-(`task-type-presets.md` `## knowledge base`) differs from that default,
-reconcile it in `## Knowledge base` instead: record the agreed cadence and
-owner there, and add one explicit override line naming the bullet it
-supersedes — for example "Update cadence for this project: monthly, owned by
-<name>; this supersedes the per-work-cycle default in `## Working rules`."
-Without that line the generated file carries two conflicting rules and fails
+Two of the block's bullets state the **default** knowledge-base update
+behaviour: bullet 2 fixes *when* the knowledge base is written ("After
+finishing any piece of work"), and bullet 3 fixes *when* a new learning is
+captured ("don't let it evaporate at the end of the session"). Keep the
+block verbatim regardless; never edit it to match an interview answer. When
+the interview's update-cadence/ownership answer (`task-type-presets.md`
+`## knowledge base`) differs from that default, reconcile it in
+`## Knowledge base` instead: record the agreed cadence and owner there, and
+add an explicit override line for **every** standing bullet the answer
+supersedes. A cadence answer supersedes at least bullets 2 and 3, so a
+single line is not enough:
+
+- **Bullet 2 — when the knowledge base is written.** State the agreed
+  cadence and owner, and say plainly that the per-work-cycle default no
+  longer applies. For example: "Update cadence: monthly, owned by <name>,
+  who runs the monthly update of `<kb>/`. This supersedes the
+  `## Working rules` bullet 'After finishing any piece of work, update the
+  knowledge base with what changed' — do not write to `<kb>/` on your own
+  schedule."
+- **Bullet 3 — where interim learnings go.** Any cadence longer than "after
+  every piece of work" opens a gap between learning something and writing it
+  down, and bullet 3 forbids losing it. Name the interim path explicitly.
+  For example: "When you learn a fact one of the `<kb>/` concepts covers, or
+  an answer to a gap one lists as open, say so in your final message to the
+  owner so it reaches the next update." Without this line an agent must
+  either break the agreed cadence or drop the learning.
+
+Without these lines the generated file carries conflicting rules and fails
 Phase 5's `## Checklist: prompt engineering` bar "No two rules conflict."
 When the answer matches the default, add nothing.
 

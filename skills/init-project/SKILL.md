@@ -41,9 +41,14 @@ otherwise, these win.
   An **external** fact cites a resolvable URL from an official/trusted
   origin. A fact taken from the target project's own material — a README,
   design docs, meeting notes, an existing docs folder, i.e. the seed sources
-  the `knowledge base` preset asks for — cites that file by
-  repository-relative path, which OKF 0.2 §5.1 accepts as a `resource:`
-  alongside URLs. Nothing is written from memory. (A `Decision` concept
+  the `knowledge base` preset asks for — cites that file by path instead.
+  OKF 0.2 §6.2 accepts exactly three forms for a path-valued `resource:`: an
+  absolute URL, a bundle-relative path beginning with `/`, or a relative
+  path. A relative path resolves **from the concept file that carries it**,
+  so project material outside `<kb>/` needs `../` — a README sitting beside
+  `<kb>/` is `../README.md`, never a bare `README.md`, which would resolve
+  to `<kb>/README.md` and not exist. Nothing is written from memory.
+  (A `Decision` concept
   recording this project's own choice has no external origin and needs no
   external source.) If research cannot settle a question, ask the user; if
   the user cannot settle it either, record it as an explicit gap instead of
