@@ -1,7 +1,7 @@
 {
   "name": "kengjudd",
   "description": "Kongsak (kengjudd)'s central multi-agent skills collection with an OKF knowledge base",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "author": {
     "name": "kengjudd"
   },
