@@ -124,11 +124,21 @@ skill directory, not against the target project.
      `human:<id>` entry only once a human actually confirmed the content —
      do not add it speculatively).
 5. Add a `* [Title](path) - description` bullet for every new concept to
-   the nearest `index.md` above it (normally the bundle root). Index bullets
-   and `log.md` entries link a concept by its plain **relative** filename
-   (`<slug>.md`), which resolves from the file carrying the link. Do not
-   describe such a link as "bundle-relative" in prose — that term belongs
-   only to a path that begins with `/`.
+   the nearest `index.md` above it (normally the bundle root). **Every
+   bullet this skill generates goes inside the provenance markers.** The
+   skeleton ships them already: append new bullets **inside** the existing
+   `<!-- init-project:start -->` / `<!-- init-project:end -->` block, never
+   after it. If the index has no markers yet (an OKF bundle written by
+   something else), add the pair around the bullets this run writes and
+   leave every pre-existing bullet outside them. The `okf_version`
+   frontmatter, the `#` title line, and the section headings always stay
+   outside. This is what lets a later run replace its own listing instead of
+   appending a second copy.
+
+   Index bullets and `log.md` entries link a concept by its plain
+   **relative** filename (`<slug>.md`), which resolves from the file
+   carrying the link. Do not describe such a link as "bundle-relative" in
+   prose — that term belongs only to a path that begins with `/`.
 6. Keep the layout **flat** (`<kb>/<slug>.md`) until the bundle reaches
    roughly 15 concepts, or the user asks for grouping. OKF prescribes no
    folder names, so either shape is conformant; only add structure when it
@@ -223,9 +233,20 @@ it over introducing these four from scratch; ask the user which to use.
 
 ## Researched-technology template
 
-For every technology named as a **project decision** during the interview —
-the ones `task-type-presets.md` `## Gap rules` expands — create exactly one
-concept, `type: Reference`, containing:
+Every technology the interview settles gets a concept — whether the user
+named it outright or accepted it from a recommendation.
+
+Do not confuse this scope with the interview's expansion rule. **Expanding
+the interview is narrow**: only a technology chosen as a project decision
+adds a follow-up question (`task-type-presets.md` `## Gap rules`).
+**Getting a concept is broad**: every settled technology gets one, including
+the ecosystem defaults the user accepted rather than named — the language
+and runtime, package manager, test framework, and lint tooling a
+recommendation supplied are concepts here even though they added no question
+there.
+
+For each of them, create exactly one concept, `type: Reference`,
+containing:
 
 1. **Current stable version** — as of the verification date below, from
    the technology's own release notes or official site, not memory.

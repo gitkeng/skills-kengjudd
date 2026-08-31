@@ -1,5 +1,6 @@
 # AGENTS.md
 
+<!-- init-project:start -->
 ## Project
 
 - **Name:** <Project name>
@@ -70,3 +71,4 @@ Opt-out: delete this block.
      run <command> here"), or an import-expansion limit. For an adapter
      agent the quirk lives in that agent's own file. -->
 - **<Agent name>:** <adapter kind (native / import-adapter / full-copy) and, for a native agent, the one quirk — e.g. "reads CLAUDE.md, never AGENTS.md"; "do not run /init here — it creates an AGENTS.md">
+<!-- init-project:end -->

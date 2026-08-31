@@ -6,4 +6,6 @@ okf_version: "0.2"
 
 ## Concepts
 
+<!-- init-project:start -->
 * [<Title>](<path>.md) - <description>
+<!-- init-project:end -->

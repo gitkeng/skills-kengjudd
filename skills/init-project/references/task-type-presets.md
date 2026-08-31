@@ -282,11 +282,13 @@ within both of these limits:
 
 - **Only project decisions expand.** A technology expands when the user
   chose it *as a project decision* — their answer to the framework,
-  component-library, styling, state-management, datastore, tracker, or CI
-  question, or a technology they volunteered in free text. A technology that
-  merely came along with a recommendation the user accepted — the
+  component-library, styling, state-management, design-source, tracker, or
+  CI question, or a technology they volunteered in free text. A technology
+  that merely came along with a recommendation the user accepted — the
   ecosystem's default bundler, a transitive dependency, a peer library the
-  framework ships with — does **not** expand.
+  framework ships with — does **not** expand. It still gets a knowledge-base
+  concept: expansion scope is narrow, concept scope is broad (see
+  `okf-kb-guide.md` `## Researched-technology template`).
 - **Expansion is one level deep, and expansion items are terminal.** The
   items an expansion adds never expand again. A second-order technology
   named while answering them becomes a one-line mention inside the parent

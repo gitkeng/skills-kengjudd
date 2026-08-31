@@ -170,14 +170,19 @@ rest, or defer the rest; everything deferred joins the running gap list.
    restated in
    [references/context-file-guidelines.md](references/context-file-guidelines.md)
    `## Standing rules block`.
-8. **Pre-existing artifacts.** Do **not** ask one global question up front.
-   When a later phase encounters an artifact that already exists, stop there
-   and ask merge / skip / replace for *that artifact*, per
+8. **Pre-existing artifacts.** There is never one global question covering
+   everything found, and never a silent overwrite — but the two later phases
+   time their asks differently, because they know different things. **Phase
+   3** asks when it encounters an artifact, since it discovers `<kb>/`'s
+   contents as it goes. **Phase 4** asks for all of its targets up front in
+   its step 1, because it knows its complete target list before it writes a
+   byte. Both ask merge / skip / replace per artifact, per
    [references/context-file-guidelines.md](references/context-file-guidelines.md)
-   `## Merge semantics`, which defines all three answers. Never overwrite
-   silently. **One exception:** an existing OKF knowledge base is updated in
-   place — new concepts and index/log entries are added alongside what is
-   there, which destroys nothing, so it is not asked about. An older
+   `## Merge semantics`, which defines all three answers. **One exception:**
+   additive writes into an existing OKF knowledge base — new concepts and
+   index/log entries added alongside what is there — destroy nothing and are
+   not asked about; an overwrite or amendment inside that bundle still goes
+   through the batched ask in that same section. An older
    `okf_version` still goes through
    [references/okf-kb-guide.md](references/okf-kb-guide.md) `## Migration`
    and its own approval.
@@ -225,10 +230,14 @@ rest, or defer the rest; everything deferred joins the running gap list.
    and add to it (a new concept bullet, a new dated entry at the top) per
    [references/context-file-guidelines.md](references/context-file-guidelines.md)
    `## Merge semantics`, whose existing-OKF-bundle branch updates in place.
+   **Additive writes anywhere under `<kb>/` proceed without a question;
+   before overwriting or amending any `<kb>/` file that already exists, show
+   the batched list from that same section and get one answer.**
    In every file you do instantiate, **replace every `<...>` token** —
    `<Project name>`, `<Title>`, `<path>`, `<description>`, `<YYYY-MM-DD>`,
    the seeding summary. No `<...>` placeholder may survive into the target
-   project.
+   project. The skeleton's `init-project:*` markers are not placeholders —
+   keep them exactly where they are.
 4. Write the concept documents per `## Creating the bundle`: one per named
    technology using `## Researched-technology template`; one per domain and
    per seed source named under the `## knowledge base` preset, using
@@ -236,9 +245,9 @@ rest, or defer the rest; everything deferred joins the running gap list.
    per `## External knowledge bases`; and, if Karpathy was opted in, the
    fuller guidelines as a `Reference` concept.
 5. Use only the four `type:` values in `## Type vocabulary`, and index every
-   concept in `<kb>/index.md` — wrapping the bullets this run generates
-   between `<!-- init-project:start -->` and `<!-- init-project:end -->`, as
-   Phase 4 step 3 requires of everything this skill writes. Write the
+   concept in `<kb>/index.md`, putting the bullets this run generates inside
+   that file's `<!-- init-project:start -->` / `<!-- init-project:end -->`
+   block per `## Creating the bundle` step 5. Write the
    `<kb>/log.md` entry for the seeding **and one entry for every gap
    accumulated in Phases 1–2** — this is where the running gap list is
    flushed to disk. Gap entries are bullets under the same date heading, not
@@ -275,9 +284,14 @@ This is a **draft** — Phase 5 reviews and corrects it before the report.
    `AGENTS.md` and into every adapter goes between
    `<!-- init-project:start -->` and `<!-- init-project:end -->`, on a fresh
    run exactly as on a merge; only the file's H1 stays outside them. The
-   same wrapping applies to the concept bullets Phase 3 step 5 generated in
-   `<kb>/index.md`. This is what makes a re-run replace instead of
-   duplicate — without it, run 2 appends a second copy of everything.
+   template already ships the pair around its body — keep them, do not add a
+   second pair, and let the `karpathy:*` markers nest inside. An adapter you
+   author from scratch gets the same wrapping. The `<kb>/index.md` bullets
+   Phase 3 step 5 wrote are already wrapped by the skeleton per
+   [references/okf-kb-guide.md](references/okf-kb-guide.md)
+   `## Creating the bundle` step 5. This is what makes a re-run replace
+   instead of duplicate — without it, run 2 appends a second copy of
+   everything.
 4. **Karpathy block.** Opted in: keep the block between
    `<!-- karpathy:start -->` and `<!-- karpathy:end -->`. Opted out, **or
    never asked because no code-writing task type was selected**: delete that

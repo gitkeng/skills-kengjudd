@@ -3,10 +3,12 @@
 Rules for what `init-project` writes into a target project's generated
 context files (canonical `AGENTS.md` and its per-agent adapters), and for
 how it handles artifacts that already exist there. Phase 1 (Interview) only
-*points* at `## Merge semantics` — it encounters no artifacts itself; Phases
-3 (Create the KB) and 4 (Generate context files) consult it at encounter
-time. Phase 4 also consults the budget while writing and `## Standing rules
-block` while assembling `## Working rules`. This file travels with the skill
+*points* at `## Merge semantics` — it encounters no artifacts itself. Phase
+3 (Create the KB) consults it at encounter time; Phase 4 (Generate context
+files) consults it up front in its step 1, then consults `## Content
+budget` while writing, `## Standing rules block` and
+`## Scaffolder collisions` while assembling `## Working rules`, and
+`## Context vs KB` when a fact has to move. This file travels with the skill
 (including a bare symlink install); it makes no this-repo `knowledge/`
 references. Sibling references — `agent-context-matrix.md`,
 `okf-kb-guide.md` (its `## Migration` procedure) — are allowed and used below.
@@ -147,10 +149,18 @@ item 5), do two things:
 
 ## Merge semantics
 
-Every pre-existing artifact is handled **per artifact, at the moment it is
-encountered** — never one global answer covering everything found, and
-never a silent overwrite. The user is asked merge, skip, or replace for
-that specific artifact before it is touched. The three answers mean:
+Every pre-existing artifact is handled **per artifact** — never one global
+answer covering everything found, and never a silent overwrite. The user is
+asked merge, skip, or replace for that specific artifact before it is
+touched. When the ask happens depends on what the phase knows:
+
+- **Phase 3** asks **at encounter**, because it discovers what is inside
+  `<kb>/` as it goes.
+- **Phase 4** asks **up front, in its step 1**, because it can list every
+  path it will write before writing any of them. Collecting the answers
+  first is still one ask per artifact — it is not a global question.
+
+The three answers mean:
 
 - **Merge** — leave the existing content exactly as it is and add the
   generated content between the provenance markers below.
@@ -163,12 +173,24 @@ that specific artifact before it is touched. The three answers mean:
   discarded (at minimum: the existing headings and the file's length) and
   get the user's confirmation; then write.
 
-**Knowledge-base files are the one batched ask.** Context files are asked
-one artifact at a time. The files under `<kb>/` are instead shown as a
-single list — each path with what will be added to it — and approved in one
-answer, the way `okf-kb-guide.md` `## Migration` presents its changes. The
-user may still answer per file for any subset they name. Never touch a
-`<kb>/` file that was not on the list you showed.
+**Knowledge-base files: additive writes are not asked about; overwrites and
+amendments are one batched ask.** Split them by what the write does, not by
+where it lands:
+
+- **Additive** — creating a new concept file, appending a bullet inside the
+  index's marker block, adding a dated entry at the top of `log.md`. This
+  destroys nothing, so it proceeds **without a question**, exactly as the
+  existing-OKF-knowledge-base bullet below says.
+- **Overwriting or amending** — replacing content in a `<kb>/` file that is
+  already there: editing an existing concept, rewriting existing index
+  bullets or log entries, or converting files during a migration. These are
+  **never** asked one file at a time. Show them as a single list — each path
+  with what will change in it — and get one answer, the way
+  `okf-kb-guide.md` `## Migration` presents its changes. The user may still
+  answer per file for any subset they name. Never touch a `<kb>/` file that
+  was not on the list you showed.
+
+Phase 3 invokes this before it overwrites or amends anything under `<kb>/`.
 
 - **Existing context file** (e.g. an `AGENTS.md`, `CLAUDE.md`, or `GEMINI.md`
   already present at the target path) and the user chooses merge: preserve
@@ -195,10 +217,13 @@ user may still answer per file for any subset they name. Never touch a
   content — see `okf-kb-guide.md` `## Migration`, which scopes migration to
   OKF bundles only.
 - **Existing OKF knowledge base** (an `index.md`/`log.md` bundle, any
-  `okf_version`): update in place. This is the one artifact class that is
-  **not** asked about, because adding new concepts and index/log entries
-  alongside the existing ones destroys nothing. Never overwrite an existing
-  `index.md` or `log.md` with the skeleton. If its `okf_version` is older
+  `okf_version`): update in place. **Additive** writes here are the one
+  artifact class that is **not** asked about, because adding new concepts
+  and index/log entries alongside the existing ones destroys nothing. Any
+  write that would overwrite or amend what is already in the bundle goes
+  through the batched list-and-approve above first. Never overwrite an
+  existing `index.md` or `log.md` with the skeleton. If its `okf_version`
+  is older
   than the version found by the current run's version check, follow the
   migration path in `okf-kb-guide.md` `## Migration` — propose the concrete
   changes and get the user's approval before touching anything, then log the
