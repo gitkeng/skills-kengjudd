@@ -34,7 +34,7 @@ Two standing reviewers run on every project, regardless of stack:
 
 Beyond the two standing reviewers, add one **domain reviewer per technology
 or domain the user named during the interview** (the `task-type-presets.md`
-questions, plus any free-text technology named per R9). For example, a user
+questions, plus any technology named in a free-text answer). For example, a user
 who named Next.js, shadcn, and Figma during the interview gets three domain
 reviewers — one per technology — in addition to the two standing reviewers.
 

@@ -56,19 +56,27 @@ have both finished, because it reviews both of their outputs.
 
 Ask **one topic at a time** and wait for each answer before moving on.
 Conduct the interview in whatever language the user is already writing in;
-topic ⑥ sets the language of the *generated* files, not of this skill.
+topic ⑦ sets the language of the *generated* files, not of this skill.
 
-1. **Agents.** Multi-select from the agents covered in
+1. **Project identity.** Ask for the project's **name** and a one-or-two
+   sentence **purpose** (what it does, who it is for). Recommend the target
+   directory's own name as the project name; for an existing codebase also
+   draft the purpose from its README per `## Edge cases` and offer that
+   draft. For an empty directory there is nothing to draft from — ask
+   outright rather than inventing a purpose. Both answers are required:
+   `assets/agents-md-template.md` and `assets/kb-skeleton/index.md` carry
+   `<Project name>` tokens that Phase 3 forbids leaving unreplaced.
+2. **Agents.** Multi-select from the agents covered in
    [references/agent-context-matrix.md](references/agent-context-matrix.md),
    plus free text for any agent not listed there.
-2. **Task types.** Multi-select from the four presets in
+3. **Task types.** Multi-select from the four presets in
    [references/task-type-presets.md](references/task-type-presets.md) —
    `## coding`, `## frontend`, `## project management`,
    `## knowledge base` — plus free text. Any free-text task type goes
    through that file's `## Free-text task types` procedure: draft the
    checklist by analogy, show the draft, get it confirmed *before* asking
    anything from it.
-3. **Gap checklists.** For every selected task type, ask its checklist items
+4. **Gap checklists.** For every selected task type, ask its checklist items
    using the question wording in that file (translated if needed), one item
    at a time, recommendation first. Keep going until no gaps remain under
    its `## Gap rules` — including the extra items an answer naming a new
@@ -76,20 +84,20 @@ topic ⑥ sets the language of the *generated* files, not of this skill.
    dropped: add each to a **running gap list** you keep for the whole run.
    `<kb>/` does not exist yet, so nothing is written to it here — Phase 3
    step 5 flushes the list into `<kb>/log.md`, and Phase 6 reports it.
-4. **Knowledge-base folder name.** Recommend `knowledge-base`, then ask.
+5. **Knowledge-base folder name.** Recommend `knowledge-base`, then ask.
    This is `<kb>` everywhere below.
-5. **Karpathy guidelines opt-in.** Only when a coding task type was
+6. **Karpathy guidelines opt-in.** Only when a coding task type was
    selected. It is the last item of the `## coding` checklist, so it is
-   normally already answered in ③ — carry that answer forward instead of
-   asking again. Ask here only if ③ did not cover it; the question wording
+   normally already answered in ④ — carry that answer forward instead of
+   asking again. Ask here only if ④ did not cover it; the question wording
    is in
    [references/task-type-presets.md](references/task-type-presets.md)
    `## coding` and the default is to include. Including it never installs
    the upstream skill.
-6. **Language of generated files.** Recommend the language the user is
+7. **Language of generated files.** Recommend the language the user is
    writing in, then ask. Every file this run writes — `AGENTS.md`, the
    adapters, the KB concepts, and the Phase 6 report — uses the answer.
-7. **Pre-existing artifacts.** Do **not** ask one global question up front.
+8. **Pre-existing artifacts.** Do **not** ask one global question up front.
    When a later phase encounters an artifact that already exists, stop there
    and ask merge / skip / replace for *that artifact*, per
    [references/context-file-guidelines.md](references/context-file-guidelines.md)
@@ -112,7 +120,7 @@ topic ⑥ sets the language of the *generated* files, not of this skill.
    `## Researched-technology template` from official sources.
 4. **No web access:** say so to the user before continuing, proceed with
    bundled knowledge only, and add every skipped item to the running gap
-   list from Phase 1 ③ (Phase 3 step 5 flushes it to `<kb>/log.md`; Phase 6
+   list from Phase 1 ④ (Phase 3 step 5 flushes it to `<kb>/log.md`; Phase 6
    reports it). Never fill the hole from memory.
 
 ### Phase 3 — Create the KB (draft)
@@ -146,7 +154,10 @@ This is a **draft** — Phase 5 reviews and corrects it before the report.
 1. Instantiate `assets/agents-md-template.md` as the canonical `AGENTS.md`
    at the target project root. Fill `## Project` from the interview (and,
    for an existing codebase, the light analysis described under
-   `## Edge cases`); fill `## Knowledge base` with the chosen `<kb>` folder;
+   `## Edge cases`); fill `## Commands` with the commands the interview's
+   package-manager, test, lint, and build answers imply, deleting that
+   section outright when the project has no toolchain yet and named none;
+   fill `## Knowledge base` with the chosen `<kb>` folder;
    fill `## Agent notes` with one bullet per selected agent. The template's
    `## Working rules` already carries the verbatim standing-rules block from
    [references/context-file-guidelines.md](references/context-file-guidelines.md)
@@ -191,7 +202,7 @@ findings get a one-line reason, not silence.
 
 ### Phase 6 — Report
 
-Report to the user, in the language chosen in Phase 1 ⑥:
+Report to the user, in the language chosen in Phase 1 ⑦:
 
 - **Files created or modified,** by path: `AGENTS.md`, each adapter, and
   everything under `<kb>/`.

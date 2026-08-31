@@ -54,9 +54,12 @@ document. Start from `../assets/kb-skeleton/`.
    **bundle root** index — it is the one place allowed to carry
    frontmatter, and only one key: `okf_version: "0.2"` (already present in
    the skeleton). Replace the `<Project name>`, `<Title>`, `<path>`,
-   `<description>` placeholder tokens with real values. Body format is
-   fixed: a `# Heading` line followed by `* [Title](path) - description`
-   bullets, one per concept. If you later create subdirectories with their
+   `<description>` placeholder tokens with real values. Body format: one
+   or more section headings, each followed by
+   `* [Title](path) - description` bullets, one bullet per concept — the
+   shipped skeleton uses a `#` title line plus a `## Concepts` section, and
+   more sections may be added when the concept count justifies grouping.
+   If you later create subdirectories with their
    own `index.md`, those carry **no frontmatter at all** — only the bundle
    root index may carry `okf_version`.
 3. Copy `../assets/kb-skeleton/log.md` to `<kb>/log.md`. Replace the

@@ -6,6 +6,17 @@
 - **Purpose:** <One or two sentences: what this project does and who it's for>
 - **Stack:** <Primary language(s)/runtime, framework(s), package manager, test framework, lint/format tooling>
 
+## Commands
+
+<!-- The commands an agent runs directly, from the interview's package
+     manager / test / lint / build answers. Delete this whole section if
+     the project has no toolchain yet and no commands were named. -->
+- `<install>` — install dependencies
+- `<dev>` — run locally
+- `<test>` — run the test suite
+- `<lint>` — lint and format check
+- `<build>` — production build
+
 ## Knowledge base
 
 - **Folder:** `<knowledge-base-folder>/` — an OKF (Open Knowledge Format)
