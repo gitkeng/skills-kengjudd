@@ -7,7 +7,8 @@ description: >-
   measure, not what decides success. Three failure modes seen in practice: a
   balance check standing in for a parser, acceptance criteria defined as
   "passes our lint", and syntax rules living in a reference that most producing
-  phases never load. Worked example: Mermaid in comprehensive-codebase-analysis.
+  phases never load. Worked example: Mermaid in comprehensive-codebase-analysis,
+  then ported to business-rules-extraction.
 tags:
   - skills
   - validation
@@ -21,6 +22,8 @@ sources:
     title: Mermaid documentation — diagram grammars and v11 syntax
   - resource: file:///Users/keng/Coding/finoniq/docugent/codebase-analysis
     title: Real v2 output tree with three unrenderable diagrams that the checker passed (local inspection 2026-08-30)
+  - resource: file:///Users/keng/Coding/gitkeng/skills-kengjudd/skills/business-rules-extraction/scripts/validate_output.py
+    title: The same linter ported as check class 11 (calibrated by execution against mermaid 11.17.2, 2026-08-31)
 generated:
   by: claude-code/claude-opus-5
   at: 2026-08-30T00:00:00Z
@@ -33,7 +36,7 @@ A skill that writes Mermaid, JSON, SQL, YAML, or any other language for a
 downstream tool needs to answer one question: *will the consumer accept this?*
 Hand-written checkers reliably drift into answering an easier question instead.
 This playbook records how that drift looked and what fixed it. Related:
-[[imported-self-checks]], which covers gates inherited at import time.
+[imported-self-checks](/skill-authoring/imported-self-checks.md), which covers gates inherited at import time.
 
 ## 1. A balance check is not a parser
 
@@ -110,6 +113,36 @@ An example that is individually correct can still be a trap when it collides
 with a keyword. Choose demonstration identifiers that are not reserved anywhere
 in the target language.
 
+## 2026-08-31 — ported to `business-rules-extraction`
+
+The same gap existed one skill over: `business-rules-extraction` mandates three
+Mermaid diagrams per domain and had **no Mermaid check at all**, no syntax
+reference, and no rendering criterion. The v0.9.0 work transferred whole — the
+linter as check class 11, `references/mermaid-syntax.md`, the `actor` hazard
+note in the templates, and acceptance restated as "every block renders".
+
+Three things the port confirmed or corrected:
+
+- **A ported heuristic still needs its own calibration run.** Re-running the
+  20-block fixture through mermaid 11.17.2 reproduced 20/20 agreement with zero
+  false positives — including the three traps that broke the original draft. The
+  rules survived transplant intact, but the cost of *assuming* that is a broken
+  gate in a second skill, which is exactly how the two imported-self-check
+  defects reached production (see [imported-self-checks](/skill-authoring/imported-self-checks.md)).
+- **The heuristic has a documented blind spot.** `;` inside a `sequenceDiagram`
+  message is fatal *even when quoted* — verified against the parser. The lint
+  masks quoted spans before its rules run, so it is silent on that form. This is
+  the intended trade (a missed case costs one diagram; a false positive blocks
+  the deliverable), but a blind spot the tool cannot see must be written where
+  the *author* will: the ported `references/mermaid-syntax.md` states it
+  explicitly instead of leaving it implicit in the code. The sibling skill's
+  copy does not yet say so.
+- **"Never scan the skill's own files" is cheapest as a structural property.**
+  The 0.9.1 defect existed because the sibling validator judges its own
+  `SKILL.md`. This validator takes one output directory on the command line and
+  reads nothing else, so the whole failure class is absent by construction —
+  worth preserving deliberately when adding checks, not just avoided once.
+
 ## Checklist
 
 1. Identify the real consumer of the artifact and what it rejects.
@@ -121,3 +154,6 @@ in the target language.
 5. Route cross-cutting syntax rules to every phase that produces the artifact.
 6. Audit templates for identifiers that collide with the target language's
    keywords.
+7. When a sibling skill emits the same artifact, port the checker *and* re-run
+   the calibration there — a transplanted heuristic is unverified until it has
+   faced the real consumer in its new home. Record what it still cannot see.

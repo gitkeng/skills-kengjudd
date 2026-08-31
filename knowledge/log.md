@@ -2,6 +2,28 @@
 
 ## 2026-08-31
 
+- **business-rules-extraction 1.1.0** (repo v0.11.0) — the Mermaid fix made for
+  `comprehensive-codebase-analysis` in 0.9.0 was ported here, where the same gap
+  was wider: the skill mandates three diagrams per domain (sequence, component,
+  workflow/state) and shipped **no Mermaid check at all**, no syntax reference,
+  and an acceptance bar that never mentioned rendering. Ported as check class 11
+  of `scripts/validate_output.py` — the type-aware linter rule for rule, lint
+  applied to every ```mermaid block anywhere under the output directory rather
+  than only where a diagram is required — plus `references/mermaid-syntax.md`
+  wired into step 13, worked diagram examples with the `actor`/node-id hazard in
+  `references/output-templates.md`, and acceptance restated as "every block
+  renders; the lint is necessary, not sufficient". **Re-calibrated in its new
+  home** against mermaid 11.17.2 on a 20-block fixture shaped like a real output
+  tree: 20/20 agreement, 10/10 fatal constructs caught, 0 false positives,
+  including the traps that broke the original draft. Two findings recorded in
+  `/skill-authoring/validating-generated-artifacts.md`: the parser confirmed
+  that `;` inside a *quoted* sequence message is still fatal while the lint is
+  silent on that form (an accepted false negative, now written down for the
+  author rather than left implicit in the code), and that this validator reads
+  nothing but the output directory named on its command line — so the 0.9.1
+  self-scanning defect has no counterpart here and that property is worth
+  preserving deliberately as checks are added.
+
 - **init-project 1.0.0** (repo v0.10.0) — the repo's first orchestrator-sized
   skill: it interviews the user, researches, writes an OKF knowledge base into a
   *target* project, generates a canonical `AGENTS.md` plus only the per-agent

@@ -7,6 +7,57 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.11.0] - 2026-08-31
+
+### business-rules-extraction (1.0.1 → 1.1.0)
+
+**Added — Mermaid validation, ported from `comprehensive-codebase-analysis`
+0.9.0.** The skill mandates three Mermaid diagrams per domain (sequence,
+component, workflow/state) but shipped no Mermaid check at all, no syntax
+guidance anywhere, and an acceptance bar that never mentioned rendering. That is
+the same gap that cost the sibling skill three blank diagrams before 0.9.0: a
+Mermaid parse error blanks the **whole block** and renders an error box, so one
+bad line loses an entire diagram.
+
+- **Check class 11 in `scripts/validate_output.py`** — the sibling's type-aware
+  linter, ported rule for rule. Rules are keyed by diagram type because the same
+  token differs by type (`loop["Per page"]` is a node in a flowchart and a block
+  opener in a sequenceDiagram): shape attached to an edge instead of a node id,
+  `sequenceDiagram` keywords inside a flowchart, `;` inside a sequence message,
+  unclosed or stray block `end`, odd pipe count, unknown flowchart direction,
+  non-v11 first token, and bracket balance. It lints every ```mermaid block
+  found anywhere under the output directory — not only the per-domain
+  `diagrams.md` where a diagram is required — and additionally checks that each
+  declared domain's `diagrams.md` carries all three mandated diagram kinds.
+- **Calibrated against mermaid 11.17.2 as an oracle** on a 20-block fixture
+  shaped like a real output tree: 20/20 agreement, 10/10 fatal constructs
+  caught, zero false positives — including the traps that broke the sibling's
+  first draft (`loop["Per page"]` as a flowchart node, `end note` in a
+  `stateDiagram`, `<|..` in a `classDiagram`).
+- **`references/mermaid-syntax.md`** (new) carries the rules; step 13 loads it
+  before any diagram is written, and the reference table routes it to *any*
+  document containing a Mermaid block, not just `diagrams.md`.
+- **`references/output-templates.md`** gained worked examples of the three
+  required diagrams plus the hazards they exist to prevent: `actor` is a
+  `sequenceDiagram` keyword and a parse error in a flowchart, a node id is not a
+  declaration and cannot be reused, and `;` in a sequence message ends the
+  statement — quoting does *not* rescue it there, though it does inside a
+  flowchart label (both verified against the parser).
+- **Acceptance is now a property of the artifact, not of the tool:** new
+  workflow step 19 reads "every Mermaid block in the output renders … the lint
+  is a heuristic, not a parser — passing it is necessary, not sufficient".
+
+Unlike the sibling skill, this validator has no `check_skill_frontmatter`
+equivalent and reads nothing outside the output directory named on the command
+line, so the 0.9.1 self-scanning defect has no counterpart here.
+
+### Knowledge
+
+- `skill-authoring/validating-generated-artifacts.md` records the port, the
+  calibration result, and one delta the parser surfaced: a `;` inside a *quoted*
+  sequence message is still fatal, and the shipped heuristic is silent on it by
+  design (quoted spans are masked before the rules run).
+
 ## [0.10.0] - 2026-08-31
 
 ### init-project
