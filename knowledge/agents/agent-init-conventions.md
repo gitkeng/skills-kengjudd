@@ -242,12 +242,12 @@ All URL-backed facts below were verified **2026-08-31**.
 
 - **(a)** Default context filename is `GEMINI.md`; the `context.fileName`
   setting takes a list and **can include `AGENTS.md`** (documented example:
-  `["AGENTS.md", "CONTEXT.md", "GEMINI.md"]`). **Name change, unreconciled:**
-  [/specs/agents-md-standard.md](/specs/agents-md-standard.md) records this
-  setting as flat `contextFileName`; the current docs give the nested
-  `context.fileName`, matching Gemini CLI's move to a nested `settings.json`
-  structure. This document records the name verified 2026-08-31 — the older
-  concept needs updating (see Known gaps). Hierarchy: global
+  `["AGENTS.md", "CONTEXT.md", "GEMINI.md"]`). **Name change, reconciled
+  2026-08-31:** the older flat `contextFileName` (recorded on 2026-08-29 from
+  the docs site) has been replaced by this nested name in
+  [/specs/agents-md-standard.md](/specs/agents-md-standard.md); the change
+  matches Gemini CLI's move to a nested `settings.json` structure, though no
+  official changelog entry names the rename (see Known gaps). Hierarchy: global
   `~/.gemini/GEMINI.md`, then configured workspace directories and their
   parents, plus just-in-time scanning — when a tool touches a file or
   directory, the CLI scans that directory and its ancestors. All found files
@@ -546,16 +546,15 @@ of 2026-08-31, not assumptions:
 - **Antigravity, whether nested/parent AGENTS.md files are discovered.** The
   docs say "your active directory's" files — neither an upward walk nor a
   subtree scan is documented.
-- **Gemini CLI, `context.fileName` vs `contextFileName` — a live conflict
-  inside this bundle.** This document records `context.fileName` (nested),
-  verified against the current `docs/cli/gemini-md.md` on 2026-08-31;
-  [/specs/agents-md-standard.md](/specs/agents-md-standard.md) records the flat
-  `contextFileName`, verified 2026-08-29. The most likely explanation is the
-  documented migration of `settings.json` to a nested structure, but no official
-  changelog entry naming the rename was found, so neither the old name's
-  removal nor a compatibility alias is confirmed. **Action:** update the
-  `contextFileName` mention in `/specs/agents-md-standard.md` — deliberately not
-  done here, as that file is outside this change's scope.
+- **Gemini CLI, when `contextFileName` became `context.fileName`.** Both this
+  document and [/specs/agents-md-standard.md](/specs/agents-md-standard.md) now
+  record the nested `context.fileName`, verified against
+  `docs/cli/gemini-md.md` on 2026-08-31 (the bundle-internal conflict with the
+  flat `contextFileName`, recorded 2026-08-29, was resolved on 2026-08-31). The
+  most likely explanation is the documented migration of `settings.json` to a
+  nested structure, but no official changelog entry naming the rename was
+  found, so neither the old name's removal nor a compatibility alias is
+  confirmed — a config written against the flat key may or may not still work.
 - **Cursor, `@filename` inside AGENTS.md.** The `@filename.ts` include is
   documented for `.mdc` rules; whether Cursor expands it inside `AGENTS.md` is
   not stated.

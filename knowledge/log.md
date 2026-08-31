@@ -2,6 +2,58 @@
 
 ## 2026-08-31
 
+- **init-project 1.0.0** (repo v0.10.0) — the repo's first orchestrator-sized
+  skill: it interviews the user, researches, writes an OKF knowledge base into a
+  *target* project, generates a canonical `AGENTS.md` plus only the per-agent
+  adapters that agent actually needs, and runs an adaptive expert review.
+  Built on the per-agent research below, then hardened twice. **Two end-to-end
+  runs** (empty directory; existing codebase with a merge) found six defects in
+  two classes: data the workflow demands but never collects (the templates
+  require a project name and purpose; no interview topic asked, and the only
+  path that produces one is "read the README", which an empty directory lacks),
+  and rules that are individually right but jointly unsatisfiable on one input
+  (URL-only sources vs. a preset that seeds from an in-repo README; a
+  user-chosen KB cadence vs. a verbatim standing-rules block that fixes the
+  cadence — two conflicting rules in one generated file, failing the skill's own
+  review bar). A **four-domain expert panel** (loop, harness, context, prompt
+  engineering, parallel read-only reviewers) then found what a run cannot see:
+  nine unbounded loops, an iron rule that is unsatisfiable headlessly, a
+  skeleton write that overwrites an existing index and log on re-run, a
+  standing-rules block duplicated byte-identically with cross-references by
+  *ordinal*, a 512-line reference loaded whole for one section, and markers
+  written only on merge so a second run duplicated everything. All findings
+  accepted; 59 applied as written, 6 adapted, none dropped — and the wave itself
+  introduced four contradictions needing a second round. Post-fix validation:
+  triggers 7/7, both scenarios green, interview cost 44 questions → 18 with the
+  same output.
+
+- **Creation** of /skill-authoring/init-project-lessons.md (`Playbook`)
+  alongside that skill: the transferable half — imports are an adapter
+  mechanism and never a content-organization one (5 of 12 agents expand no
+  imports at all, so a canonical file that delegates its substance loses it);
+  every "for each X" is a loop needing a depth, a ceiling, an exit, and a cost
+  preview shown before it is spent; adaptive reviewer rosters need a cap and a
+  named adjudicator with a recorded reason per rejection; a skill that writes
+  files it may write again must decide its **write-identity mechanism first**
+  (unconditional markers, not merge-only ones) because every re-run behavior is
+  downstream of it; a language choice must enumerate what it does *not* apply to
+  (verbatim blocks, markers, YAML keys); and a description must name the
+  built-in command it is not — trigger testing caught this skill matching the
+  built-in `/init`, and some agents show only ~250 characters, so triggers go
+  first. Also records what only a run finds vs. what only a panel finds, and
+  that emergent good behavior is a missing instruction rather than a success.
+
+- **Correction** in /specs/agents-md-standard.md, closing the follow-up owed
+  below: the Gemini CLI opt-in setting is the nested `context.fileName`, not the
+  flat `contextFileName` recorded there on 2026-08-29 — verified against
+  `google-gemini/gemini-cli` `docs/cli/gemini-md.md` on 2026-08-31, with the
+  repo-docs URL added as a source and the docs-site entry re-titled to say which
+  name it backs. The setting takes a list and can include `AGENTS.md`. No
+  official changelog entry names the rename, so the old key's removal and any
+  compatibility alias remain unconfirmed; the known gap in
+  /agents/agent-init-conventions.md was rewritten from "a live conflict inside
+  this bundle" (with an action item) to that narrower open question.
+
 - **Per-agent init conventions** — new `Reference` concept
   `/agents/agent-init-conventions.md`, the research foundation for the upcoming
   `init-project` skill. For all 12 target agents (Claude Code, Codex, Cursor,

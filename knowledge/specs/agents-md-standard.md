@@ -26,7 +26,9 @@ sources:
   - resource: https://learn.chatgpt.com/docs/agent-configuration/agents-md
     title: OpenAI Codex docs — AGENTS.md configuration (locations, precedence, size limits)
   - resource: https://google-gemini.github.io/gemini-cli/docs/cli/gemini-md.html
-    title: Gemini CLI docs — Provide context with GEMINI.md files (contextFileName, @file.md imports)
+    title: Gemini CLI docs site — Provide context with GEMINI.md files (@file.md imports; source of the flat `contextFileName` name recorded here on 2026-08-29)
+  - resource: https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/gemini-md.md
+    title: "gemini-cli repo docs — Context files (nested `context.fileName`, GEMINI.md hierarchy, @file.md imports; verified 2026-08-31)"
   - resource: https://github.com/google-gemini/gemini-cli/issues/12345
     title: google-gemini/gemini-cli issue #12345 — AGENTS.md by default (closed, not planned)
   - resource: https://opencode.ai/docs/rules/
@@ -91,7 +93,7 @@ Notable per-tool behavior:
 | **Cursor** | Reads AGENTS.md at project root and in subdirectories; nested files combined, nearest wins. `.cursor/rules/*.mdc` remains for glob-scoped/manually-invoked rules. |
 | **opencode** | Reads project AGENTS.md (falls back to CLAUDE.md for Claude Code compatibility) plus global `~/.config/opencode/AGENTS.md`. Explicitly "doesn't automatically parse file references in AGENTS.md" — extra files come via the `instructions` array in `opencode.json` (globs and URLs supported). |
 | **Zed** | First-match-wins list: `.rules`, `.cursorrules`, `.windsurfrules`, `.clinerules`, `.github/copilot-instructions.md`, `AGENT.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`. A stray `.cursorrules` silently shadows AGENTS.md. |
-| **Gemini CLI** | Does **not** read AGENTS.md by default (default context file is GEMINI.md); requires opting in via the `contextFileName` setting. Issue google-gemini/gemini-cli#12345 requesting it by default was closed as not planned. Gemini CLI's context files are the only non-Claude ones with `@file.md` import syntax. |
+| **Gemini CLI** | Does **not** read AGENTS.md by default (default context file is GEMINI.md); requires opting in via the nested `context.fileName` setting, which takes a list and can include `AGENTS.md` (documented example `["AGENTS.md", "CONTEXT.md", "GEMINI.md"]`). Verified 2026-08-31 against the repo docs; this entry previously recorded the flat `contextFileName` from the docs site on 2026-08-29, consistent with Gemini CLI's move to a nested `settings.json` structure — no official changelog entry names the rename, so neither removal of the old key nor a compatibility alias is confirmed. Issue google-gemini/gemini-cli#12345 requesting AGENTS.md by default was closed as not planned. Gemini CLI's context files are the only non-Claude ones with `@file.md` import syntax. |
 | **ZCode** (Z.ai) | Reads **AGENTS.md only** — the engine's candidate-filename list is the single entry `["AGENTS.md"]` (verified in `/Applications/ZCode.app/Contents/Resources/glm/zcode.cjs`, v3.9.2). User default `~/.zcode/AGENTS.md` is injected first, then the workspace `<repo>/AGENTS.md` is searched from cwd upward to the project root and overrides it; hidden alternates `<repo>/.zcode/AGENTS.md` and `<repo>/.agents/AGENTS.md` also resolve. **CLAUDE.md is never read at runtime** — the Z.ai docs use it only during onboarding as a one-time migration source. |
 | **Claude Code** | Does **not** read AGENTS.md at all — see below. |
 

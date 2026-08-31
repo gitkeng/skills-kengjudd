@@ -7,6 +7,115 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.10.0] - 2026-08-31
+
+### init-project
+
+**Added — init-project 1.0.0.** Initializes a *target* project so the AI coding
+agents the user selects can work in it: it interviews the user (project
+identity, agents, task types, stack, knowledge-base folder name, Karpathy
+guidelines opt-in), researches any selected agent or named technology its
+bundled reference does not already cover, creates an OKF knowledge base inside
+the project, generates a canonical `AGENTS.md` plus only the per-agent adapters
+those agents actually need, and runs an adaptive expert review before reporting.
+It never scaffolds application code, never runs `git init`, and never installs
+third-party skills. Twelve agents are covered by a bundled context matrix
+(Claude Code, Codex, Cursor, opencode, Gemini CLI, Zed, Kiro, Kimi CLI, Amp,
+Goose, ZCode, Antigravity); only two of them need an adapter, and five expand no
+imports at all, so the canonical file is written self-contained rather than
+delegating its substance to `@` references.
+
+**Hardened by two end-to-end runs before release.** Scenario A (empty directory)
+hit a hard dead end and three contradictions: Phase 1 never asked for the
+project's name or purpose although both templates require them and the skill
+forbids inventing or leaving placeholders (the only path that produces them is
+"read the README", which an empty directory does not have) — a `Project
+identity` topic was added; the guidelines promised context files hold "the
+commands an agent runs" with no template section for them — a `## Commands`
+section was added; the review protocol cited `R9`, a requirement ID that exists
+only in the internal plan; and the KB guide called the index body format "fixed"
+in a way its own shipped skeleton contradicts. Scenario B (existing codebase,
+merge into a pre-existing `AGENTS.md`) hit two more, both cases of rules that
+are individually right and jointly unsatisfiable: the KB iron rule demanded a
+resolvable URL for every fact while the `knowledge base` preset invites seeding
+from an in-repo README that has no URL, and a user-chosen KB update cadence
+contradicted the verbatim standing-rules block, producing two conflicting rules
+in one generated file with no permitted remedy. The first pass at those two
+fixes was itself wrong twice — it cited a source category the OKF spec does not
+define (a bare relative path resolves from the concept file, i.e. inside the KB
+folder, so project material needs `../`), and it reconciled one superseded
+standing-rules bullet where a non-default cadence conflicts with two.
+
+**Hardened by a four-domain expert panel.** Loop, harness, context, and prompt
+engineering reviewers ran in parallel over the frozen skill; every finding was
+accepted (59 applied as written, 6 adapted, none dropped), and the wave itself
+introduced four contradictions that took a second round. The behavior changes:
+
+- **Cost.** The interview's technology expansion was an unbounded rewrite
+  relation — one scenario produced 9 concepts and 27 extra questions, another
+  none. Expansion is now depth-1 with terminal items and fires only for
+  technologies chosen as a project decision, under a 25-question ceiling with a
+  cost preview and a continue/recommend/defer valve; research is bounded at 3
+  fetches per technology with per-field "not applicable"; the review loop
+  converges (one pass plus one re-check of only what changed) with a roster cap
+  of 5 domain reviewers plus 2 standing ones, grouped by shared surface and
+  named in the report. Measured: 44 questions → 18 on the same scenario.
+- **Re-runs.** Provenance markers were written only when merging, so a second
+  run could not recognize its own output and appended a full duplicate (82 lines
+  → 164, past the file's own budget). Markers are now unconditional on every
+  generated file including the KB index, which makes the re-run promise literal,
+  and a new Phase 0 detects a previous run, replays the previous answers, asks
+  only what changed, and re-researches only what is stale.
+- **Harnesses.** New iron rule 4 — *if you cannot ask, do not write*: with no
+  user channel (headless, CI, subagent) the skill emits the question list and
+  stops instead of substituting defaults. The KB skeleton no longer overwrites
+  an existing `index.md`/`log.md`; the OKF version check works through any fetch
+  mechanism (a shell network error is not evidence of being offline); `<kb>`
+  folder names are validated and checked case-insensitively; concurrent runs
+  re-read before writing.
+- **Correctness of output.** Before writing, the skill now checks the target for
+  files that shadow or duplicate `AGENTS.md` and warns about native `/init`
+  commands that would overwrite it, using the matrix's verbs verbatim — one run
+  had emitted an *invented* claim about `/init` that contradicted the researched
+  matrix. Scaffolder collisions (a framework CLI that writes its own agent
+  context files) are surfaced too.
+- **Drift and duplication.** The standing-rules block is single-sourced in the
+  template (the byte-identity contract between two copies is retired) and
+  cross-references anchor to bullet text rather than ordinals; merge semantics
+  is stated once with pointers elsewhere; `skip` and `replace` are now defined
+  alongside `merge`; the 512-line agent matrix is read one `## <agent>` section
+  at a time.
+- **Language and triggering.** An explicit never-translated list (standing-rules
+  and Karpathy blocks, the HTML markers, YAML keys and `type:` values) resolves
+  the contradiction between the language answer and the verbatim blocks. The
+  description is front-loaded with "Use when" and its trigger phrases because
+  some agents inject only ~250 characters of it, and it names the built-in
+  `/init` as an anti-trigger. Final validation: triggers 7/7, both scenarios
+  green.
+
+### Knowledge
+
+- New concept `knowledge/agents/agent-init-conventions.md` (`Reference`), the
+  precursor research for the skill: for each of the 12 target agents, the
+  instruction/context files it reads and their precedence, import syntax, native
+  init command, and config file locations — every claim from official docs,
+  repos, or changelogs, with ten questions parked as known gaps rather than
+  guessed. It feeds the skill's bundled `references/agent-context-matrix.md`.
+- New concept `knowledge/skill-authoring/init-project-lessons.md` (`Playbook`):
+  what building an orchestrator-sized skill taught — canonical file plus thin
+  adapters and why imports cannot carry content, bounding loops rather than only
+  specifying them, the dead-end classes only an end-to-end run finds versus the
+  cost/re-run/harness classes only a review panel finds, deciding a
+  write-identity mechanism before the first template, verbatim-vs-language
+  conflicts, and trigger wording against a built-in command.
+- Fixed a stale fact in `knowledge/specs/agents-md-standard.md`: Gemini CLI's
+  AGENTS.md opt-in is the nested `context.fileName`, not the flat
+  `contextFileName` recorded on 2026-08-29 (verified 2026-08-31 against
+  `google-gemini/gemini-cli` `docs/cli/gemini-md.md`, added as a source). No
+  official changelog names the rename, so the old key's removal and any
+  compatibility alias stay recorded as an open question in
+  `knowledge/agents/agent-init-conventions.md`.
+
 ## [0.9.1] - 2026-08-30
 
 ### comprehensive-codebase-analysis (1.1.0 → 1.1.1)
