@@ -416,7 +416,7 @@ Report to the user, in the language chosen in Phase 1 topic 7:
   anything outside them.
 - **Out-of-scope suggestions,** clearly labeled as suggestions: e.g.
   installing the upstream Karpathy guidelines skill, or running
-  `comprehensive-codebase-analysis` for a deep pass over an existing
+  `codebase-analysis` for a deep pass over an existing
   codebase.
 
 ## Edge cases
@@ -442,7 +442,7 @@ Report to the user, in the language chosen in Phase 1 topic 7:
 - **An existing codebase.** Do light analysis only — README, directory
   layout, manifest/config files — enough to fill `AGENTS.md`'s project and
   stack sections. Deep understanding is not this skill's job: point the user
-  at the `comprehensive-codebase-analysis` skill instead of duplicating it.
+  at the `codebase-analysis` skill instead of duplicating it.
 - **No web access.** Only after every fetch route your harness offers has
   failed (a shell error alone is not proof — see
   [references/okf-kb-guide.md](references/okf-kb-guide.md)

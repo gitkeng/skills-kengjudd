@@ -1,16 +1,16 @@
 ---
 name: codebase-analysis-report
-description: Generate a portable, offline, accessible HTML report from a comprehensive-codebase-analysis v2 output tree. Use to visualize evidence-backed findings, business rules, components, test traceability, coverage, migration analysis, operations, and Mermaid diagrams without choosing a vendor platform.
+description: Generate a portable, offline, accessible HTML report from a codebase-analysis v2 output tree. Use to visualize evidence-backed findings, business rules, components, test traceability, coverage, migration analysis, operations, and Mermaid diagrams without choosing a vendor platform.
 metadata:
   version: "1.1.0"
   updated: "2026-08-30"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/codebase-analysis-report @4320cce plus uncommitted working-tree changes as of 2026-08-29"
-  requires: "comprehensive-codebase-analysis v2 output tree as input"
+  requires: "codebase-analysis v2 output tree as input"
 ---
 
 # Codebase analysis report
 
-Turn a completed `comprehensive-codebase-analysis` v2 output tree into a single,
+Turn a completed `codebase-analysis` v2 output tree into a single,
 self-contained HTML report that works from `file://`, needs no network, and
 faithfully preserves evidence, confidence, coverage, and traceability. The
 deterministic renderer owns HTML structure, escaping, counts, theme behavior,

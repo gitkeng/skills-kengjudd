@@ -2,6 +2,20 @@
 
 ## 2026-08-31
 
+- **codebase-analysis 2.0.0** (repo v0.12.0) — the skill formerly named
+  `comprehensive-codebase-analysis` was renamed to `codebase-analysis`, a
+  breaking change on both install channels (no alias is shipped; symlink
+  installs must be re-created). Live references were updated across the three
+  skill-authoring playbooks, the consuming `codebase-analysis-report` skill,
+  `init-project`'s delegation pointer, and `business-rules-extraction`'s port
+  attribution — including a `sources:` `file://` path in
+  `/skill-authoring/validating-generated-artifacts.md` that would otherwise have
+  dangled. Dated records keep the old name deliberately: the rename does not
+  make `/decisions/2026-08-29-repo-design.md` or earlier entries of this log
+  wrong, and rewriting them would misstate what was decided then. The import
+  inventory in `/skill-authoring/importing-skills.md` notes the rename inline,
+  following the precedent its `doc2markdown` row already set. `metadata.upstream`
+  keeps the upstream's own path, which is unaffected by our renaming.
 - **business-rules-extraction 1.1.0** (repo v0.11.0) — the Mermaid fix made for
   `comprehensive-codebase-analysis` in 0.9.0 was ported here, where the same gap
   was wider: the skill mandates three diagrams per domain (sequence, component,

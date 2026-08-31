@@ -4,7 +4,7 @@ Load this before writing any Mermaid block. Diagrams appear in each domain's
 `diagrams.md` (sequence, component, workflow/state) and wherever a workflow,
 integration, or overview document illustrates a process; these rules apply
 identically everywhere. Adapted from the sibling skill
-`comprehensive-codebase-analysis`, where they were calibrated against the real
+`codebase-analysis`, where they were calibrated against the real
 Mermaid parser.
 
 A Mermaid parse error blanks the **entire block** and renders an error box in

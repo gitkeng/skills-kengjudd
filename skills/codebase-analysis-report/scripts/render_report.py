@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Render a portable, offline, accessible HTML report from a
-comprehensive-codebase-analysis v2 output tree.
+codebase-analysis v2 output tree.
 
 Python standard library only. No network, no external dependencies, no CDNs.
 
@@ -173,7 +173,7 @@ def validate_source(source_root, allow_incomplete):
 
     # ------------------------------------------------------------------ #
     # Normative input-contract mappings (mirror the upstream validator's
-    # alias/category semantics; see comprehensive-codebase-analysis
+    # alias/category semantics; see codebase-analysis
     # scripts/validate_output.py and references/input-contract.md). These are
     # fail-closed cross-reference checks over the alias graph.
     # ------------------------------------------------------------------ #

@@ -1060,7 +1060,7 @@ class TestEvidenceFormatter(Base):
 # --------------------------------------------------------------------------- #
 class TestInputContractMappings(Base):
     """R2: normative input-contract mappings enforced by validate_source, with
-    semantics mirrored from the upstream comprehensive-codebase-analysis
+    semantics mirrored from the upstream codebase-analysis
     validator (coverage/component alias equality; traceability + source_refs
     resolution with category semantics). All negatives must fail closed."""
 

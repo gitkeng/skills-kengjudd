@@ -666,7 +666,7 @@ def check_10_no_stubs(output_dir, manifest, findings):
 # ---------------------------------------------------------------------------
 # Mermaid syntax rules (check class 11)
 #
-# Ported from the sibling skill comprehensive-codebase-analysis, where the rules
+# Ported from the sibling skill codebase-analysis, where the rules
 # were calibrated against mermaid 11.17.2 as an oracle (26/26 agreement, zero
 # false positives).
 #

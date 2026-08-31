@@ -1,7 +1,7 @@
 # codebase-analysis-report
 
 Generate a portable, offline, accessible HTML report from a
-`comprehensive-codebase-analysis` **v2** output tree. The report visualizes
+`codebase-analysis` **v2** output tree. The report visualizes
 evidence-backed findings, business rules, components, test traceability,
 coverage, and Mermaid diagrams — without adopting any vendor platform.
 
@@ -70,7 +70,7 @@ Requires Python 3 (standard library only). No installs, no network.
 ## Compatibility and safety notes
 
 - Input must be v2 (`schema_version` `2.0`) output of the current
-  `comprehensive-codebase-analysis` skill. Legacy provider-specific output is
+  `codebase-analysis` skill. Legacy provider-specific output is
   not an input target.
 - Publication is one-shot (temp → validate → publish). Unvalidated output is
   never intentionally published; multi-step replacement is not claimed

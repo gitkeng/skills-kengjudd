@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate comprehensive-codebase-analysis v2 output using Python stdlib only."""
+"""Validate codebase-analysis v2 output using Python stdlib only."""
 
 import json
 import re
@@ -160,7 +160,7 @@ def check_skill_frontmatter(skill_root):
             errors.append(f"SKILL.md metadata.updated {updated!r} is not YYYY-MM-DD")
     name = fields.get("name", "")
     desc = fields.get("description", "")
-    if name != "comprehensive-codebase-analysis" or not re.fullmatch(r"[a-z0-9-]{1,64}", name):
+    if name != "codebase-analysis" or not re.fullmatch(r"[a-z0-9-]{1,64}", name):
         errors.append("SKILL.md frontmatter name is invalid")
     if not desc or len(desc) > 1024:
         errors.append("SKILL.md description must contain 1..1024 characters")

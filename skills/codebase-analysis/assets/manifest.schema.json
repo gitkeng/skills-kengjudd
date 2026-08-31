@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.invalid/comprehensive-codebase-analysis/manifest.schema.json",
+  "$id": "https://example.invalid/codebase-analysis/manifest.schema.json",
   "title": "Comprehensive codebase analysis manifest",
   "type": "object",
   "additionalProperties": false,

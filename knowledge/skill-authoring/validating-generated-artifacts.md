@@ -7,7 +7,7 @@ description: >-
   measure, not what decides success. Three failure modes seen in practice: a
   balance check standing in for a parser, acceptance criteria defined as
   "passes our lint", and syntax rules living in a reference that most producing
-  phases never load. Worked example: Mermaid in comprehensive-codebase-analysis,
+  phases never load. Worked example: Mermaid in codebase-analysis,
   then ported to business-rules-extraction.
 tags:
   - skills
@@ -16,7 +16,7 @@ tags:
   - testing
   - playbook
 sources:
-  - resource: file:///Users/keng/Coding/gitkeng/skills-kengjudd/skills/comprehensive-codebase-analysis/scripts/validate_output.py
+  - resource: file:///Users/keng/Coding/gitkeng/skills-kengjudd/skills/codebase-analysis/scripts/validate_output.py
     title: The Mermaid checker before and after (verified by execution against the real parser 2026-08-30)
   - resource: https://mermaid.js.org/
     title: Mermaid documentation — diagram grammars and v11 syntax
@@ -40,7 +40,7 @@ This playbook records how that drift looked and what fixed it. Related:
 
 ## 1. A balance check is not a parser
 
-`comprehensive-codebase-analysis` validated Mermaid with `balanced()` — a
+`codebase-analysis` validated Mermaid with `balanced()` — a
 bracket matcher — plus a first-token check. It reported `PASS: Mermaid v11
 syntax` on an output tree with **three diagrams that render nothing at all**.
 Every one had perfectly balanced brackets:

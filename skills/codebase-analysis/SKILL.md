@@ -1,13 +1,13 @@
 ---
-name: comprehensive-codebase-analysis
+name: codebase-analysis
 description: Analyze any repository offline to produce hierarchical, evidence-backed architecture documentation, behavior and API references, security and technical-debt findings, migration readiness, onboarding, and machine-auditable traceability. Use for codebase analysis, architecture docs, tech-debt reports, legacy-system understanding, security review, onboarding, or migration-readiness assessment.
 metadata:
-  version: "1.1.2"
+  version: "2.0.0"
   updated: "2026-08-31"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/comprehensive-codebase-analysis @7423a91"
 ---
 
-# Comprehensive Codebase Analysis
+# Codebase Analysis
 
 Analyze source statically. Do not execute application code, install its dependencies, run migrations, or deploy it. Write only under the selected output root, which defaults to `./codebase-analysis/` and may be overridden, including to an out-of-tree path.
 
@@ -203,7 +203,7 @@ that matches how it was installed.
 **Git clone + symlink install** — run from the repository root:
 
 ```bash
-./scripts/update.sh comprehensive-codebase-analysis
+./scripts/update.sh codebase-analysis
 ```
 
 If this skill directory is a symlink (the normal install), resolve it with

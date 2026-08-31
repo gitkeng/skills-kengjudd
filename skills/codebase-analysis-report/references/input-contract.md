@@ -1,7 +1,7 @@
 # Input contract (normative)
 
 This is the single field-to-view map shared by the workflow and the scripts. It
-binds to the real `comprehensive-codebase-analysis` v2 keys and enums. Unknown
+binds to the real `codebase-analysis` v2 keys and enums. Unknown
 schema versions or keys fail closed with an unsupported-contract message. The
 new skill has no runtime dependency on the sibling analyzer; if its validator is
 discoverable it may be run as optional corroboration only.

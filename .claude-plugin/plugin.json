@@ -1,7 +1,7 @@
 {
   "name": "kengjudd",
   "description": "Kongsak (kengjudd)'s central multi-agent skills collection with an OKF knowledge base",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "author": {
     "name": "kengjudd"
   },
@@ -15,7 +15,7 @@
     "./skills/creating-skills",
     "./skills/business-rules-extraction",
     "./skills/codebase-analysis-report",
-    "./skills/comprehensive-codebase-analysis",
+    "./skills/codebase-analysis",
     "./skills/doc2markdown",
     "./skills/git-commit",
     "./skills/init-project"

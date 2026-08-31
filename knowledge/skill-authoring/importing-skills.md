@@ -62,7 +62,7 @@ in practice.
    path resolves to the wrong place — or nowhere. Every imported skill needs an
    explicit statement that its `scripts/`, `references/`, and `assets/` paths
    are relative to the skill directory, with `readlink -f <this-skill-dir>` as
-   the way to resolve it. (`comprehensive-codebase-analysis` already used
+   the way to resolve it. (`codebase-analysis` already used
    `<skill-root>/scripts/...`, which is the pattern to prefer when authoring.)
 5. **Rewrite host-specific install instructions.** A bundled `README.md` written
    for Kiro told users to `cp -r` the directory into `.kiro/skills/`. That
@@ -105,7 +105,7 @@ user's request). Two consequences:
 
 ## Paired skills
 
-`codebase-analysis-report` consumes a `comprehensive-codebase-analysis` **v2**
+`codebase-analysis-report` consumes a `codebase-analysis` **v2**
 output tree (`schema_version` `2.0`) and has no other input. Importing one
 without the other yields a skill that cannot run. Skills coupled by a data
 contract are imported, versioned, and released together; the dependency is
@@ -119,7 +119,7 @@ initialization. Imported since then:
 | Skill | Source | Imported | Repo release |
 |-------|--------|----------|--------------|
 | business-rules-extraction | aws-kiro-atx-lab | 2026-08-29 | 0.4.0 |
-| comprehensive-codebase-analysis | aws-kiro-atx-lab | 2026-08-29 | 0.4.0 |
+| codebase-analysis | aws-kiro-atx-lab (renamed from comprehensive-codebase-analysis in 0.12.0) | 2026-08-29 | 0.4.0 |
 | codebase-analysis-report | aws-kiro-atx-lab | 2026-08-29 | 0.4.0 |
 | doc2markdown | ~/.claude/skills (renamed from doc-to-markdown; no git history) | 2026-08-29 | 0.5.0 |
 

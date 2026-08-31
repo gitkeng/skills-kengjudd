@@ -7,6 +7,37 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.12.0] - 2026-08-31
+
+### codebase-analysis (1.1.2 → 2.0.0)
+
+**Changed — BREAKING: renamed from `comprehensive-codebase-analysis`.** The skill
+now lives at `skills/codebase-analysis/` and invokes as `codebase-analysis`
+(bare name on the git-clone/symlink channel) or `kengjudd:codebase-analysis` (plugin
+channel). The old name no longer resolves on either channel and no alias is
+shipped: existing symlinks pointing at the old directory dangle and must be
+re-created with `./scripts/install.sh --tool <agent>`; plugin users pick the new
+name up with `claude plugin update kengjudd@kengjudd`. Nothing about the skill's
+behavior, output tree, or `metadata.upstream` provenance changed — this is a
+rename only, which is why the repo release is minor (pre-1.0 SemVer) while the
+skill's own version takes a major bump.
+
+### codebase-analysis-report (1.1.0)
+
+**Changed — references updated to the new sibling name**, including the
+`description` trigger text and `compatibility.requires`. The input contract is
+unchanged: it still consumes a v2 analysis output tree.
+
+### Knowledge
+
+- `/skill-authoring/importing-skills.md`, `/skill-authoring/imported-self-checks.md`,
+  and `/skill-authoring/validating-generated-artifacts.md` now name the renamed
+  skill (including a `sources:` path that would otherwise dangle); the import
+  inventory records the rename the way the `doc2markdown` row already did.
+- Dated records keep the historical name on purpose: `/decisions/2026-08-29-repo-design.md`,
+  earlier `/log.md` entries, earlier releases in this file, and `docs/superpowers/`
+  describe what was true when written.
+
 ## [0.11.0] - 2026-08-31
 
 ### business-rules-extraction (1.0.1 → 1.1.0)
