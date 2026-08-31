@@ -17,6 +17,7 @@
     "./skills/codebase-analysis-report",
     "./skills/comprehensive-codebase-analysis",
     "./skills/doc2markdown",
-    "./skills/git-commit"
+    "./skills/git-commit",
+    "./skills/init-project"
   ]
 }
