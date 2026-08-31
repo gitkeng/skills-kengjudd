@@ -1,5 +1,59 @@
 # Knowledge Base Log
 
+## 2026-08-31
+
+- **Per-agent init conventions** — new `Reference` concept
+  `/agents/agent-init-conventions.md`, the research foundation for the upcoming
+  `init-project` skill. For all 12 target agents (Claude Code, Codex, Cursor,
+  opencode, Gemini CLI, Zed, Kiro, Kimi CLI, Amp, Goose, ZCode, Antigravity) it
+  records the instruction/context files read and their precedence, import
+  syntax, native init command, and config file locations — every claim from
+  official docs, official repos, or vendor changelogs. Four agents had no
+  context-file coverage in this bundle before: **Kiro** (steering files under
+  `.kiro/steering/`, with `AGENTS.md` accepted as an always-included steering
+  source and `#[[file:…]]` embeds), **Amp** (the widest AGENTS.md search of the
+  twelve — cwd up to `$HOME`, subtrees on access, two user paths, three system
+  paths, `AGENT.md`/`CLAUDE.md` fallback, `@`-mentions with globs), **Goose**
+  (`["AGENTS.md", ".goosehints"]` at every level, overridable via
+  `CONTEXT_FILE_NAMES`), and **Antigravity** (Google's agentic IDE: reads
+  workspace `GEMINI.md` *and* `AGENTS.md`, global `~/.gemini/GEMINI.md`, rules
+  under `.agents/rules` capped at 12,000 chars, `@path/to/file` inlining since
+  v2.11.0).
+
+- **Two findings that change how the skill must be built.** First, only **two**
+  of the twelve need an import adapter — Claude Code (`CLAUDE.md` with
+  `@AGENTS.md`) and Gemini CLI (`GEMINI.md` with `@AGENTS.md`, since it reads
+  AGENTS.md only when `context.fileName` is configured); every other agent reads
+  `AGENTS.md` in some form, including Kiro and Antigravity, whose behavior was
+  unknown when the spec was written. Second, **five agents expand no imports at
+  all** (ZCode explicitly, plus Codex, opencode, Zed, Goose), so a canonical
+  AGENTS.md that delegates its substance to `@`-referenced files silently loses
+  that substance on nearly half the target set. Imports are an adapter
+  mechanism, not a content-organization one — the generated file must be
+  self-contained.
+
+- **Follow-up owed to `/specs/agents-md-standard.md`.** That concept records the
+  Gemini CLI opt-in setting as flat `contextFileName` (verified 2026-08-29); the
+  current Gemini CLI docs give the nested `context.fileName`, matching the
+  documented move of `settings.json` to a nested structure. The new concept
+  records the verified name and flags the divergence as a known gap; the older
+  concept was deliberately left untouched because it sits outside the change
+  that surfaced this, and should be corrected in its own edit.
+
+- **Ten questions parked as known gaps rather than guessed**, notably
+  Antigravity's AGENTS.md-vs-GEMINI.md precedence and the version at which it
+  began reading AGENTS.md (third-party guides state one; no official entry
+  does), Cursor's `@filename` expansion inside AGENTS.md as opposed to `.mdc`
+  rules, Kimi CLI's two config homes (`~/.kimi/` in the repo docs vs
+  `$KIMI_CODE_HOME` default `~/.kimi-code/` on kimi.com), and ZCode's split
+  between `~/.zcode/v2/config.json` (provider settings) and
+  `~/.zcode/cli/config.json` (`mcp.servers`, and the per-skill `enable: false`
+  this bundle recorded from engine inspection) with no documented rule for which
+  keys belong where. Several entries are "not documented" rather than
+  "confirmed absent" — for missing init commands (Zed, Amp, Antigravity) the
+  distinction is stated explicitly so a later reader does not upgrade silence
+  into a fact.
+
 ## 2026-08-30
 
 - **comprehensive-codebase-analysis 1.1.1** — the skill's validator rejected its

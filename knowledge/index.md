@@ -17,6 +17,7 @@ Project knowledge bundle in OKF format. Canonical spec:
 # Agents
 
 * [Skill discovery matrix](agents/skill-discovery-matrix.md) - where each supported agent discovers skills, per scope
+* [Per-agent init conventions](agents/agent-init-conventions.md) - context files, init commands, config locations for the 12 init-project agents
 
 # Skill authoring
 
