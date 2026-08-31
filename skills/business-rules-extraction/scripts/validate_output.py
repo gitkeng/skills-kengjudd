@@ -664,6 +664,250 @@ def check_10_no_stubs(output_dir, manifest, findings):
 
 
 # ---------------------------------------------------------------------------
+# Mermaid syntax rules (check class 11)
+#
+# Ported from the sibling skill comprehensive-codebase-analysis, where the rules
+# were calibrated against mermaid 11.17.2 as an oracle (26/26 agreement, zero
+# false positives).
+#
+# A Mermaid parse error blanks the WHOLE block and renders an error box in its
+# place, so one bad line costs an entire diagram. Bracket balance is necessary
+# but nowhere near sufficient: every rule below encodes a construct that Mermaid
+# v11 rejects outright while the brackets stay perfectly paired. Rules are keyed
+# by diagram type because the same token is legal in one type and fatal in
+# another: `loop["Per page"]` is an ordinary node in a flowchart but a block
+# opener in a sequenceDiagram, and `actor` declares a participant in a
+# sequenceDiagram but is only a node name in a flowchart.
+#
+# This is a heuristic, not a grammar; it cannot be complete. It is calibrated to
+# raise no false positives, so extraction output is never blocked over syntax
+# Mermaid actually accepts.
+# ---------------------------------------------------------------------------
+
+MERMAID_TYPES = {
+    "flowchart", "graph", "sequenceDiagram", "classDiagram", "stateDiagram",
+    "stateDiagram-v2", "erDiagram", "C4Context", "C4Container", "C4Component",
+    "C4Deployment", "architecture-beta", "block-beta", "packet-beta", "journey",
+    "gantt", "pie", "mindmap", "timeline", "gitGraph", "quadrantChart", "xychart-beta",
+    "sankey-beta", "requirementDiagram", "zenuml",
+}
+FLOWCHART_TYPES = {"flowchart", "graph"}
+FLOWCHART_DIRECTIONS = {"TB", "TD", "BT", "RL", "LR"}
+# Declaration keywords that only exist in a sequenceDiagram.
+SEQUENCE_ONLY_KEYWORDS = {"actor", "participant", "autonumber", "activate", "deactivate"}
+# Block openers closed by `end`, per diagram type.
+SEQUENCE_BLOCK_OPENERS = {"loop", "alt", "opt", "par", "critical", "rect", "break", "box"}
+# A flowchart edge, ending right where the target node id must begin.
+ARROW_TAIL_RE = re.compile(r"(?:-{2,}[->ox]|-{2,}|-\.-*>?|={2,}>?|~~~)\s*(?=[\[({])")
+SEQ_MESSAGE_RE = re.compile(r"^[^:]*?(?:-{1,2}>>?|-{1,2}[)x])[+-]?[^:]*:(?P<text>.*)$")
+
+# The three diagram kinds every domain's diagrams.md must carry, per
+# references/output-templates.md § domains/<slug>/diagrams.md.
+SEQUENCE_DIAGRAM_TYPES = {"sequenceDiagram"}
+COMPONENT_DIAGRAM_TYPES = {
+    "flowchart", "graph", "classDiagram", "C4Component", "C4Container", "C4Context",
+}
+WORKFLOW_DIAGRAM_TYPES = {"flowchart", "graph", "stateDiagram", "stateDiagram-v2"}
+
+
+def _mermaid_blocks(text):
+    """Return the body of every ```mermaid fenced block in a markdown document."""
+    return re.findall(r"```mermaid[ \t]*\n(.*?)```", text, flags=re.DOTALL)
+
+
+def _mermaid_balanced(block):
+    """Check [], (), {} and quotes pair up outside quoted label text."""
+    stack = []
+    pairs = {"]": "[", ")": "(", "}": "{"}
+    openers = set(pairs.values())
+    in_quote = False
+    escaped = False
+    for line in block.splitlines():
+        if line.lstrip().startswith("%%"):
+            continue
+        for index, char in enumerate(line):
+            if escaped:
+                escaped = False
+                continue
+            if char == "\\" and in_quote:
+                escaped = True
+                continue
+            if char == '"':
+                in_quote = not in_quote
+                continue
+            if in_quote:
+                continue
+            previous = line[index - 1] if index else ""
+            following = line[index + 1] if index + 1 < len(line) else ""
+            # `-o{` / `-|{` style edge decorations are not brackets.
+            if char == "{" and previous and previous in "o|":
+                continue
+            if char == "}" and following and following in "o|":
+                continue
+            if char in openers:
+                stack.append(char)
+            elif char in pairs:
+                if not stack or stack.pop() != pairs[char]:
+                    return False
+    return not stack and not in_quote
+
+
+def _strip_quoted_spans(line):
+    """Replace double-quoted spans with same-length filler so the rules below
+    never match punctuation that Mermaid treats as literal label text."""
+    out, in_quote, escaped = [], False, False
+    for char in line:
+        if escaped:
+            out.append("_")
+            escaped = False
+            continue
+        if char == "\\" and in_quote:
+            out.append("_")
+            escaped = True
+            continue
+        if char == '"':
+            in_quote = not in_quote
+            out.append('"')
+            continue
+        out.append("_" if in_quote else char)
+    return "".join(out)
+
+
+def _significant_lines(block):
+    """Yield (1-based index, line) pairs, skipping blanks and %% comment lines."""
+    for number, line in enumerate(block.splitlines(), 1):
+        stripped = line.strip()
+        if stripped and not stripped.startswith("%%"):
+            yield number, line
+
+
+def lint_mermaid_block(block):
+    """Return a list of human-readable syntax problems in one Mermaid block."""
+    problems = []
+    body = block.strip()
+    if not body:
+        return ["empty block"]
+    tokens = body.split()
+    diagram_type = tokens[0]
+    is_flowchart = diagram_type in FLOWCHART_TYPES
+    is_sequence = diagram_type == "sequenceDiagram"
+
+    if diagram_type not in MERMAID_TYPES:
+        problems.append(f"line 1: {diagram_type!r} is not a Mermaid v11 diagram type")
+    if not _mermaid_balanced(block):
+        problems.append("unbalanced brackets or quotes")
+
+    # R6 — flowchart direction must be one Mermaid knows.
+    if is_flowchart and len(tokens) > 1:
+        direction = tokens[1].rstrip(";")
+        if direction not in FLOWCHART_DIRECTIONS and not direction.startswith("%%"):
+            problems.append(
+                f"line 1: {diagram_type} direction {direction!r} is not one of "
+                + "/".join(sorted(FLOWCHART_DIRECTIONS))
+            )
+
+    depth = 0
+    for number, raw in _significant_lines(block):
+        line = _strip_quoted_spans(raw)
+        stripped = line.strip()
+        first = stripped.split()[0] if stripped.split() else ""
+
+        # R1 — a shape token belongs to a node id; it may not follow an edge.
+        if is_flowchart and ARROW_TAIL_RE.search(line):
+            problems.append(
+                f"line {number}: edge is followed by a node shape with no node id "
+                f"(write `--> id[\"label\"]`, not `-->[\"label\"]`)"
+            )
+
+        # R2 — sequenceDiagram declaration keywords are fatal inside a flowchart.
+        if is_flowchart and first in SEQUENCE_ONLY_KEYWORDS and len(stripped.split()) > 1:
+            problems.append(
+                f"line {number}: {first!r} is a sequenceDiagram keyword and cannot "
+                f"declare a node in a {diagram_type} (drop it and write the node alone)"
+            )
+
+        # R3 — `;` ends a statement; a sequence message is not quoted, so a `;`
+        # inside the message text truncates it and orphans the remainder.
+        if is_sequence:
+            match = SEQ_MESSAGE_RE.match(line)
+            if match and ";" in match.group("text").rstrip().rstrip(";"):
+                problems.append(
+                    f"line {number}: ';' inside a sequence message ends the statement "
+                    f"and orphans the rest of the text (use ',' instead)"
+                )
+
+        # R4 — block openers must be closed by `end`.
+        if is_flowchart and first == "subgraph":
+            depth += 1
+        elif is_sequence and first in SEQUENCE_BLOCK_OPENERS:
+            depth += 1
+        elif first == "end" and (is_flowchart or is_sequence):
+            depth -= 1
+            if depth < 0:
+                problems.append(f"line {number}: `end` without a matching block opener")
+                depth = 0
+
+        # R5 — flowchart edge labels are delimited by a pair of pipes.
+        if is_flowchart and stripped.count("|") % 2:
+            problems.append(f"line {number}: odd number of '|' — an edge label is not closed")
+
+    if depth > 0:
+        problems.append(f"{depth} unclosed block(s): every subgraph/loop/alt/opt needs an `end`")
+    return problems
+
+
+def check_11_mermaid(output_dir, manifest, findings):
+    """Class 11: every Mermaid block in the output renders; required diagrams exist.
+
+    Lints EVERY ```mermaid block found anywhere under the output directory — not
+    only the per-domain `diagrams.md` files where a diagram is mandatory. A
+    broken diagram in `workflows.md` or `overview.md` is just as broken, and
+    "where the artifact must exist" is a smaller set than "where it must be
+    valid". Only the output tree is read; the skill's own files are never
+    scanned.
+
+    Also verifies each declared domain's `diagrams.md` carries the three
+    mandated diagram kinds: sequence, component, and workflow/state.
+    """
+    types_by_file = {}
+    for path in sorted(output_dir.rglob("*.md")):
+        if not path.is_file():
+            continue
+        text = read_text_tolerant(path)
+        if text is None:
+            continue
+        rel = to_forward_slash(path.relative_to(output_dir))
+        for index, block in enumerate(_mermaid_blocks(text), 1):
+            tokens = block.strip().split()
+            types_by_file.setdefault(rel, []).append(tokens[0] if tokens else "")
+            for problem in lint_mermaid_block(block):
+                findings.add(11, f"{rel} block {index}: {problem}")
+
+    if manifest is None:
+        return
+    for domain in manifest.get("domains", []):
+        slug = domain.get("slug", "?")
+        rel = f"domains/{slug}/diagrams.md"
+        if not (output_dir / "domains" / slug / "diagrams.md").exists():
+            continue  # class 10 reports the missing file
+        present = set(types_by_file.get(rel, []))
+        if not present:
+            findings.add(11, f"Domain '{slug}': diagrams.md contains no Mermaid block")
+            continue
+        for label, expected in (
+            ("sequence", SEQUENCE_DIAGRAM_TYPES),
+            ("component", COMPONENT_DIAGRAM_TYPES),
+            ("workflow/state", WORKFLOW_DIAGRAM_TYPES),
+        ):
+            if not (present & expected):
+                findings.add(
+                    11,
+                    f"Domain '{slug}': diagrams.md has no {label} diagram "
+                    f"(expected one of {', '.join(sorted(expected))})",
+                )
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -715,6 +959,7 @@ def main():
     check_8_evidence(output_dir, all_rules, args.repo, findings)
     check_9_counts(manifest, all_rules, findings)
     check_10_no_stubs(output_dir, manifest, findings)
+    check_11_mermaid(output_dir, manifest, findings)
 
     print(findings.summary(args.format))
     sys.exit(0 if findings.passed else 1)

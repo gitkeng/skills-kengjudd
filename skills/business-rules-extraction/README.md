@@ -4,7 +4,7 @@ Statically extracts, documents, and verifies business rules from any codebase. P
 domain-decomposed rule catalogs with line-level evidence, acceptance criteria, and
 mechanical validation.
 
-Version: 1.0.1 (skills-kengjudd numbering; imported from `gitkeng/aws-kiro-atx-lab`
+Version: 1.1.0 (skills-kengjudd numbering; imported from `gitkeng/aws-kiro-atx-lab`
 where it was numbered 1.1.0 — see `metadata.upstream` in `SKILL.md`)  
 License: MIT
 
@@ -111,3 +111,6 @@ business-rules-output/
 8. Evidence file existence, line range validity, snippet containment
 9. Manifest↔rules.json rule count agreement
 10. No empty/stub files in required output tree
+11. Mermaid syntax — every ```mermaid block anywhere in the output tree is linted
+    for constructs Mermaid v11 rejects, and each domain's `diagrams.md` carries
+    the three required diagram kinds (sequence, component, workflow/state)

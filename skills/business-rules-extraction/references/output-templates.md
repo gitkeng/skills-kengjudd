@@ -165,6 +165,8 @@ Enumeration of business features/capabilities within the domain. Each feature ha
 
 Business process flows with steps, decision points, actors, state transitions, and error paths. Reference Mermaid diagrams in `diagrams.md`.
 
+Where this file embeds a Mermaid block of its own, follow `references/mermaid-syntax.md`. In a `flowchart` an actor is an ordinary node — `client["Ordering client"]` — never `actor client["…"]`: `actor` is a `sequenceDiagram` keyword and is a parse error in a flowchart, which blanks the whole block.
+
 ## domains/&lt;slug&gt;/validations.md
 
 All input and data validation logic: field-level, cross-field, and business-level validations with their enforcement points.
@@ -188,11 +190,58 @@ Questions for business stakeholders. Each item cites the evidence that prompted 
 
 ## domains/&lt;slug&gt;/diagrams.md
 
+Read `references/mermaid-syntax.md` before writing any block here. A parse error
+blanks the entire diagram, not one line.
+
 Three required Mermaid diagram types per domain:
 
 1. **Sequence diagram** — key business interactions between actors/components.
+
+```mermaid
+sequenceDiagram
+  actor client as Ordering client
+  participant orderSvc as Order service
+  participant ledger as Ledger store
+  client->>orderSvc: submit order
+  orderSvc->>ledger: record entry, mark settled
+  ledger-->>orderSvc: confirmation
+```
+
 2. **Component diagram** — service components and their relationships.
+
+```mermaid
+flowchart LR
+  client["Ordering client"] -->|"submits"| orderApi["Order API"]
+  orderApi --> pricing["Pricing component"]
+  pricing --> ledger[("Ledger store")]
+```
+
 3. **Workflow/state diagram** — business process flow or state machine.
+
+```mermaid
+stateDiagram-v2
+  [*] --> Draft
+  Draft --> Submitted: submit
+  Submitted --> Settled: credit available
+  Submitted --> Rejected: credit exhausted
+  Settled --> [*]
+  Rejected --> [*]
+```
+
+Three hazards these templates exist to prevent:
+
+- **`actor` is a `sequenceDiagram` keyword only.** It declares a participant in
+  the sequence block above. In the flowchart an actor is an ordinary node id
+  (`client["Ordering client"]`); writing `actor client["…"]` there is a parse
+  error.
+- **A node id is not a declaration and cannot be reused.** Two actors in one
+  flowchart means two distinct ids — `client`, `settlementBank` — not two
+  `actor` lines. Redeclaring an id merges the nodes instead of failing.
+- **Never write `;` in a sequence message.** Message text after `:` is read raw,
+  so `;` ends the statement and orphans the remainder — use `,`, as in
+  `record entry, mark settled` above. Quoting does not rescue it: even
+  `orderSvc->>ledger: "record; settle"` is a parse error. Inside a *flowchart*
+  label, quoting does make `;` safe: `a["priced; then settled"]`.
 
 ## glossary.md
 

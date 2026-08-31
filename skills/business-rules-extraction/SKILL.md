@@ -8,8 +8,8 @@ description: >-
   analyze legacy system, what does this system do, mine rules from code.
 license: MIT
 metadata:
-  version: "1.0.1"
-  updated: "2026-08-30"
+  version: "1.1.0"
+  updated: "2026-08-31"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/business-rules-extraction @595f830 (upstream version 1.1.0)"
 ---
 
@@ -51,7 +51,7 @@ For each domain in extraction order:
 10. For each candidate rule: phrase atomically (no OR on condition, no AND on action); assign type and category per the taxonomy; collect evidence with file, line_start, line_end, snippet, and layer; link to features/workflows and glossary terms; set confidence and initial review status. Register every distinct enforcement location as a separate candidate — do not pre-merge at this stage.
 11. **Candidate fingerprint and comparison.** After all files in the current domain are mined, group candidates by business object/data element + observable outcome. For every group with more than one candidate, compare four dimensions: (a) subject scope — same entity/actor population? (b) condition/trigger — same guard? (c) threshold — same numeric, temporal, or categorical boundary? (d) outcome — same business effect? Decision: ALL four identical across layers → MERGE into one rule with multiple evidence entries. ANY dimension differs (different threshold, different population scope, different outcome) → KEEP as SEPARATE rules with bidirectional `conflicting_rule_ids`; flag in `open_questions` as supplemental documentation but NEVER as a substitute for the structural link. Merely associated rules addressing different business concepts that reference the same entity → `related_rule_ids` only (see pitfalls.md §5).
 12. Flag dead code (unreachable logic) and suspicious patterns (magic values, comment-contradicts-code) — never silently treat them as active business rules. Beware framework-default configuration: only extract a configuration value as a business rule if a stakeholder would need to know about it (see pitfalls.md §11).
-13. Write the domain's `rules.json` (canonical), then render `business-rules.md`, `overview.md`, `features.md`, `workflows.md`, `validations.md`, `integrations.md`, `open-questions.md`, and `diagrams.md` (sequence, component, workflow in Mermaid).
+13. Write the domain's `rules.json` (canonical), then render `business-rules.md`, `overview.md`, `features.md`, `workflows.md`, `validations.md`, `integrations.md`, `open-questions.md`, and `diagrams.md` (sequence, component, workflow in Mermaid). **Read `references/mermaid-syntax.md` before writing any Mermaid block, in `diagrams.md` or anywhere else** — a parse error blanks the whole block, so one bad line costs an entire diagram.
 14. Persist progress: write a marker file `domains/<slug>/.complete` after each domain so extraction is resumable. On resume, skip domains whose `.complete` marker exists.
 
 ### Cross-Domain Finalization
@@ -63,7 +63,8 @@ For each domain in extraction order:
 ### Verification
 
 18. Run the verification pass: accuracy (statement matches code behavior), redundancy (merge/conflict applied — every multi-location enforcement resolved per step 11; no `related_rule_ids` pair where dimensions differ), completeness (coverage ledger accounts for all files), relevance (plumbing excluded, legacy hacks flagged). Confirm backward traces: every rule referencing a configurable threshold cites evidence from both the enforcement site and the definition/configuration source.
-19. Run `scripts/validate_output.py <output-dir> --repo <repo-root>`. Fix all failures and rerun until exit 0. Extraction is not complete while any check fails.
+19. Every Mermaid block in the output renders. The shipped lint (check class 11) catches the common fatal mistakes but is a heuristic, not a parser — passing it is necessary, not sufficient. Re-read `references/mermaid-syntax.md` against every block you wrote.
+20. Run `scripts/validate_output.py <output-dir> --repo <repo-root>`. Fix all failures and rerun until exit 0. Extraction is not complete while any check fails.
 
 ## Rule Identity and Rerun Policy
 
@@ -117,7 +118,7 @@ business-rules-output/
 
 - Do not proceed past Pass 1 until the manifest passes schema validation and the entity-ownership (class 2) and coverage-accounting (class 7) criteria are satisfied.
 - Do not declare a domain complete until its `rules.json` passes schema validation.
-- Do not declare extraction complete until all ten validator checks pass with `--repo`.
+- Do not declare extraction complete until all eleven validator checks pass with `--repo`.
 - If domain boundaries cannot be determined (e.g., trivial or homogeneous codebase), collapse into a single domain covering all analyzed source and document the decision in `manifest.json`.
 - If a file cannot be analyzed (encoding failure, extreme size, unknown binary), exclude with reason and continue — never halt the full extraction for one file.
 
@@ -136,6 +137,7 @@ Load each reference file only when its condition is met:
 | `references/rule-schema.md` | Writing or reviewing any `rules.json` |
 | `references/taxonomy.md` | Assigning `rule_type` or `category` to any rule |
 | `references/output-templates.md` | Creating any output file for the first time |
+| `references/mermaid-syntax.md` | Writing any Mermaid block — `diagrams.md` or any other document |
 | `references/pitfalls.md` | Reviewing extraction results or encountering ambiguous code |
 | `references/sme-validation.md` | Generating SME artifacts or preparing a validation session |
 | `references/playbooks/mainframe.md` | Target contains COBOL, JCL, PL/I, RPG, or CICS artifacts |
