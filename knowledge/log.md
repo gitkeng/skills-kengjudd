@@ -1,5 +1,43 @@
 # Knowledge Base Log
 
+## 2026-09-07
+
+- **init-project 1.1.0** (repo v0.13.0) — the fix wave from the six-expert
+  review recorded in `docs/init-project-expert-review-2026-09-06.md` (56
+  verified proposals, 11 maintainer decisions, 23 dropped findings) was
+  applied in one release. Structural changes: every step now has a label and
+  is cited by it; SKILL.md was cut to 439 lines / 25.6 KB with the Phase 6
+  report, the run lifecycle (target root, detection signals, marker forms,
+  Phase 0 states, run record, write plan, resume, rollback, headless gate,
+  chat ledger) and the self-check moved into three new references; a fourth
+  new reference archives every shipped standing-rules block. Questions now
+  have a type — interview questions count toward the 25 ceiling, consent
+  asks are a closed set (target root, write plan, then at most four
+  post-plan turns) that never counts. Run state lives in
+  `<kb>/init-project-run.md`, an OKF `Decision` with flat namespaced keys
+  and double-quoted user text; the index block is rebuilt as a union on
+  re-run; marked context files get one batched block diff; skill-owned files
+  are marked by `init_project_asset` / `init_project_version` and bypass the
+  batched-amend ask. Two assets now ship into every bundle:
+  `kb-maintenance.md` (the consumer-facing format contract; standing rules
+  1, 5 and 6 were rewritten to point at it, bullets 2–3 keep their anchor
+  text) and, on opt-in, `karpathy-guidelines.md` vendored verbatim from
+  `multica-ai/andrej-karpathy-skills` at commit `2c60614` (MIT), replacing
+  the "fuller guidelines from memory" gap. `scripts/validate_output.py`
+  (Python 3.9 stdlib) implements the nine checks of `self-check.md` plus
+  `--detect`, `--probe-folder` and the maintainer `--self` gate; it was
+  exercised on a hand-built positive fixture (exit 0) and a broken one
+  (C2, C4, C6, C9 all caught). Two earlier commits (`f890369`, `baae7e5`)
+  that touched the skill without a version bump are now logged in the
+  CHANGELOG. Maintainer decisions: bump 1.1.0 not 2.0.0 (1.0.0 output is
+  still read), single release, all panel recommendations accepted for Q-2
+  to Q-11. Recorded in `/skill-authoring/init-project-lessons.md` §10 and
+  the new `/skill-authoring/init-project-scenarios.md`. **Not run in this
+  release:** scenarios A, C and E (interactive runs) and the trigger /
+  anti-trigger tests after the description change — the description now
+  names five agents' `/init` commands instead of only Claude Code's; both
+  are open gaps to close before the next release.
+
 ## 2026-08-31
 
 - **codebase-analysis 2.0.0** (repo v0.12.0) — the skill formerly named

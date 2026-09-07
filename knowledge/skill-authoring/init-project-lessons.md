@@ -17,7 +17,9 @@ tags:
   - playbook
 sources:
   - resource: ../../skills/init-project/SKILL.md
-    title: The skill this playbook is about (init-project 1.0.0, repo v0.10.0)
+    title: The skill this playbook is about (init-project 1.1.0, repo v0.13.0)
+  - resource: ../../docs/init-project-expert-review-2026-09-06.md
+    title: The six-expert review whose 56 proposals produced 1.1.0 (section 10 below)
   - resource: ../../skills/init-project/references/expert-review-protocol.md
     title: Adaptive review protocol as shipped (roster cap, convergence, adjudication)
   - resource: ../../skills/init-project/references/context-file-guidelines.md
@@ -33,12 +35,14 @@ status: stable
 `init-project` is the largest skill in this repo: an orchestrator that
 interviews the user, researches, writes an OKF knowledge base into a target
 project, generates a canonical `AGENTS.md` plus per-agent adapters, and runs an
-adaptive expert review — 486 lines of SKILL.md over five references and two
-asset trees. It was built once, then **hardened twice**: two full end-to-end
-runs against real directories, and a four-domain expert panel (loop, harness,
-context, and prompt engineering) whose findings were all accepted and applied
-in one wave (59 applied as written, 6 adapted, none dropped), followed by a
-second round for four breakages the wave itself introduced.
+adaptive expert review — 439 lines of SKILL.md over nine references, two
+asset trees and a validator. It was built once, then **hardened three
+times**: two full end-to-end runs against real directories, a four-domain
+expert panel (loop, harness, context, and prompt engineering) whose findings
+were all accepted and applied in one wave (59 applied as written, 6 adapted,
+none dropped) followed by a second round for four breakages the wave itself
+introduced, and — for 1.1.0 — a six-expert review with two-lens verification
+(section 10).
 
 This document keeps the transferable part. The per-agent facts the skill is
 built on live in
@@ -266,6 +270,61 @@ character), put the capability blurb after, and anti-triggers last. Re-run the
 trigger tests after any description rewrite — they are cheap and they are the
 only evidence that a rewrite did not break discovery.
 
+## 10. What a verified review panel adds to a working skill
+
+1.0.0 passed its runs and its first panel. A second panel of six experts
+(prompt, context, agent, knowledge-base, harness, loop engineering) plus a
+completeness critic, with every proposal re-checked by two independent
+reviewers — one asking *is the quoted evidence real and the priority
+right*, the other *can this be applied as written without breaking a repo
+rule or another proposal* — found 56 defects and refuted none. Almost every
+one lived **at a seam**, not inside a rule:
+
+- **Two correct rules, one input.** The 25-question ceiling counted consent
+  asks and offered "take recommendations" as an exit — which for a replace
+  ask is a silent overwrite. The fix is a *type system for questions*:
+  interview questions count, consent asks are a closed set that never
+  counts and is never answered by recommendation, and the post-plan consent
+  turns are a fixed number (four), not "one per artifact".
+- **State the workflow demands but nobody records.** Phase 0 promised to
+  recover the previous answers; no file held them. Now one run record
+  (`init-project-run.md`, an OKF `Decision` with flat, namespaced,
+  parser-safe keys) is written the moment `<kb>/` exists and is the arbiter
+  of every Phase 0 state — before that moment, a chat ledger re-emitted at
+  two fixed points survives compaction.
+- **Idempotency claimed in prose, contradicted in detail.** The index block
+  was "replaced" in one file and "never overwritten" in another; a merge
+  into a marked file overwrote a consumer's in-block edits without showing
+  them. The block is now rebuilt as a *union*, marked files get one batched
+  block diff, and skill-owned files are exempt from the batched-amend ask
+  by a frontmatter key, not by filename.
+- **Checks that are orders, not checks.** `grep <` could never come back
+  clean because the markers start with `<`. Every deterministic check moved
+  into `scripts/validate_output.py` (stdlib, failure-only, exit codes, a
+  pinned YAML subset, `--self` for the skill itself) with a normative
+  `self-check.md` and a two-retry fix loop — the same shape the sibling
+  skills already shipped.
+- **The generated project outlives the run.** Standing rules told every
+  consumer to write the KB, but nothing in the project said how. A
+  maintenance asset now travels with every bundle, the standing block was
+  rewritten to point at it, and every shipped version of that block is
+  archived so a re-run can recognize its own older output.
+- **Verification amends more than it refutes.** Of 56 proposals, 55 were
+  amended by at least one lens. The recurring amendments were the same
+  three every time: the proposal cited a file another proposal creates
+  (order the wave), it added lines to a SKILL.md that had one line of
+  headroom (cut first, then add pointers), or its wording collided with a
+  rule that stays. Ordering the wave (labels → cut → new references →
+  content → validator → description tests → bookkeeping last) mattered more
+  than any single change, and the bookkeeping proposal — two commits had
+  touched the skill after a release without a version bump — went last so
+  that the recorded numbers were final.
+
+The one-line lesson: **a skill's second review is about its seams, and a
+seam fix needs a place to live** (a reference section, a record key, a
+validator check) — a sentence in SKILL.md is where the last review's fixes
+went to conflict with each other.
+
 ## Checklist for the next orchestrator-sized skill
 
 1. For every consumer of a generated artifact, record *how* it reads the file,
@@ -286,6 +345,10 @@ only evidence that a rewrite did not break discovery.
    explicit acceptance bar, and a recorded reason for every rejection.
 9. Re-run trigger and anti-trigger tests after any description change, and name
    the built-in commands the skill must not shadow.
+10. Give every question a type (counts / consent) and every consent a fixed
+    slot; give run state a file with a parser-safe shape; give every
+    deterministic check a script; and give every rule a single home that the
+    generated output can still reach after the skill is gone.
 
 ## Related
 
