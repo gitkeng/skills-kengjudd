@@ -91,10 +91,19 @@ a minor bump.
   (the `codebase-analysis` rename pointer) changed this skill after 0.10.0
   without a `metadata.version` bump; they shipped in 0.11.0 / 0.12.0 and are
   recorded here.
-- **Not yet run for this release:** the interactive scenarios A, C, E of
-  `knowledge/skill-authoring/init-project-scenarios.md` and the
-  trigger/anti-trigger tests after the description change. Both are open
-  gaps; `validate_output.py --self` and the validator fixtures did run.
+- **Tested:** `validate_output.py --self` exit 0; the validator on a
+  positive fixture (exit 0) and a broken one (C2, C4, C6, C9 caught);
+  trigger tests 5/5 and anti-trigger tests 4/4 after the description change
+  (Claude Code 2.1.263, `claude -p`); scenario E (headless) twice with zero
+  files written; scenarios A (fresh run, Thai, three agents, four
+  technologies) and C (re-run changing one answer: union index, block diff
+  with a kept line, backup directory, run record advanced to run 2) both
+  interactive with validator exit 0. The runs found and fixed three skill
+  defects before release: the validator's YAML subset rejected the `>-`
+  block scalars the skill's own assets use (C4/C7 were silently skipped);
+  the Karpathy block's "Opt-out: delete this block" contradicted standing
+  rule 5; the template's "Read-first rule" line restated standing rule 1.
+  Results and open observations are in `knowledge/log.md`.
 
 ### Knowledge
 

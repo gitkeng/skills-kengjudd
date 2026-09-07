@@ -32,11 +32,57 @@
   CHANGELOG. Maintainer decisions: bump 1.1.0 not 2.0.0 (1.0.0 output is
   still read), single release, all panel recommendations accepted for Q-2
   to Q-11. Recorded in `/skill-authoring/init-project-lessons.md` §10 and
-  the new `/skill-authoring/init-project-scenarios.md`. **Not run in this
-  release:** scenarios A, C and E (interactive runs) and the trigger /
-  anti-trigger tests after the description change — the description now
-  names five agents' `/init` commands instead of only Claude Code's; both
-  are open gaps to close before the next release.
+  the new `/skill-authoring/init-project-scenarios.md`.
+- **init-project 1.1.0 — test results** (same day, Claude Code 2.1.263,
+  `claude -p` with the project-scope symlink install). Trigger tests
+  **5/5**: "init this project for Claude Code", "set up AGENTS.md for this
+  repo", "ตั้งต้นโครงการให้ agent หน่อย", "generate CLAUDE.md and GEMINI.md
+  for this project", "ตั้งค่า knowledge base ให้โปรเจกต์นี้" each invoked
+  `init-project` as the first tool call. Anti-trigger tests **4/4**: bare
+  `/init`, "run codex /init to create an AGENTS.md here", "I'm on Gemini
+  CLI, run /init to make a GEMINI.md" invoked no skill; "analyze this
+  codebase in depth and document its architecture and tech debt" invoked
+  `codebase-analysis`. **Scenario E passed twice** — in this repository's
+  root and in an empty scratch directory: zero files written in all nine
+  headless runs; the last message was the target-root consent ask (the model
+  cannot see the `-p` flag, so the ask is the probe — the scenarios playbook
+  now accepts that outcome). In the repository run, `--detect` correctly
+  reported *fresh* although `knowledge/` is an OKF bundle: an index without
+  the markers is somebody else's bundle (signal (b) alone). Harness note,
+  not a skill defect: in the scratch directory the skill was a symlink
+  pointing outside the working directory, and `claude -p` denied every Read
+  of its `references/` — a symlink-channel install only works headlessly
+  when the skill directory resolves inside the working tree (or with
+  `--add-dir`).
+- **init-project 1.1.0 — scenarios A and C** (same day, interactive, Kongsak
+  answering, target `/tmp/ip-scenario-a`; Claude Code). **A** (empty dir;
+  coding + a free-text `backend` task type; Claude Code + Codex + ZCode; Go,
+  Echo, PostgreSQL, golangci-lint; Thai files): 24/25 interview questions,
+  validator exit 0, review 18 findings (15 applied, 1 user-conflict ask
+  accepted — `gofmt -l` never fails — 2 rejected), re-check 4 regressions
+  fixed, `--detect` reports *re-run* afterwards. **C** (re-run of A changing
+  `backend/auth` to JWT): Phase 0 recovered every answer by key and asked 4
+  questions; the write plan backed up six files to
+  `.init-project-backup/<ts>/`; the index was rebuilt as a union (7 kept +
+  1); the block diff listed 5 dropped lines and the user kept the one
+  review-added line; everything outside the markers survived; record went to
+  run 2 with `init_project_previous_started`; review 9 findings applied,
+  re-check 2 regressions fixed; validator exit 0. **Defects the runs found
+  in the skill, fixed on the branch before release:** (1) the validator's
+  YAML subset rejected `description: >-`, which the skill's own assets use,
+  so C4/C7 were silently skipped on every file — block scalars are now
+  accepted and `self-check.md` says so; (2) the template's Karpathy line
+  "Opt-out: delete this block" contradicted standing rule 5 (a re-run
+  regenerates the block) — reworded; (3) the template's "Read-first rule"
+  line restated standing rule 1 — removed. **Observations left open for the
+  next release** (recorded here, not in the skill): the adjudication's
+  closed reject list has no reason for "contradicts a reference rule" and
+  no rule for two reviewers' findings contradicting each other; the bullets
+  added below the verbatim standing block have no separator in the
+  template, so a re-run's block diff drops the separator line a review
+  added; review-applied in-block edits are not stored in the run record and
+  survive a re-run only through the block-diff keep answer, which is by
+  design but worth stating in `run-lifecycle.md`.
 
 ## 2026-08-31
 
