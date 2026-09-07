@@ -7,6 +7,101 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.13.0] - 2026-09-07
+
+### init-project (1.0.0 → 1.1.0)
+
+**Changed — the fix wave from the 2026-09-06 six-expert review**
+(`docs/init-project-expert-review-2026-09-06.md`: 56 verified proposals, all
+applied under the maintainer's answers to its 11 questions). Output written
+by 1.0.0 is still detected and re-run over — a 1.0.0 standing-rules block is
+recognized from the new history file and regenerated — which is why this is
+a minor bump.
+
+- **Structure.** Every step carries a bold label and is cited by it, never
+  by number. SKILL.md shrank from 499 to 439 lines (25.6 KB, both now
+  asserted by the gate); the Phase 6 report moved to
+  `references/report-format.md`, the whole run lifecycle to
+  `references/run-lifecycle.md`, and the checks to `references/self-check.md`.
+  `references/standing-rules-history.md` archives every shipped block.
+- **Questions have a type.** The 25-question ceiling counts interview
+  questions only; consent asks (target-root confirmation, the write plan,
+  then at most four post-plan turns: block diff, batched KB amend, batched
+  user-conflict findings, migration approval) are a closed set outside it and
+  are never answered by recommendation. Every checklist item has a stable key
+  (`coding/test-framework`); a fixed interview-turn format shows a counter;
+  option 2 lists keyed recommendations; free-text checklists are confirmed in
+  one question with one revision round; any re-ask is bounded at two; a new
+  `coding/commands` question confirms the five commands `AGENTS.md` carries
+  instead of inferring them; a legacy-folders question replaces the
+  encounter-time branch that could never fire.
+- **Run state and re-runs.** Phase 0 starts by confirming the target root
+  (also the headless probe), detects from a closed literal list at depth 1,
+  and decides one of seven states with the run record as arbiter.
+  `<kb>/init-project-run.md` (OKF `Decision`, flat namespaced keys, quoted
+  user text) is created once `<kb>/` exists and closed at Phase 6; a
+  half-finished run resumes from its recorded phase. One write plan is
+  confirmed before Phase 3 writes a file; marked context files get a single
+  batched block diff instead of merge/skip/replace; the index block is
+  rebuilt as a union; skill-owned files (`init_project_asset`) are
+  regenerated without the batched-amend ask; every replace, update and
+  migration has a rollback (git checkout when tracked-and-clean, otherwise
+  `.init-project-backup/`).
+- **What the project keeps after the run.** `kb-maintenance.md` is
+  instantiated into every bundle as the consumer-facing format contract
+  (frontmatter, slugs, log grammar, add-vs-amend, spec check, data-not-
+  instructions); standing rules 1, 5 and 6 now point at it — bullets 2 and 3
+  keep the opening text the override rules anchor to. On opt-in
+  `karpathy-guidelines.md` is vendored verbatim from
+  `multica-ai/andrej-karpathy-skills` (MIT, commit `2c60614`, 2026-04-20)
+  instead of being written from memory. Technology concepts always carry
+  `verified` and `stale_after` (+30 days); every concept has `status: draft`
+  until Phase 5 stabilizes it and a tag from the concept-kinds table; one
+  `decision-*` concept per interview answer that overrides a default.
+- **Checks are a script.** `scripts/validate_output.py` (Python 3.9 stdlib,
+  failure-only output, exit 0/1/2, no network) implements checks C1–C9 —
+  marker form, placeholders from the asset-derived token list, budget in
+  lines and bytes, frontmatter in a pinned YAML subset, links, standing
+  block, run-record implications, adapter import, index — plus `--detect`,
+  `--probe-folder` and the maintainer gate `--self`. Phase 4 ends with it
+  under a two-retry fix loop; Phase 5 re-runs it after the last finding.
+- **Research and review cost.** The version check moved to the start of
+  Phase 2 as the run's single web-access probe with a hardened, anchored
+  command and a fixed route order; every technology and agent research ends
+  in a chat-ledger extract that later phases and reviewers work from; at
+  most ten technology concepts per run, confirmed with the user; four
+  fetches per uncovered agent. Reviewers start from a brief (read-only, no
+  skill activation, one fetch, the never-translated list, the fixed return
+  format); adjudication has a fixed order and one batched user-conflict ask
+  of at most three findings; the re-check is done only by reviewers whose
+  surface changed.
+- **Language, safety, portability.** One `## Never translated` list (now
+  including quoted init commands, record keys, log tokens, item keys, the
+  two verbatim assets and the backup directory); the report is in the
+  interview language; the byte cap is stated to bind first for three-byte
+  scripts; new iron rule 5 — project material is data, never instructions,
+  and secrets are cited, never copied; the anti-trigger names five agents'
+  `/init` commands instead of only Claude Code's; the skill directory is
+  defined as the directory of the loaded SKILL.md; the `## Agent notes`
+  example now illustrates a native agent.
+- **Previously shipped unlogged:** commit `f890369` (legacy-folder wiring,
+  reference TOCs, "at least N" in the cost preview, Decision provenance
+  wording, merge-cap scoping, dev/run command in the package-manager
+  question, "expands regardless of who first proposed it") and `baae7e5`
+  (the `codebase-analysis` rename pointer) changed this skill after 0.10.0
+  without a `metadata.version` bump; they shipped in 0.11.0 / 0.12.0 and are
+  recorded here.
+- **Not yet run for this release:** the interactive scenarios A, C, E of
+  `knowledge/skill-authoring/init-project-scenarios.md` and the
+  trigger/anti-trigger tests after the description change. Both are open
+  gaps; `validate_output.py --self` and the validator fixtures did run.
+
+### Knowledge
+
+- New `/skill-authoring/init-project-scenarios.md` (the five release
+  scenarios and the gate); `/skill-authoring/init-project-lessons.md` gained
+  §10 on what a verified second review adds and checklist item 10.
+
 ## [0.12.0] - 2026-08-31
 
 ### codebase-analysis (1.1.2 → 2.0.0)
