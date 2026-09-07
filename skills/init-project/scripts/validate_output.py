@@ -105,12 +105,24 @@ def parse_frontmatter(text):
             raise SubsetError(f"unparseable line {i + 1}")
         key, rest = m.group(1), m.group(2)
         if rest.strip():
-            if rest.strip().startswith("{"):
+            r = rest.strip()
+            if r.startswith("{"):
                 data[key] = parse_inline_map(rest)
-            elif rest.strip().startswith("[") or rest.strip().startswith("&") or rest.strip().startswith("|") or rest.strip().startswith(">"):
+                i += 1
+                continue
+            if r in (">", ">-", ">+", "|", "|-", "|+"):
+                # block scalar: every following line indented deeper than the key
+                i += 1
+                parts = []
+                while i < end and (lines[i].startswith(" ") or not lines[i].strip()):
+                    parts.append(lines[i].strip())
+                    i += 1
+                joiner = " " if r.startswith(">") else "\n"
+                data[key] = joiner.join(x for x in parts if x).strip()
+                continue
+            if r.startswith("[") or r.startswith("&") or r.startswith("*"):
                 raise SubsetError(f"unsupported scalar form at line {i + 1}")
-            else:
-                data[key] = unquote(rest)
+            data[key] = unquote(rest)
             i += 1
             continue
         # block: list or one-level mapping

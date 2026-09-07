@@ -23,8 +23,6 @@
   bundle. Start at `<knowledge-base-folder>/index.md` for the concept
   listing; `<knowledge-base-folder>/log.md` holds its change history and
   `<knowledge-base-folder>/kb-maintenance.md` the rules for adding to it.
-- **Read-first rule:** see `## Working rules` below — read the knowledge
-  base before researching externally, and keep it updated as you work.
 
 ## Working rules
 
@@ -56,7 +54,7 @@ Condensed from the [Karpathy guidelines](https://github.com/multica-ai/andrej-ka
 3. **Surgical changes.** Touch only what you must; clean up only your own mess. Don't refactor or "improve" adjacent code — remove only the imports/variables your own change orphaned.
 4. **Goal-driven execution.** Define verifiable success criteria and loop until met — e.g. "fix the bug" becomes "write a test that reproduces it, then make it pass."
 
-Opt-out: delete this block.
+Opt-out: delete this block, and answer "opt out" to the Karpathy question on the next init-project run — a re-run regenerates it while that answer is "include".
 <!-- karpathy:end -->
 
 ## Agent notes

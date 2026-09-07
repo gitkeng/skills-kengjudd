@@ -38,13 +38,15 @@ The script reads YAML frontmatter with its own reader, which accepts
 exactly this subset — the shape everything this skill writes conforms to:
 
 - top-level `key: scalar` (plain, single- or double-quoted; double quotes
-  escape `\"` and `\\`);
+  escape `\"` and `\\`), or a block scalar (`>-`, `>`, `|`, `|-`) whose
+  indented lines are joined — the form the skill's own `description:`
+  fields use;
 - `key:` followed by a flat list of scalars (`- item`), where an item that
   starts with `"` is always a scalar and an item of the form `- k: v` opens
   a one-level mapping (further `  k2: v2` lines belong to it);
 - `key:` followed by a one-level mapping (`  k: v`), including the inline
   form `key: { k: v, k2: v2 }`;
-- no deeper nesting, no anchors, no multi-line scalars.
+- no deeper nesting, no anchors or aliases.
 
 A file outside the subset is reported once as
 `skipped: outside parser subset` and is **not** a failure — user-authored
