@@ -2,4 +2,4 @@
 
 ## <YYYY-MM-DD>
 
-- Initialized by the init-project skill: <summary of seeded concepts>.
+- init-project: run <n>, skill <version>, seeded <slugs>

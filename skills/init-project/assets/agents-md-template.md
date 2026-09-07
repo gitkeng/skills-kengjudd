@@ -9,8 +9,8 @@
 
 ## Commands
 
-<!-- The commands an agent runs directly, from the interview's package
-     manager / test / lint / build answers. -->
+<!-- The commands the user confirmed in the interview (coding/commands).
+     Delete a line the project has no command for. -->
 - `<install>` — install dependencies
 - `<dev>` — run locally
 - `<test>` — run the test suite
@@ -21,14 +21,16 @@
 
 - **Folder:** `<knowledge-base-folder>/` — an OKF (Open Knowledge Format)
   bundle. Start at `<knowledge-base-folder>/index.md` for the concept
-  listing; `<knowledge-base-folder>/log.md` holds its change history.
+  listing; `<knowledge-base-folder>/log.md` holds its change history and
+  `<knowledge-base-folder>/kb-maintenance.md` the rules for adding to it.
 - **Read-first rule:** see `## Working rules` below — read the knowledge
   base before researching externally, and keep it updated as you work.
 
 ## Working rules
 
-- Read this project's knowledge base first, and research externally only
-  when the knowledge base does not already have the answer.
+- Start at this project's knowledge base index and open only the concepts
+  the task needs; research externally only when the knowledge base does not
+  already have the answer.
 - After finishing any piece of work, update the knowledge base with what
   changed.
 - When you learn something new about this project while working, capture it
@@ -36,16 +38,13 @@
 - When a knowledge source outside this repository has its own index (an OKF
   bundle, an LLMWiki, or similar), reference it by index + link and pull in
   only the excerpts you need — never copy it wholesale.
-- Keep this file and its adapters current every work cycle, but never let
-  them bloat: once a detail stops being something you need on every turn,
-  move it into the knowledge base and link it from here instead.
-- Watch the OKF spec version: when you have web access, fetch
-  `https://raw.githubusercontent.com/GoogleCloudPlatform/open-knowledge-format/main/SPEC.md`
-  and read its `**Version X.Y**` line before knowledge-base work. When that
-  version is newer than the `okf_version` recorded in the knowledge base's
-  index, propose a migration to the user — never migrate silently and never
-  ignore the drift. With no web access, work against the recorded
-  `okf_version` and say that the check was skipped.
+- Keep this file and its adapters current, but edit outside the
+  `init-project` markers — a re-run regenerates what is inside them — and
+  never let them bloat: once a detail stops being something you need on
+  every turn, move it into the knowledge base and link it from here instead.
+- Before changing the knowledge base, follow the `kb-maintenance.md` file in
+  this project's knowledge base: it carries the format contract and the OKF
+  spec-version check — never migrate silently and never ignore the drift.
 
 <!-- karpathy:start -->
 ## Engineering guidelines (Karpathy)
@@ -63,12 +62,12 @@ Opt-out: delete this block.
 ## Agent notes
 
 <!-- One bullet per agent selected during the interview, filled from the
-     matrix reference. Each bullet is an imperative constraint for the
+     matrix extract. Each bullet is an imperative constraint for the
      agents that read this file later, not a note about the init run. For a
      native agent the bullet also names ONE quirk from the closed list: the
      file it reads, an init command that would overwrite this file (quote
      the command and its create-vs-update behavior from the matrix — "do not
      run <command> here"), or an import-expansion limit. For an adapter
      agent the quirk lives in that agent's own file. -->
-- **<Agent name>:** <adapter kind (native / import-adapter / full-copy) and, for a native agent, the one quirk — e.g. "reads CLAUDE.md, never AGENTS.md"; "do not run /init here — it creates an AGENTS.md">
+- **<Agent name>:** <adapter kind (native / import-adapter / full-copy) and, for a native agent, the one quirk — e.g. "do not add @ imports — ZCode does not expand them"; "do not run /init here — it creates an AGENTS.md">
 <!-- init-project:end -->

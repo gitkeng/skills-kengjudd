@@ -481,16 +481,22 @@ Sources:
 ## Fallback rule
 
 Use this decision procedure for any agent not covered by the 12 sections
-above, after researching it live from its official documentation:
+above, after researching it live from its official documentation — at most
+**four fetches per agent** (the docs entry point, the context-file page,
+the configuration page, one more for whatever is still missing); a field
+still unresolved after that is recorded as "not documented" in the format
+above, and if the adapter rule itself is still undecidable the run asks the
+user (SKILL.md `## Edge cases`, "An agent research cannot resolve"):
 
 1. If the agent reads `AGENTS.md` directly at session start (or a
    configurable context-file list that can include it, with no import step
    required) → **`native`**. No adapter file is needed.
 2. Else, if the agent's own native context file supports importing or
    including another file (an `@path` mention or similar include
-   mechanism) → **`import-adapter`**. Create the agent's native file
-   containing an import of `AGENTS.md`, with any agent-specific additions
-   below the import.
+   mechanism) → **`import-adapter`**. Instantiate
+   `assets/adapter-template.md` as the agent's native file: the import
+   line uses that agent's documented syntax verbatim, with any
+   agent-specific additions below the import.
 3. Else — the agent has neither native `AGENTS.md` reading nor an import
    mechanism — → **`full-copy`**. Generate the agent's native context file
    as a full copy of `AGENTS.md`'s content, with this provenance header at
