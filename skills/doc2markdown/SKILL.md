@@ -9,7 +9,7 @@ description: >-
   "พาวเวอร์พอยต์"), RFPs, TORs, meeting minutes, and cost breakdown
   spreadsheets.
 metadata:
-  version: "1.1.2"
+  version: "1.2.0"
   updated: "2026-11-08"
   upstream: "local ~/.claude/skills/doc-to-markdown (no git repo, no upstream version; imported 2026-08-29)"
 ---
@@ -24,9 +24,10 @@ The hard parts are already solved deterministically by the scripts in
 deciding heading levels, placing figures — and then checking the result.
 
 **Never transcribe a document by reading it yourself from scratch.** Run the
-extractor first. It repairs Thai text that every naive extraction corrupts (see
-"Why the scripts exist"), and it hands you page images, table grids, and saved
-figures that you would otherwise have to reconstruct by guesswork.
+extractor first. It repairs Thai text that every naive extraction corrupts,
+keeps the document's real order, and hands you page images, table grids, and
+saved figures that you would otherwise have to reconstruct by guesswork. The
+per-kind reference explains which failure each script prevents.
 
 ## Requirements
 
@@ -34,10 +35,10 @@ figures that you would otherwise have to reconstruct by guesswork.
 (PEP 723), so `uv run scripts/probe.py …` installs what it needs on first run.
 Nothing to set up.
 
-All `scripts/` paths in this skill are relative to the **skill directory**, not
-the working directory. If this skill is installed as a symlink, resolve its real
-location first (`readlink -f <this-skill-dir>`) and run the scripts from there,
-e.g. `uv run <skill-dir>/scripts/probe.py …`.
+All `scripts/` and `references/` paths in this skill are relative to the
+**skill directory**, not the working directory. If this skill is installed as
+a symlink, resolve its real location first (`readlink -f <this-skill-dir>`)
+and run the scripts from there, e.g. `uv run <skill-dir>/scripts/probe.py …`.
 
 ## Layout
 
@@ -75,6 +76,16 @@ Legacy `.doc` / `.xls` / `.ppt` are rejected by design. Ask the user to save as
 `.docx` / `.xlsx` / `.pptx`; converting them silently is not something this
 skill does.
 
+**Then read exactly one reference for the kind probe reported** — it holds
+that kind's manifest flags, part naming, review procedure or subagent brief,
+and the reasons behind its script:
+
+| `kind` | Read |
+| --- | --- |
+| `pdf` | [references/pdf.md](references/pdf.md) |
+| `docx`, `xlsx` | [references/docx-xlsx.md](references/docx-xlsx.md) |
+| `pptx` | [references/pptx.md](references/pptx.md) |
+
 ## Step 2 — Extract
 
 Pick the extractor by kind. All four write `<work>/manifest.json`.
@@ -86,122 +97,28 @@ uv run scripts/extract_xlsx.py "<file>" --work "<work>" --assets "<out_dir>/asse
 uv run scripts/extract_pptx.py "<file>" --work "<work>" --assets "<out_dir>/assets"
 ```
 
-Then read `manifest.json` and let its `summary` decide how much work is needed:
-
-- `pages_needing_ocr` — those pages have no usable text layer. They must be
-  transcribed from `pages/pNNN.png`, not from the `.txt`.
-- `thai_text_layer_unreliable: true` — the font collapsed า into ำ across the
-  whole document. **Every** page must be read from its render; the `.txt` files
-  are unusable no matter how clean they look.
-- `pages_to_read_image` — pages where the render is worth the tokens (tables,
-  figures, odd symbol glyphs). Pages not in this list can be transcribed from
-  their `.txt` alone.
-- `repeated_assets` — a logo or letterhead repeating on most pages. Link it
-  once at first occurrence, not on every page.
-- `sheets_with_uncached_formulas` — that workbook was never opened in Excel, so
-  cells show `=SUM(...)` instead of a number. Say so in the output; do not
-  invent totals.
-- `sheets_with_hidden_data`, `skipped_sheets` — hidden rows/columns were
-  extracted anyway; hidden *sheets* were not. Mention both to the user.
-- `slides_needing_ocr` (pptx) — those slides are one full-page picture (or a
-  background image fill) with no usable text or structured content. They must
-  be transcribed from `slides/sNNN.png`, the slide's own picture normalised as
-  its render — exactly like a scanned PDF page.
-- `slides_with_overlay_text` (pptx) — OCR slides that still have a few text
-  boxes on top of the picture. **The render does not contain that text** (it is
-  the embedded picture only, not a rasterised slide); the transcription brief
-  must say to carry the draft's text into the part.
-- `slides_with_little_text` (pptx) — slides with under 40 chars that are NOT
-  OCR slides (no full-page picture). Whatever their content is, it needs eyes:
-  review them from the draft and, when in doubt, the figure files.
-- `slides_render_unavailable` (pptx) — full-page-image slides whose picture is
-  in a format neither Pillow nor LibreOffice could convert (e.g. EMF/WMF
-  without LibreOffice). The sanctioned part content is the `## Slide N`
-  heading plus one italic line: `*This slide is a single image in a format
-  that could not be converted; it was not transcribed.*` Then tell the user.
-- `slides_low_res_render` (pptx) — OCR slides whose render is under 1200 px on
-  the long side; transcription confidence is limited, say so in the report.
-- `slides_with_unreadable_charts` (pptx) — the chart's cached data could not be
-  read, and slides are never rendered whole (no PowerPoint/LibreOffice
-  dependency in this skill). The draft carries an italic placeholder line;
-  keep it in the part and tell the user which slide's chart is missing.
-- `slides_with_background_image` (pptx) — a full-bleed picture sits *under*
-  real content. It is saved as an asset flagged `background: true` and linked
-  at the end of the draft. Read the image: if it carries content (an annotated
-  infographic), transcribe that content; if it is wallpaper, remove the link.
-- `slides_with_notes` (pptx) — these slides have speaker notes; fidelity
-  rule 10 applies. On OCR slides the notes live only in the draft — the render
-  cannot show them — so the transcription brief must carry them over verbatim.
-- `furniture_dropped` (pptx) — text boxes whose whole content was the slide's
-  own number, dropped as page furniture. Listed so the drop is never silent.
+Then read `manifest.json` and let its `summary` flags decide how much work is
+needed — the kind's reference lists every flag and what to do about it. Two
+are universal: a flag naming pages or slides that **need OCR** means those
+units are transcribed from their render, never from the `.txt`; and
+`repeated_assets` means a recurring logo is linked once, not on every page.
 
 ## Step 3 — Write the parts
 
-One Markdown file per unit, into `<work>/parts/`. The names matter — `merge.py`
-sorts them naturally and checks the count against the manifest:
+One Markdown file per unit, into `<work>/parts/`, named as the kind's reference
+says — `merge.py` sorts them naturally and checks the count against the
+manifest.
 
-| Kind | One part per | File name |
-| --- | --- | --- |
-| pdf | page | `parts/p001.md`, `parts/p002.md`, … |
-| docx | chunk in `manifest.chunks` | `parts/c01.md`, … |
-| xlsx | entry in `manifest.sheets[].parts` | `parts/s01_p01.md`, … |
-| pptx | slide | `parts/s001.md`, `parts/s002.md`, … |
-
-**DOCX, XLSX, and PPTX are already drafted.** `chunks/cNN.md`,
-`sheets/sNN_pNN.md`, and `slides/sNNN.md` are real Markdown, produced
-deterministically. Read each draft against its `.txt` counterpart, fix what
-needs judgement (heading levels, figure placement, a header band the guess got
-wrong), and save to `parts/`. If a draft is already right, copy it across
-unchanged — do not rewrite for style.
-
-**PPTX exception: OCR slides have no text draft.** A slide flagged `needs_ocr`
-is one full-page picture; its `slides/sNNN.md` holds at most overlaid text and
-the speaker-notes blockquote. Those slides are transcribed from
-`slides/sNNN.png` by subagents. **Batch only the slide numbers in
-`summary.slides_needing_ocr`** — probe's `batches` span *all* slides, which is
-wrong for pptx; group the flagged numbers into ranges of `batch-size` yourself.
-Dispatch one subagent per range, concurrently, with this brief, filled in:
-
-> Transcribe slides {list} of {source} into Markdown.
-> For each slide write `{work}/parts/s{NNN}.md` (zero-padded to 3).
-> Per slide, `{work}/manifest.json` has the entry under `slides`:
-> - `image_file` — the slide's render. **Read it.** It is the embedded
->   full-page picture only — not a rasterised slide — so it is the authority
->   for everything visible *in the picture*, and nothing else.
-> - `chars` and `overlay_text` — when true, text boxes sit on top of the
->   picture and are NOT in the render. Carry the text from the slide's
->   `text_file` into the part, placed where it sits on the slide.
-> - If the slide's `draft_file` contains a `> **Speaker notes:**` blockquote,
->   append it verbatim at the end of the part (rule 10) — the render cannot
->   show notes.
-> - There are no pre-built `tables[]` files for slides. Build any table visible
->   in the render as a Markdown table yourself, following rule 5. If the render
->   is mostly a diagram or flowchart, transcribe every node's label as a nested
->   bullet list mirroring the visual hierarchy, and add a one-line italic
->   description of the layout.
-> Follow the fidelity rules below. Write nothing outside `parts/`.
-
-Then include the fidelity rules verbatim in the brief.
-
-**PDF needs transcription.** Dispatch one subagent per batch from
-`probe.batches`. Batches are independent, so send them in a single message and
-let them run concurrently. Give each subagent this brief, filled in:
-
-> Transcribe pages {start}–{end} of {source} into Markdown.
-> For each page write `{work}/parts/p{NNN}.md` (zero-padded to 3).
-> Per page, `{work}/manifest.json` has the entry under `pages`:
-> - `text_file` — the repaired text layer. Use it as the source of the words.
-> - `image_file` — the page render. **Read it** when `read_image` is true, and
->   treat it as authoritative when `needs_ocr` or `text_suspect` is true: in
->   that case the text layer is corrupt and you transcribe from the image.
-> - `tables[].file` — a pre-built Markdown table for each table on the page.
->   Check it against the render, fix cells the ruling-line detection got wrong,
->   and paste it in. Do not rebuild a table from the raw text.
-> - `assets[]` — each has a ready-made `md` link. Place it where the figure sits
->   on the page. Skip any entry where `first_occurrence` is false.
-> Follow the fidelity rules below. Write nothing outside `parts/`.
-
-Then include the fidelity rules verbatim in the brief.
+- **DOCX, XLSX, PPTX are already drafted** (`chunks/`, `sheets/`, `slides/`
+  hold real Markdown). Read each draft against its `.txt`, fix what needs
+  judgement (heading levels, figure placement, a header band the guess got
+  wrong), and save to `parts/`. If a draft is already right, copy it across
+  unchanged — do not rewrite for style.
+- **PDF pages and OCR slides need transcription** from their renders. When
+  your harness can spawn subagents, dispatch one per batch concurrently with
+  the brief in the kind's reference, followed by the Fidelity rules below
+  verbatim; otherwise transcribe batch by batch yourself under the same
+  brief.
 
 ## Fidelity rules
 
@@ -265,42 +182,9 @@ It joins the parts, fixes only whitespace, and audits. Read `problems`:
   furniture that leaked in. Remove it from the parts and merge again.
 
 Re-run `merge.py` after fixing until `ok` is true. Then report to the user:
-where the file is, how many pages/sheets, what was OCR'd, what was skipped
-(hidden sheets, unreadable spots), and anything you had to judge rather than
-read.
-
-## Why the scripts exist
-
-Don't route around them; each encodes a failure you will otherwise hit.
-
-- **Thai SARA AM.** Many Thai PDF fonts map the NIKHAHIT glyph to a zero-width
-  space, so plain extraction turns `ทำ` into `ท า` — silently, in every word
-  with ำ. `pdf_text.py` rebuilds the string at glyph level and recomposes it.
-- **Thai SARA AA collapse.** Some fonts encode า and ำ as the same codepoint,
-  so the text layer reads `กำรค้ำ` for `การค้า`. Nothing can undo that, which is
-  why the extractor detects it by ratio and forces the whole document to OCR.
-- **DOCX body order.** Iterating `document.paragraphs` then `document.tables`
-  reorders the entire document. `extract_docx.py` walks the XML body in order.
-- **XLSX merged cells.** openpyxl reports a merged value once and `None` for the
-  rest, so a group label vanishes from every row but the first.
-  `extract_xlsx.py` spreads it — except across a full-width banner row, where
-  spreading is noise.
-- **Repeated figures.** The same logo on 40 pages is one asset, not 40.
-  Extraction hashes the bytes and reports which pages each figure appears on.
-- **PPTX shape order.** `slide.shapes` iterates in z-order (creation order),
-  not reading order. `extract_pptx.py` sorts by visual position — title first,
-  then top-to-bottom, left-to-right.
-- **PPTX groups.** Shapes inside a group report positions in the group's child
-  coordinate system, not slide coordinates; using them raw scrambles reading
-  order. The extractor applies the `chOff`/`chExt` transform when recursing.
-- **PPTX full-page pictures.** A slide that is one full-bleed image with real
-  text on top is a *background* (decoration, not saved); with no text it is a
-  *scan* (saved as the slide's render and transcribed by OCR). Confusing the
-  two either loses a slide's only content or fills the output with wallpaper.
-- **PPTX runs.** PowerPoint splits runs mid-word, so per-run markdown markers
-  produce `**1.** **Import**` and empty `****` pairs. The extractor coalesces
-  adjacent same-style runs and never inserts spaces between them (Thai words
-  would break).
+where the file is, how many pages/sheets/slides, what was OCR'd, what was
+skipped (hidden sheets, unreadable spots), and anything you had to judge
+rather than read.
 
 ## Updating
 

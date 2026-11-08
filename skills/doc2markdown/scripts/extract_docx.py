@@ -228,11 +228,45 @@ def build_numbering(document) -> dict:
     return mapping
 
 
-def list_info(p_el, numbering: dict):
+def _style_numpr(style):
+    """numPr inherited from a paragraph style chain (List Bullet, List Number…).
+
+    Word and python-docx attach list numbering to the *style* as often as to
+    the paragraph itself; a paragraph styled "List Bullet" carries no numPr of
+    its own, so looking only at the paragraph turns every such item into a
+    plain paragraph.
+    """
+    seen = 0
+    while style is not None and seen < 8:
+        ppr = style.element.find(W + "pPr")
+        if ppr is not None:
+            numpr = ppr.find(W + "numPr")
+            if numpr is not None:
+                return numpr
+        style = style.base_style
+        seen += 1
+    return None
+
+
+def _style_list_kind(style_name: str):
+    name = (style_name or "").strip().lower()
+    if name.startswith("list bullet"):
+        return "bullet"
+    if name.startswith("list number"):
+        return "ordered"
+    return None
+
+
+def list_info(p_el, numbering: dict, para=None):
     ppr = p_el.find(W + "pPr")
-    if ppr is None:
-        return None
-    numpr = ppr.find(W + "numPr")
+    numpr = ppr.find(W + "numPr") if ppr is not None else None
+    style = para.style if para is not None else None
+    if numpr is None and style is not None:
+        numpr = _style_numpr(style)
+        if numpr is None:
+            kind = _style_list_kind(style.name)
+            if kind:
+                return {"kind": kind, "depth": 0}
     if numpr is None:
         return None
     ilvl_el = numpr.find(W + "ilvl")
@@ -281,7 +315,10 @@ def cell_text(cell) -> str:
 def table_grid(table) -> list[list[str]]:
     """Grid with merged-cell continuations blanked instead of duplicated."""
     grid = []
-    seen: set[int] = set()
+    # Key on the element's XPath, not id(c._tc): lxml hands out proxy objects
+    # on demand and recycles their ids once garbage-collected, so id() made
+    # unrelated cells look like merged-cell continuations and blanked them.
+    seen: set[str] = set()
     for row in table.rows:
         out_row = []
         try:
@@ -289,7 +326,7 @@ def table_grid(table) -> list[list[str]]:
         except (IndexError, ValueError):
             continue
         for c in cells:
-            key = id(c._tc)
+            key = c._tc.getroottree().getpath(c._tc)
             if key in seen:
                 out_row.append("")  # continuation of a merged cell
             else:
@@ -318,7 +355,7 @@ def walk_body(document, bank: ImageBank) -> list[dict]:
             para = Paragraph(child, document)
             md, plain, images, boxes = render_inline(child, bank, part)
             level = heading_level(para.style.name if para.style is not None else "")
-            listing = list_info(child, numbering)
+            listing = list_info(child, numbering, para)
 
             for entry in images:
                 blocks.append({"type": "image", "md": entry["md"], "plain": "", "image": entry})
