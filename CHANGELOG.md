@@ -7,6 +7,32 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.15.1] - 2026-11-08
+
+Phase 3 of the 2026-11-08 review: the first eval suite. No skill content
+changed.
+
+### Tooling
+
+- New `evals/` suite for `claude plugin eval` (Claude Code 2.1.269+), four
+  cases: `git-commit-thai-commit` (Thai prompt on a scaffolded repo with two
+  concerns and an untracked test — skill fires, emoji + type subjects,
+  concerns split, **no `git commit` without approval**),
+  `git-commit-ignores-git-question` (a rebase-vs-merge question must not
+  trigger), `doc2markdown-thai-docx` (Thai convert request on a synthetic
+  .docx with a table — skill fires, bundled extractor runs, `brief.md` keeps
+  the table), `doc2markdown-ignores-authoring` (writing a new TOR in Markdown
+  must not trigger). Fixtures are synthetic and embedded in each case's
+  `scaffold.sh`; `evals/README.md` gives the run command and grants;
+  `evals/results/` is git-ignored.
+
+### Knowledge
+
+- `decisions/2026-11-08-eval-suite-layout.md` amended to what the runner
+  actually supports: fixtures inside the case directory via `scaffold.sh`,
+  the anti-trigger grader form, `arm: with-only` for skill-only behaviour.
+  First-run results are in `log.md`.
+
 ## [0.15.0] - 2026-11-08
 
 Phase 2 of the 2026-11-08 skill quality review

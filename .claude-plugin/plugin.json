@@ -2,7 +2,7 @@
   "name": "kengjudd",
   "description": "Kongsak (kengjudd)'s central multi-agent skills collection with an OKF knowledge base",
   "license": "MIT",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "author": {
     "name": "kengjudd"
   },
