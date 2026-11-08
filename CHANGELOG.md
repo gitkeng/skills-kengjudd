@@ -7,6 +7,50 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.16.0] - 2026-11-08
+
+Phase 4 of the 2026-11-08 review: the two skills whose bodies cost the most
+per activation. Minor bump: both skills gain reference files and
+doc2markdown's extractor changes behaviour.
+
+### doc2markdown (1.1.2 → 1.2.0)
+
+- **`extract_docx.py` fixes two real defects** the first eval run exposed:
+  Word list items whose numbering lives on the *style* ("List Bullet",
+  "List Number") were emitted as plain paragraphs — the extractor now follows
+  the style chain (`_style_numpr`, name fallback); and table cells were
+  blanked at random because merged-cell detection keyed on `id(c._tc)`,
+  which lxml recycles — the key is now the cell's XPath. Verified on the
+  eval fixture: bullets and all three table rows survive.
+- **SKILL.md split by document type**: `references/pdf.md`,
+  `references/docx-xlsx.md`, `references/pptx.md` hold each kind's manifest
+  flags, part naming, review procedure or subagent brief, and the reasons
+  behind its script; Step 1 tells the agent to read exactly one of them. The
+  body drops from ≈4,320 to ≈2,311 tokens (324 → 198 lines); the Fidelity
+  rules, Layout and merge audit stay in SKILL.md because every kind needs
+  them.
+- Eval `doc2markdown-thai-docx` gains a `bullets-preserved` grader; with
+  1.2.0 it passes 3/3 runs on all five graders in 42–50 s (1.1.2: 55–63 s,
+  bullets fixed by hand).
+
+### init-project (1.2.1 → 1.3.0)
+
+- **Body under the 5,000-token re-attach budget**: ≈6,350 → ≈4,926 tokens
+  (439 → 346 lines). Phase 1's nine topics and Phase 4's seven
+  steps keep a one-line summary each in SKILL.md — the bold labels other
+  references point at are unchanged — and their full wording moves to
+  `references/phase-interview.md` and `references/phase-context-files.md`,
+  read when the phase starts. The References table is shortened. The
+  4,000-token target of the review is not reached; the next candidates are
+  Phase 3 and Phase 2, which the maintainer has not approved moving.
+- `kb-skeleton` asset markers follow to `@1.3.0`; `validate_output.py --self`
+  exit 0.
+
+### Knowledge
+
+- `skill-authoring/context-budgets.md` §3 records the new sizes; `log.md`
+  entry with the eval numbers.
+
 ## [0.15.1] - 2026-11-08
 
 Phase 3 of the 2026-11-08 review: the first eval suite. No skill content
