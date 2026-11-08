@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: git-commit-thai-commit
+description: >-
+  A Thai request to commit a working tree that holds two unrelated changes and
+  an untracked test. The skill must fire, survey the tree, propose separate
+  Gitmoji + Conventional Commits messages, and stop for approval — a headless
+  run has no one to approve, so nothing may be committed.
+tags: [git-commit, trigger, smoke]
+expected_outcome: >-
+  Reply proposes at least two commits (fix for src/pricing.py; docs for
+  README.md; the new test either with the fix or on its own), each with an
+  emoji + type subject, and asks for approval. No `git commit` ran.
+context:
+  scaffold_script: scaffold.sh

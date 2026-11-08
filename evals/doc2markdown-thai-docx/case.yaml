@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: doc2markdown-thai-docx
+description: >-
+  A Thai request to convert a synthetic .docx (Thai headings, bullet list, a
+  3-column table) into Markdown. The skill must fire and drive the bundled
+  extractor instead of reading the file by hand; the produced .md must keep
+  the table.
+tags: [doc2markdown, trigger]
+expected_outcome: >-
+  brief.md exists beside the source, contains the Thai H1 and a Markdown table
+  with the three budget rows, and the run invoked scripts/probe.py or
+  scripts/extract_docx.py.
+context:
+  scaffold_script: scaffold.sh
