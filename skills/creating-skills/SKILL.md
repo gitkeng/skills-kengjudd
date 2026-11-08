@@ -7,8 +7,8 @@ description: >-
   skills in this repo are named, prefixed, structured, versioned, installed,
   or updated.
 metadata:
-  version: "1.2.0"
-  updated: "2026-08-30"
+  version: "1.3.0"
+  updated: "2026-11-08"
 ---
 
 # Creating Skills in skills-kengjudd
@@ -60,11 +60,16 @@ multiple agents, and always carries its own update command.
    metadata values must be strings).
 5. **Write the description carefully** — it is the trigger. Third person, state
    what the skill does AND when to use it, include the concrete words a user
-   would type. Details: [references/authoring-checklist.md](references/authoring-checklist.md).
-6. **Write the body.** Under 500 lines; put depth in `references/` (linked one
-   level deep), executable helpers in `scripts/`, templates/data in `assets/`.
-   Match "degrees of freedom" to the task: exact commands for fragile
-   operations, heuristics for open-ended ones.
+   would type (Thai included), and finish the trigger inside the **first 240
+   characters** — ZCode and Kimi show no more than that. 300–600 characters
+   total. Details: [references/authoring-checklist.md](references/authoring-checklist.md).
+6. **Write the body.** Under 500 lines and under ~5,000 tokens — Claude Code
+   re-attaches only the first 5,000 tokens after context compaction, so rules
+   that must hold for the whole task go first. Put depth in `references/`
+   (linked one level deep, organised by variant so a run loads one file),
+   executable helpers in `scripts/`, templates/data in `assets/`. Match
+   "degrees of freedom" to the task: exact commands for fragile operations,
+   heuristics for open-ended ones.
 7. **Keep the required `## Updating` section** from the template, with the
    skill's own name in the `./scripts/update.sh <skill-name>` command.
 8. **Register the skill** in `.claude-plugin/plugin.json` → `skills` array as
@@ -83,10 +88,11 @@ multiple agents, and always carries its own update command.
    path form) and append an entry to `knowledge/log.md` under today's date.
 10. **Validate.** Run the checklist in
     [references/authoring-checklist.md](references/authoring-checklist.md).
-    Then install the repo so the skill is discoverable —
-    `./scripts/install.sh --tool claude --project .` — and in a fresh session
-    test that it triggers on its intended prompts and does NOT trigger on
-    near-miss prompts.
+    Then add the skill's eval cases — at least one trigger and one
+    anti-trigger case under `<repo>/evals/<skill-name>-<case>/`, synthetic
+    fixtures only — and run `claude plugin eval . --case '<skill-name>-*'`;
+    the checklist's "Testing" section gives the layout and the manual
+    fresh-session fallback for agents without eval tooling.
 11. **Version bookkeeping.** Run `./scripts/bump-version.sh <semver>` (new skill
     = minor bump) — it sets all four repo-level version fields. Then add a
     `CHANGELOG.md` entry under the skill's name and a row in the README
@@ -103,8 +109,9 @@ multiple agents, and always carries its own update command.
 4. Update the related `knowledge/` concept and `knowledge/log.md`.
 5. Re-run the checklist in
    [references/authoring-checklist.md](references/authoring-checklist.md) —
-   at minimum the portability gate, and repeat the trigger and anti-trigger
-   tests in a fresh session whenever the `description` changed.
+   at minimum the portability gate, and re-run the skill's eval cases
+   (`claude plugin eval . --case '<skill-name>-*'`) whenever the
+   `description` or the workflow changed.
 
 ## Workflow: importing a skill from another project
 
@@ -133,49 +140,16 @@ lives in `knowledge/decisions/2026-08-29-repo-design.md`.
 
 ## Skill prefixes
 
-Claude Code namespaces plugin skills by the **plugin name**: a skill
-registered in the plugin named `kengjudd` invokes as `kengjudd:<skill-name>`
-on the plugin channel (`kengjudd:git-commit`). The prefix never lives in the
-skill itself — directory name and frontmatter `name` stay bare `a-z0-9-`
-(Agent Skills spec) — and on the git-clone/symlink channel every skill
-invokes by its bare name, with no prefix, on every agent. Handle this
-explicitly for **every** skill you create or import:
-
-- **The repo already ships a plugin** — `.claude-plugin/plugin.json` with a
-  `name` (this repo: `kengjudd`). Reuse it: registering the new skill in
-  that plugin's `skills` array (step 8) is all it takes; the skill inherits
-  the existing prefix. Never create a second plugin or a second prefix
-  alongside it.
-- **The repo has no plugin packaging** — ask the user *before* scaffolding,
-  in words they can answer without knowing the mechanism (substitute the
-  real skill name):
-
-  > This repo has no Claude Code plugin yet. Without one, the skill invokes
-  > by its bare name everywhere (`<skill-name>`). With one, it also invokes
-  > namespaced on the Claude Code plugin channel — the plugin name becomes
-  > the prefix (`<prefix>:<skill-name>`) — and renaming a plugin later is a
-  > breaking change. Create a plugin? If yes, which name?
-
-  The **user** picks the name — it becomes the prefix everyone types, so it
-  should be short, lowercase, and owner-recognizable (this repo: `kengjudd`,
-  not `skills-kengjudd`). Never derive it silently from the repository name.
-
-  - *Yes* → create `.claude-plugin/plugin.json` with the user's name. Add
-    `marketplace.json` only when distribution to other machines is wanted.
-    Field formats and pitfalls: `knowledge/specs/claude-code-plugins.md`.
-  - *No* → plain skills directory; the skill invokes by its bare name
-    everywhere, and step 8's registration does not apply — the one
-    exception to this repo's register-every-skill default (CLAUDE.md),
-    taken only on the user's explicit instruction.
-
-  Record the answer — and the plugin name, if one was created — in the
-  skill's knowledge concept so later sessions don't re-ask.
-
-Renaming a plugin later changes every skill's prefix and orphans existing
-installs — a breaking change (see
-`knowledge/decisions/2026-08-30-plugin-name-kengjudd.md`). Choose the name
-once, early. Full decision flow, naming rationale, and sources:
-`knowledge/skill-authoring/skill-prefixes.md`.
+Claude Code namespaces plugin skills by the **plugin name**: this repo ships
+the plugin `kengjudd`, so every registered skill also invokes as
+`kengjudd:<skill-name>` on the plugin channel, while directory name and
+frontmatter `name` stay bare `a-z0-9-` and the symlink channel uses the bare
+name everywhere. Registering in `.claude-plugin/plugin.json` (step 8) is all
+a new skill needs; never create a second plugin or prefix. The full decision
+flow — including the question to ask when a repo has **no** plugin yet, and
+why renaming a plugin later is a breaking change — is in
+[references/skill-prefixes.md](references/skill-prefixes.md); read it only in
+that situation.
 
 ## Multi-agent compatibility rules
 
@@ -190,25 +164,11 @@ once, early. Full decision flow, naming rationale, and sources:
 
 ## Updating
 
-This skill is versioned via `metadata.version` (see frontmatter) and
-distributed from the private repo `gitkeng/skills-kengjudd`. Use the command
-that matches how it was installed.
+Versioned by `metadata.version`; source: private repo `gitkeng/skills-kengjudd`.
 
-**Git clone + symlink install** — run from the repository root:
+- Git clone + symlink install (from the repo root; `readlink -f` a symlinked
+  skill dir to find it): `./scripts/update.sh creating-skills`
+- Claude Code plugin install (`update.sh` cannot run in the plugin cache, which
+  has no `.git`): `claude plugin update kengjudd@kengjudd`
 
-```bash
-./scripts/update.sh creating-skills
-```
-
-The script verifies the clone (branch `main`, clean tree), fetches
-`origin/main`, compares this skill's `metadata.version` against the remote,
-shows this skill's pending commits, and pulls after confirmation.
-
-**Claude Code plugin install** — the plugin cache has no `.git`, so
-`update.sh` cannot run there:
-
-```bash
-claude plugin update kengjudd@kengjudd
-```
-
-After updating, restart the agent session so the new version loads.
+Then reload skills or restart the session (Claude Code: `/reload-skills`).

@@ -18,54 +18,13 @@ Template rules (delete this comment block when done):
   license, compatibility, metadata, allowed-tools. metadata values must be strings.
 - Keep this file under 500 lines; move detail into references/ (one level deep).
 - Write the description in third person with explicit "Use when..." triggers.
-- The "## Updating" section below is REQUIRED for every skill in this repo.
--->
+- The "## Updating
 
-## Purpose
+Versioned by `metadata.version`; source: private repo `gitkeng/skills-kengjudd`.
 
-One short paragraph: what problem this skill solves and what the output is.
+- Git clone + symlink install (from the repo root; `readlink -f` a symlinked
+  skill dir to find it): `./scripts/update.sh skill-name-here`
+- Claude Code plugin install (`update.sh` cannot run in the plugin cache, which
+  has no `.git`): `claude plugin update kengjudd@kengjudd`
 
-## Workflow
-
-1. Step one.
-2. Step two.
-3. Step three.
-
-<!--
-Optional: if this skill needs depth beyond the body, create a references/
-directory and link the files here, one level deep. Delete this section if
-there are none — a link to a file that does not exist is a defect.
-
-## References
-
-- [references/<topic>.md](references/<topic>.md) — load only when needed.
--->
-
-
-## Updating
-
-This skill is versioned via `metadata.version` (see frontmatter) and
-distributed from the private repo `gitkeng/skills-kengjudd`. Use the command
-that matches how it was installed.
-
-**Git clone + symlink install** — run from the repository root:
-
-```bash
-./scripts/update.sh skill-name-here
-```
-
-If this skill directory is a symlink (the normal install), resolve it with
-`readlink -f <this-skill-dir>`; the repo root is two directories above the
-resolved path.
-
-The script fetches `origin/main`, compares this skill's `metadata.version`,
-shows this skill's pending commits, and pulls after confirmation.
-
-**Claude Code plugin install** — the plugin cache has no `.git`, so
-`update.sh` cannot run there:
-
-```bash
-claude plugin update kengjudd@kengjudd
-```
-
-After updating, restart the agent session so the new version loads.
+Then reload skills or restart the session (Claude Code: `/reload-skills`).

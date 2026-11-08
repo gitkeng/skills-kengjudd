@@ -9,11 +9,14 @@ sources live in the repo knowledge base: `knowledge/skill-authoring/best-practic
       leading/trailing/consecutive hyphens; does not contain "anthropic" or "claude";
       unique among skills already installed on the machine (check the
       directories `install.sh` targets and `claude plugin list`).
-- [ ] `description` is 1-1024 chars, third person, states BOTH what the skill
-      does and when to use it, and contains the concrete trigger words a user
-      would type. No XML tags.
+- [ ] `description` is 1-1024 chars (aim for 300-600), third person, states
+      BOTH what the skill does and when to use it, and contains the concrete
+      trigger words a user would type (Thai included). The trigger is complete
+      within the **first 240 characters** — ZCode shows ~250, Kimi 240, Codex
+      shortens first; "Not for …" exclusions come last. No XML tags.
 - [ ] Only spec fields used: `name`, `description`, `license`, `compatibility`,
-      `metadata`, `allowed-tools`. Nothing else.
+      `metadata`, `allowed-tools`. Nothing else. `allowed-tools`, when present,
+      is a space-separated string (`Bash(git status:*) Read`), not a YAML list.
 - [ ] `metadata.version` and `metadata.updated` present; all metadata values
       are quoted strings.
 
@@ -31,7 +34,11 @@ Check the final version:
 
 ## Body structure
 
-- [ ] Under 500 lines (~5,000 tokens); depth moved to `references/`.
+- [ ] Under 500 lines and under ~5,000 tokens (≈20 KB of English); depth
+      moved to `references/`, organised by variant so one run loads one file.
+- [ ] Rules that must hold for the whole task (iron rules, stop conditions,
+      the reference table) sit in the first ~5,000 tokens — Claude Code
+      re-attaches only that much after context compaction.
 - [ ] References linked one level deep from SKILL.md, relative paths,
       forward slashes.
 - [ ] Reference files longer than ~100 lines start with a table of contents.
@@ -42,7 +49,8 @@ Check the final version:
 - [ ] Deterministic, repeatable operations are shipped as executable scripts
       in `scripts/`, not as prose instructions.
 - [ ] Workflows with more than ~3 steps are numbered checklists.
-- [ ] `## Updating` section present, names this skill in the
+- [ ] `## Updating` section present in the template's short form (two
+      commands, one reload sentence), names this skill in the
       `./scripts/update.sh <skill-name>` command, AND gives the plugin-channel
       alternative `claude plugin update kengjudd@kengjudd` (the plugin
       cache has no `.git`, so `update.sh` fails there).
@@ -69,15 +77,20 @@ Check the final version:
 
 ## Testing before calling it done
 
-Prerequisite: a skill that is not linked into a discovery directory cannot be
-trigger-tested. Run `./scripts/install.sh --tool claude --project .` (or
-`--tool <your agent>`) and start a fresh session first.
-
 - [ ] Portability gate: `skills-ref validate ./skills/<name>` (and
       `claude plugin validate .` when packaging changed).
-- [ ] Trigger test: paste each intended prompt into a fresh session; the skill
-      should activate from its description alone.
-- [ ] Anti-trigger test: near-miss prompts should NOT activate it.
+- [ ] Eval cases exist under `<repo>/evals/<skill-name>-<case>/` — at least one
+      trigger case (`tool_used: Skill`) and one near-miss anti-trigger case,
+      fixtures synthetic only (`knowledge/decisions/2026-11-08-eval-suite-layout.md`).
+- [ ] On Claude Code: `claude plugin eval . --case '<skill-name>-*'` passes;
+      read `evals/results/.../report.html` for tokens and duration with vs
+      without the skill.
+- [ ] On agents without eval tooling (fallback): link the repo into that
+      agent's discovery directory (`./scripts/install.sh --tool <agent>
+      --project .`), start a fresh session, paste each intended prompt (should
+      trigger) and each near-miss prompt (should not). Use one install channel
+      per machine — with the `kengjudd` plugin also enabled every skill is
+      listed twice.
 - [ ] Walk the workflow end-to-end once as written — every command runs, every
       referenced file exists.
 - [ ] If the skill will be used by weaker/smaller models, test with them too;
