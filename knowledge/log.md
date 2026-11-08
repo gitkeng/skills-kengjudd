@@ -2,6 +2,20 @@
 
 ## 2026-11-08
 
+- **Phase 5 of the review** (repo v0.17.0; codebase-analysis 2.1.0). The
+  skill gains an optional parallel mode: Phases 2–5 then 6–7 as concurrent
+  subagents, aliases minted once at Phase 8 by the new
+  `scripts/resolve_aliases.py` from canonical keys and `{{alias:…}}`
+  placeholders (Playbook /skill-authoring/parallel-phase-skills.md). The
+  resolver was tested on synthetic fragments only; no end-to-end parallel run
+  yet — recorded as the open item. `scripts/check-spec-versions.sh` now also
+  compares `spec_source_commit` in /specs/agent-skills-spec.md (217be548739f,
+  2026-08-04) with the last commit touching `docs/specification.mdx`, so
+  CLAUDE.md rule 5 covers both specs; both checks passed on 2026-11-08.
+  Still open from the review: init-project Phase 2–3 to references for the
+  4,000-token target (needs the maintainer's OK), and a doc2markdown fixture
+  with damaged Thai text so the eval Δ reflects the extractor's value.
+
 - **Phase 4 of the review** (repo v0.16.0; doc2markdown 1.2.0, init-project
   1.3.0). doc2markdown: the eval fixture exposed two extractor defects — list
   items numbered through the paragraph *style* came out as paragraphs, and

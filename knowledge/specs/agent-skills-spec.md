@@ -1,6 +1,8 @@
 ---
 type: Spec Summary
 title: Agent Skills specification
+spec_source_path: docs/specification.mdx
+spec_source_commit: "217be548739f"
 description: >
   Summary of the agentskills.io Agent Skills open standard: skill directory
   layout, the exact six SKILL.md frontmatter fields and their constraints,
@@ -143,6 +145,17 @@ Practical consequences: keep SKILL.md under 500 lines; move detail into
 references one level deep so the agent can find them from SKILL.md.
 Authoring guidance that builds on this lives in
 [/skill-authoring/best-practices.md](/skill-authoring/best-practices.md).
+
+## Freshness check
+
+The spec publishes no version number, so this summary records the short
+SHA of the last commit that touched `docs/specification.mdx` in
+`agentskills/agentskills` (`spec_source_commit` in the frontmatter, read by
+`scripts/check-spec-versions.sh`, which queries the GitHub commits API for
+that path). When the script reports drift, read the diff of that file since
+the recorded commit, update this summary and the commit, and log it in
+`/log.md` — the same migration rule CLAUDE.md rule 5 states for the OKF
+spec.
 
 ## Validation tooling
 
