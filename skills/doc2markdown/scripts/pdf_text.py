@@ -97,7 +97,19 @@ def _blocks_to_text(raw, join_blocks: str = "\n\n") -> str:
         chunk = "\n".join(lines).strip()
         if chunk:
             parts.append(chunk)
-    return join_blocks.join(parts)
+    return _rejoin_split_sara_am(join_blocks.join(parts))
+
+
+# A line or block break can fall between the two halves of a decomposed ำ when
+# a PDF wraps Thai mid-word: "ขอกํ" ends one line and "าหนด" starts the next.
+# SARA AA never begins a line on its own, so the pair is recomposed and the
+# wrapped word rejoined. Applied after blocks are joined, because that is the
+# only point where both halves are in the same string.
+_SPLIT_SARA_AM = re.compile(NIKHAHIT + r"[ \t]*\n+[ \t]*" + SARA_AA)
+
+
+def _rejoin_split_sara_am(text: str) -> str:
+    return _SPLIT_SARA_AM.sub(SARA_AM, text)
 
 
 def page_text(page) -> str:

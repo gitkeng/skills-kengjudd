@@ -9,7 +9,7 @@ description: >-
   "พาวเวอร์พอยต์"), RFPs, TORs, meeting minutes, and cost breakdown
   spreadsheets.
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
   updated: "2026-11-08"
   upstream: "local ~/.claude/skills/doc-to-markdown (no git repo, no upstream version; imported 2026-08-29)"
 ---

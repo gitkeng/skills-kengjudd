@@ -54,7 +54,10 @@ Fidelity rules from SKILL.md verbatim**:
 
 - **Thai SARA AM.** Many Thai PDF fonts map the NIKHAHIT glyph to a zero-width
   space, so plain extraction turns `ทำ` into `ท า` — silently, in every word
-  with ำ. `pdf_text.py` rebuilds the string at glyph level and recomposes it.
+  with ำ; others leave the decomposed pair `ํ` + `า`. `pdf_text.py` rebuilds
+  the string at glyph level and recomposes both forms, including a pair the
+  PDF split across a line break (`ขอกํ` / `าหนด`), since SARA AA never
+  starts a line on its own (1.2.1).
 - **Thai SARA AA collapse.** Some fonts encode า and ำ as the same codepoint,
   so the text layer reads `กำรค้ำ` for `การค้า`. Nothing can undo that, which is
   why the extractor detects it by ratio and forces the whole document to OCR.
