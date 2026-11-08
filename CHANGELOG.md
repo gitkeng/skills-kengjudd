@@ -7,6 +7,80 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.15.0] - 2026-11-08
+
+Phase 2 of the 2026-11-08 skill quality review
+(`docs/skill-quality-review-2026-11-08.md` §8): the shared format every
+skill pays for on every activation. Every skill bumps a patch;
+`creating-skills` a minor because the template and checklist it hands out
+changed.
+
+### creating-skills (1.2.0 → 1.3.0)
+
+- `templates/skill-template/SKILL.md` and every skill: `## Updating` shrinks
+  from ~27 lines (836 bytes) to 8 (≈440 bytes) — roughly 100 tokens less
+  per activation per skill — and now says Claude Code hot-reloads
+  an edited SKILL.md and needs `/reload-skills` only for a new directory
+  (the old text asked for a restart every time).
+- Description rule: the trigger must be complete within the first 240
+  characters (ZCode shows ~250, Kimi 240, Codex shortens first); 300–600
+  characters total. Body rule: under ~5,000 tokens with standing rules first
+  (Claude Code re-attaches only that much after compaction).
+- Workflow steps 10 and update step 5 call `claude plugin eval` with the
+  skill's own cases under `evals/` (decision
+  `knowledge/decisions/2026-11-08-eval-suite-layout.md`); the manual
+  fresh-session test is the fallback for agents without eval tooling.
+- `## Skill prefixes` (~50 lines about a decision this repo made in August)
+  moves to `references/skill-prefixes.md`; SKILL.md keeps a ten-line summary.
+  177 lines, from 214.
+- Checklist: `allowed-tools` is a space-separated string, not a YAML list.
+
+### business-rules-extraction (1.1.0 → 1.1.1)
+
+- Description rewritten so "extract business rules, document business logic,
+  reverse engineer requirements, analyze a legacy system, what does this
+  system do" sit in the first 240 characters (they started at ~300).
+- `## Contents` added to the 11 reference files over 100 lines (`pitfalls`,
+  `taxonomy`, `rule-schema`, playbooks `go`, `dart-flutter`, `scale`, `apple`,
+  `rust`, `mainframe`, `beam`, `native`, `typescript-react-next`,
+  `automation`). Short `## Updating`.
+
+### codebase-analysis (2.0.0 → 2.0.1)
+
+- Description leads with "Use for codebase analysis, architecture docs,
+  tech-debt reports, security review …" inside the first 240 characters.
+  Short `## Updating`.
+
+### codebase-analysis-report (1.1.0 → 1.1.1)
+
+- `## Contents` in `references/validation.md`. Short `## Updating`.
+
+### doc2markdown (1.1.1 → 1.1.2)
+
+- Description moves the Thai trigger phrases ("แปลงเอกสาร", "อ่านไฟล์เป็น
+  markdown", "ถอดเอกสาร") into the first 240 characters. Short `## Updating`.
+
+### git-commit (1.0.1 → 1.0.2)
+
+- `allowed-tools` becomes the spec's space-separated string (Claude Code
+  accepts space-, comma-separated or a list; the open spec and other agents
+  only the string). Description shortened from 611 to 488 characters with the
+  Thai phrases inside the first 240. Short `## Updating`.
+
+### init-project (1.2.0 → 1.2.1)
+
+- Description shortened from 915 to 654 characters; the Thai triggers and
+  "set up AGENTS.md" sit in the first 240. Short `## Updating` (the
+  maintainers' `--self` gate note stays); the two `kb-skeleton` assets'
+  `init_project_asset` markers follow to `@1.2.1`, as the `--self` gate
+  requires. Body split to under 4,000 tokens is deferred to 1.3.0 (review
+  §5.1).
+
+### Knowledge
+
+- `skill-authoring/update-mechanism.md` records the short two-channel form as
+  the required shape of `## Updating`; `log.md` entry.
+
 ## [0.14.1] - 2026-11-08
 
 Knowledge-and-tooling release from the 2026-11-08 skill quality review
