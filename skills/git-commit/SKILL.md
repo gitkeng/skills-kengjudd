@@ -1,26 +1,18 @@
 ---
 name: git-commit
 description: >-
-  Create a Gitmoji + Conventional Commits commit message by analyzing the
-  whole working tree — staged, unstaged, and untracked changes — group
-  unrelated changes into separate commits, and commit each only after the
-  user approves. Use when asked to commit, write or improve a commit
-  message, prepare a commit, split changes into commits, or in Thai
-  "คอมมิตให้หน่อย", "ทำ commit", "เขียน commit message". Emits emoji-prefixed
-  types (✨ feat:, 🐛 fix:, ♻️ refactor:, 📝 docs:, …) with a why-focused body.
-  Not for pushing, rebasing, or explaining git itself; amends only the
-  message of the most recent commit on request.
+  Create Gitmoji + Conventional Commits commits from the working tree, one
+  commit per concern, only after the user approves. Use when asked to commit,
+  write or improve a commit message, or split changes into commits —
+  "คอมมิตให้หน่อย", "ทำ commit", "เขียน commit message". Covers staged,
+  unstaged, and untracked changes; emits ✨ feat:, 🐛 fix:, ♻️ refactor:, 📝
+  docs: … with a why-focused body. Not for pushing, rebasing, or explaining
+  git; amends only the latest commit's message on request.
 metadata:
-  version: "1.0.1"
-  updated: "2026-08-30"
+  version: "1.0.2"
+  updated: "2026-11-08"
   upstream: "local ~/.claude/commands/commit.md (slash command /commit, no git repo, no upstream version; imported 2026-08-30)"
-allowed-tools:
-  - Bash(git status:*)
-  - Bash(git diff:*)
-  - Bash(git add:*)
-  - Bash(git reset:*)
-  - Bash(git commit:*)
-  - Bash(git log:*)
+allowed-tools: Bash(git status:*) Bash(git diff:*) Bash(git add:*) Bash(git reset:*) Bash(git commit:*) Bash(git log:*)
 ---
 
 # Git Commit
@@ -247,28 +239,11 @@ out. Report the new commit hashes and anything left behind, with the reason.
 
 ## Updating
 
-This skill is versioned via `metadata.version` (see frontmatter) and
-distributed from the private repo `gitkeng/skills-kengjudd`. Use the command
-that matches how it was installed.
+Versioned by `metadata.version`; source: private repo `gitkeng/skills-kengjudd`.
 
-**Git clone + symlink install** — run from the repository root:
+- Git clone + symlink install (from the repo root; `readlink -f` a symlinked
+  skill dir to find it): `./scripts/update.sh git-commit`
+- Claude Code plugin install (`update.sh` cannot run in the plugin cache, which
+  has no `.git`): `claude plugin update kengjudd@kengjudd`
 
-```bash
-./scripts/update.sh git-commit
-```
-
-If this skill directory is a symlink (the normal install), resolve it with
-`readlink -f <this-skill-dir>`; the repo root is two directories above the
-resolved path.
-
-The script fetches `origin/main`, compares this skill's `metadata.version`,
-shows this skill's pending commits, and pulls after confirmation.
-
-**Claude Code plugin install** — the plugin cache has no `.git`, so
-`update.sh` cannot run there:
-
-```bash
-claude plugin update kengjudd@kengjudd
-```
-
-After updating, restart the agent session so the new version loads.
+Then reload skills or restart the session (Claude Code: `/reload-skills`).
