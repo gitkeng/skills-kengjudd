@@ -1,5 +1,12 @@
 # Report integrity, publication, and testing
 
+## Contents
+
+- [Report manifest](#report-manifest)
+- [Publication semantics](#publication-semantics)
+- [Test matrix (`scripts/test_report.py`, temp dirs only)](#test-matrix-scriptstest_reportpy-temp-dirs-only)
+- [Acceptance fixture](#acceptance-fixture)
+
 ## Report manifest
 
 Every published report includes `report-manifest.json`, validated against
