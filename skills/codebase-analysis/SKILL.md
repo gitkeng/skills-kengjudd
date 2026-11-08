@@ -8,7 +8,7 @@ description: >-
   and technical-debt findings cited as file:line, Mermaid diagrams, and
   machine-auditable traceability; resumable across runs.
 metadata:
-  version: "2.0.1"
+  version: "2.1.0"
   updated: "2026-11-08"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/comprehensive-codebase-analysis @7423a91"
 ---
@@ -101,6 +101,17 @@ codebase-analysis/
     └── testing-observability.md
 ```
 
+## Execution modes
+
+Phases run **sequentially** by default, exactly as written below. When your
+harness can spawn concurrent subagents and Phase 1 is checkpointed, Phases
+2–5 and then 6–7 may run as parallel subagents under
+`references/parallel-phases.md`: subagents register entries with canonical
+keys and `{{alias:<canonical-key>}}` placeholders instead of minting
+aliases, and `scripts/resolve_aliases.py` mints and substitutes them once at
+Phase 8. Read that reference only when you choose parallel mode; it changes
+who writes what and when aliases are minted, nothing about the documents.
+
 ## Phase 0 — Initialize or resume
 
 Load only `references/evidence-and-identity.md` and `assets/progress.schema.json`.
@@ -109,7 +120,7 @@ Load only `references/evidence-and-identity.md` and `assets/progress.schema.json
 2. Read an existing `manifest.json` into a read-only in-memory prior snapshot; do not modify that snapshot or overwrite the file until synthesis.
 3. Read `progress.json`. Resume after the last completed phase when its repository and output roots match.
 4. Otherwise initialize `progress.json` from `assets/progress.schema.json` with phases `inventory`, `architecture`, `behavior`, `reference-analysis`, `debt-specialized`, `operations-diagrams`, `migration-onboarding`, and `synthesis`.
-5. Preserve prior findings, components, aliases, and test cases in the read-only snapshot for canonical-key matching.
+5. Preserve prior findings, components, aliases, and test cases in the read-only snapshot for canonical-key matching. In parallel mode also copy that manifest to `.work/prior-manifest.json` under the output root.
 
 ## Phase 1 — Inventory and route languages
 
@@ -180,7 +191,7 @@ Load only `references/playbook-migration.md`, `references/template-migration.md`
 Load only `references/neutrality.md`, `references/template-root.md`, and `assets/manifest.schema.json`. Run the validator as a tool action; do not inspect its source as analysis input.
 
 1. Match current entries to the prior manifest by canonical key; reuse aliases.
-2. Assign the next unused numeric alias only after matching all prior entries.
+2. Assign the next unused numeric alias only after matching all prior entries. In parallel mode both steps are `python3 <skill-root>/scripts/resolve_aliases.py <output-root>`, which also replaces every `{{alias:…}}` placeholder; delete `.work/` once `manifest.json` is written.
 3. Compute `new`, `resolved`, `regressed`, and `persisted`; regressions require increased severity.
 4. Auto-mark remediation actions linked only to resolved findings as resolved.
 5. Write root documents, the final manifest, and README navigation; make `technical-debt-report.md` the executive rollup of `technical-debt/summary.md` plus the remediation and modernization pathways.
