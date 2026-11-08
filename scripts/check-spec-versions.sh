@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Check whether the OKF spec version recorded in this repo's knowledge base is
-# still the latest published version.
+# Check whether the spec versions recorded in this repo's knowledge base are
+# still the latest published ones:
+#   1. OKF  — knowledge/specs/okf-spec.md   spec_version   vs the canonical SPEC.md
+#   2. Agent Skills — knowledge/specs/agent-skills-spec.md spec_source_commit
+#      vs the last commit touching docs/specification.mdx in agentskills/agentskills
+#      (the spec publishes no version number; the commit is the only marker).
 #
 # Canonical OKF spec: https://github.com/GoogleCloudPlatform/open-knowledge-format
 # (the copy under GoogleCloudPlatform/knowledge-catalog/okf/ is a frozen,
@@ -11,6 +15,7 @@
 # version source.
 #
 # Exit codes: 0 = up to date, 1 = drift detected (KB needs updating), 2 = error.
+# Both checks always run; the exit code is the worst of the two.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -45,15 +50,51 @@ fi
 echo "Recorded OKF version (knowledge/specs/okf-spec.md): $recorded"
 echo "Latest OKF version (canonical SPEC.md):             $latest"
 
+status=0
 if [[ "$recorded" == "$latest" ]]; then
   echo "OK: knowledge base matches the latest OKF spec."
-  exit 0
+else
+  echo ""
+  echo "DRIFT: the OKF spec has changed. Before further KB work:"
+  echo "  1. Read the new spec: $SPEC_URL"
+  echo "  2. Update knowledge/specs/okf-spec.md (content + spec_version) and adjust"
+  echo "     the knowledge/ bundle to the new rules."
+  echo "  3. Record the migration in knowledge/log.md."
+  status=1
 fi
 
+# ---------------------------------------------------------------------------
+# 2. Agent Skills specification (agentskills.io)
+# ---------------------------------------------------------------------------
+AS_FILE="$REPO_ROOT/knowledge/specs/agent-skills-spec.md"
+AS_PATH="$(grep -m1 '^spec_source_path:' "$AS_FILE" | sed 's/spec_source_path:[[:space:]]*"\{0,1\}//; s/"\{0,1\}[[:space:]]*$//')"
+AS_RECORDED="$(grep -m1 '^spec_source_commit:' "$AS_FILE" | sed 's/spec_source_commit:[[:space:]]*"\{0,1\}//; s/"\{0,1\}[[:space:]]*$//')"
+if [[ -z "$AS_PATH" || -z "$AS_RECORDED" ]]; then
+  echo "Error: spec_source_path / spec_source_commit missing in $AS_FILE frontmatter." >&2
+  exit 2
+fi
+AS_API="https://api.github.com/repos/agentskills/agentskills/commits?path=${AS_PATH}&per_page=1"
+as_json="$(curl -fsSL -H 'Accept: application/vnd.github+json' "$AS_API")"
+as_latest="$(printf '%s' "$as_json" | grep -m1 -oE '"sha": *"[0-9a-f]{40}"' | grep -oE '[0-9a-f]{40}' || true)"
+as_date="$(printf '%s' "$as_json" | grep -m1 -oE '"date": *"[0-9T:Z-]+"' | grep -oE '[0-9T:Z-]{20}' || true)"
+if [[ -z "$as_latest" ]]; then
+  echo "Error: could not read the latest commit for $AS_PATH from the GitHub API." >&2
+  echo "Rate-limited or offline? Try again later; do not assume the spec is unchanged." >&2
+  exit 2
+fi
 echo ""
-echo "DRIFT: the OKF spec has changed. Before further KB work:"
-echo "  1. Read the new spec: $SPEC_URL"
-echo "  2. Update knowledge/specs/okf-spec.md (content + spec_version) and adjust"
-echo "     the knowledge/ bundle to the new rules."
-echo "  3. Record the migration in knowledge/log.md."
-exit 1
+echo "Recorded Agent Skills spec commit (knowledge/specs/agent-skills-spec.md): $AS_RECORDED"
+echo "Latest commit touching $AS_PATH:                 ${as_latest:0:12} ($as_date)"
+if [[ "$as_latest" == "$AS_RECORDED"* ]]; then
+  echo "OK: knowledge base matches the latest Agent Skills spec page."
+else
+  echo ""
+  echo "DRIFT: the Agent Skills spec page has changed since the recorded commit. Before further KB work:"
+  echo "  1. Read the diff: https://github.com/agentskills/agentskills/compare/${AS_RECORDED}...${as_latest:0:12}"
+  echo "  2. Update knowledge/specs/agent-skills-spec.md (content + spec_source_commit)"
+  echo "     and re-check skills/ against any changed rule."
+  echo "  3. Record the migration in knowledge/log.md."
+  status=1
+fi
+
+exit "$status"

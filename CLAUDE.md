@@ -34,11 +34,15 @@ reads); `GEMINI.md` does the same for Gemini CLI.
    entry, a `CHANGELOG.md` entry, a `metadata.version` bump, a repo `VERSION`
    bump, and the plugin `version` bumps (see Versioning). No exceptions.
 5. **Check spec freshness before KB work.** Before significant changes to
-   `knowledge/`, run `./scripts/check-spec-versions.sh` (it checks the OKF spec
-   only — the other spec summaries have no automated freshness gate). On exit 1,
-   migrate before continuing: update `knowledge/specs/okf-spec.md` (content +
-   `spec_version`), update `okf_version` in `knowledge/index.md`, bring the
-   bundle to the new rules, and log it in `knowledge/log.md`. The canonical
+   `knowledge/`, run `./scripts/check-spec-versions.sh`. It checks two specs:
+   the OKF spec (`knowledge/specs/okf-spec.md` → `spec_version`) and the
+   Agent Skills spec (`knowledge/specs/agent-skills-spec.md` →
+   `spec_source_commit`, the last commit touching the spec page, since that
+   spec publishes no version); the AGENTS.md and Claude plugin summaries
+   have no automated gate. On exit 1, migrate before continuing: update the
+   drifted summary (content + its version/commit key), for OKF also
+   `okf_version` in `knowledge/index.md`, bring the bundle (and, for Agent
+   Skills, `skills/`) to the new rules, and log it in `knowledge/log.md`. The canonical
    OKF spec lives at
    `github.com/GoogleCloudPlatform/open-knowledge-format` — the copy under
    `GoogleCloudPlatform/knowledge-catalog/okf/` is a frozen snapshot; never
