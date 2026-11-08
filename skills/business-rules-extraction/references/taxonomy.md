@@ -1,5 +1,14 @@
 # Rule Taxonomy Reference
 
+## Contents
+
+- [Semantic Types (rule_type)](#semantic-types-rule_type)
+- [Practical Categories (category)](#practical-categories-category)
+- [Validity Matrix](#validity-matrix)
+- [Worked Examples — Every Legal Cell](#worked-examples-every-legal-cell)
+- [Decision Guide](#decision-guide)
+- [Literature Citations](#literature-citations)
+
 ## Semantic Types (rule_type)
 
 Derived from established classification (von Halle; Wiegers & Beatty, Software Requirements 3rd ed. ch. 9; Business Rules Group GUIDE Report):

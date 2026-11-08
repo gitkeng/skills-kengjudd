@@ -5,6 +5,20 @@ Static analysis only; no runtime introspection or vendor-specific tooling assume
 
 ---
 
+## Contents
+
+- [Candidate Patterns](#candidate-patterns)
+- [Module & Application Signals](#module-application-signals)
+- [Patterns, Guards & Decision Tables](#patterns-guards-decision-tables)
+- [Behaviours, Protocols & Polymorphic Dispatch](#behaviours-protocols-polymorphic-dispatch)
+- [State, Messages & Transitions](#state-messages-transitions)
+- [Supervision & Lifecycle (extract only when stakeholder-visible)](#supervision-lifecycle-extract-only-when-stakeholder-visible)
+- [Data & Validation](#data-validation)
+- [Configuration, Scheduling, and Macros](#configuration-scheduling-and-macros)
+- [Definition-Use and Cross-Module Comparison](#definition-use-and-cross-module-comparison)
+- [Evidence Layer Mapping](#evidence-layer-mapping)
+- [Extraction Checklist](#extraction-checklist)
+
 ## Candidate Patterns
 
 | Pattern | Business-rule signal | Confidence guidance |

@@ -4,6 +4,22 @@
 
 ---
 
+## Contents
+
+- [1 Detection & Inventory](#1-detection-inventory)
+- [2 Header / Source / Build-Manifest Parsing (No Compile)](#2-header-source-build-manifest-parsing-no-compile)
+- [3 Include / Call / Data-Flow Analysis](#3-include-call-data-flow-analysis)
+- [4 Preprocessor Variants & Build Flags](#4-preprocessor-variants-build-flags)
+- [5 Structs / Enums / Tagged Unions](#5-structs-enums-tagged-unions)
+- [6 Function Pointers / Templates / Macros](#6-function-pointers-templates-macros)
+- [7 Persistence / Embedded SQL / Configuration](#7-persistence-embedded-sql-configuration)
+- [8 Definition-Use Chains](#8-definition-use-chains)
+- [9 Business-Rule vs Plumbing Classification](#9-business-rule-vs-plumbing-classification)
+- [10 Macro Uncertainty](#10-macro-uncertainty)
+- [11 Cross-Platform & Preprocessor Conflict Handling](#11-cross-platform-preprocessor-conflict-handling)
+- [12 Artifact → Evidence Layer Mapping](#12-artifact-evidence-layer-mapping)
+- [13 Extraction Checklist](#13-extraction-checklist)
+
 ## 1 Detection & Inventory
 
 | Signal | Files / Patterns |

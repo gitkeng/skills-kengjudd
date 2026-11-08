@@ -1,5 +1,19 @@
 # Go Business-Rules Extraction Playbook
 
+## Contents
+
+- [1 · Detection](#1-detection)
+- [2 · Inventory Pass](#2-inventory-pass)
+- [3 · Dependency Signals](#3-dependency-signals)
+- [4 · Struct Tags & Validation](#4-struct-tags-validation)
+- [5 · Definition-Use Analysis](#5-definition-use-analysis)
+- [6 · Goroutines & Channels — Policy vs Plumbing](#6-goroutines-channels-policy-vs-plumbing)
+- [7 · Build Tags & Config Variants](#7-build-tags-config-variants)
+- [8 · Rule vs Plumbing](#8-rule-vs-plumbing)
+- [9 · Merge & Conflict Resolution](#9-merge-conflict-resolution)
+- [10 · Artifact → Evidence Layer Mapping](#10-artifact-evidence-layer-mapping)
+- [11 · Checklist](#11-checklist)
+
 ## 1 · Detection
 
 Confirm presence of at least two: `go.mod` at root, `*.go` files with `package` declarations, `go.sum`, or build targets referencing `go build`/`go test`. If confirmed, apply this playbook.

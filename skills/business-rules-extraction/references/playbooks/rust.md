@@ -1,5 +1,20 @@
 # Rust Business-Rules Extraction Playbook
 
+## Contents
+
+- [Detection](#detection)
+- [Artifact → Evidence Enum](#artifact-evidence-enum)
+- [Compile-Time vs Runtime Enforcement](#compile-time-vs-runtime-enforcement)
+- [Feature Gates & Config Variants — Conflict Rules](#feature-gates-config-variants-conflict-rules)
+- [Crate & Module Signals](#crate-module-signals)
+- [Enum States & Match Transitions](#enum-states-match-transitions)
+- [Macros](#macros)
+- [Persistence & Data Integrity](#persistence-data-integrity)
+- [Background Jobs & Temporal Rules](#background-jobs-temporal-rules)
+- [Ownership & Concurrency — Policy Filter](#ownership-concurrency-policy-filter)
+- [Merge & Conflict Resolution](#merge-conflict-resolution)
+- [Checklist](#checklist)
+
 ## Detection
 
 Confirm presence of at least two: `Cargo.toml` at root or workspace, `*.rs` source files with `mod`/`use` declarations, `Cargo.lock`, or targets referencing `cargo build`/`cargo test`. If confirmed, apply this playbook.

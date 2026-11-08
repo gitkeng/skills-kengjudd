@@ -1,15 +1,16 @@
 ---
 name: business-rules-extraction
 description: >-
-  Statically extracts, documents, and verifies business rules from any codebase.
-  Performs read-only analysis without building or executing code. Produces domain-decomposed
-  rule catalogs with line-level evidence, acceptance criteria, and coverage accounting.
-  Triggers on: extract business rules, document business logic, reverse engineer requirements,
-  analyze legacy system, what does this system do, mine rules from code.
+  Extract, document, and verify business rules from any codebase by static
+  analysis. Use when asked to extract business rules, document business logic,
+  reverse engineer requirements, analyze a legacy system, or answer "what does
+  this system do" from its code. Read-only — never builds or runs the target.
+  Produces domain-decomposed rule catalogs with line-level evidence,
+  acceptance criteria, coverage accounting, and a mechanical validator.
 license: MIT
 metadata:
-  version: "1.1.0"
-  updated: "2026-08-31"
+  version: "1.1.1"
+  updated: "2026-11-08"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/business-rules-extraction @595f830 (upstream version 1.1.0)"
 ---
 
@@ -161,28 +162,11 @@ Load each reference file only when its condition is met:
 
 ## Updating
 
-This skill is versioned via `metadata.version` (see frontmatter) and
-distributed from the private repo `gitkeng/skills-kengjudd`. Use the command
-that matches how it was installed.
+Versioned by `metadata.version`; source: private repo `gitkeng/skills-kengjudd`.
 
-**Git clone + symlink install** — run from the repository root:
+- Git clone + symlink install (from the repo root; `readlink -f` a symlinked
+  skill dir to find it): `./scripts/update.sh business-rules-extraction`
+- Claude Code plugin install (`update.sh` cannot run in the plugin cache, which
+  has no `.git`): `claude plugin update kengjudd@kengjudd`
 
-```bash
-./scripts/update.sh business-rules-extraction
-```
-
-If this skill directory is a symlink (the normal install), resolve it with
-`readlink -f <this-skill-dir>`; the repo root is two directories above the
-resolved path.
-
-The script fetches `origin/main`, compares this skill's `metadata.version`,
-shows this skill's pending commits, and pulls after confirmation.
-
-**Claude Code plugin install** — the plugin cache has no `.git`, so
-`update.sh` cannot run there:
-
-```bash
-claude plugin update kengjudd@kengjudd
-```
-
-After updating, restart the agent session so the new version loads.
+Then reload skills or restart the session (Claude Code: `/reload-skills`).

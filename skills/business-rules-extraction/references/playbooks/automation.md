@@ -5,6 +5,22 @@ Do NOT execute, source, dot-source, or import any discovered script.
 
 ---
 
+## Contents
+
+- [1 Detection & Identification](#1-detection-identification)
+- [2 Sourced Functions & Dependencies](#2-sourced-functions-dependencies)
+- [3 Parameter Validation](#3-parameter-validation)
+- [4 Environment & Configuration](#4-environment-configuration)
+- [5 Exit-Code / Pipeline / Job / Scheduler Workflows](#5-exit-code-pipeline-job-scheduler-workflows)
+- [6 Shell Conditions/Case & PowerShell Switch/Objects](#6-shell-conditionscase-powershell-switchobjects)
+- [7 Expansion Uncertainty](#7-expansion-uncertainty)
+- [8 Platform Copies](#8-platform-copies)
+- [9 Plumbing vs Stakeholder Policy](#9-plumbing-vs-stakeholder-policy)
+- [10 Snippet Citation and Secret Safety](#10-snippet-citation-and-secret-safety)
+- [11 Merge / Conflict Policy](#11-merge-conflict-policy)
+- [12 Evidence Layer Mapping](#12-evidence-layer-mapping)
+- [13 Extraction Checklist](#13-extraction-checklist)
+
 ## 1 Detection & Identification
 
 | Pattern | Indicates |

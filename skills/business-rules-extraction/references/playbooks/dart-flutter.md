@@ -1,5 +1,20 @@
 # Dart / Flutter — Business-Rules Extraction Playbook
 
+## Contents
+
+- [Detection Signals](#detection-signals)
+- [Dependency Signals](#dependency-signals)
+- [Mining Strategy](#mining-strategy)
+- [Evidence Layer Enum Mapping](#evidence-layer-enum-mapping)
+- [Client-Only Enforcement — Explicit Absence](#client-only-enforcement-explicit-absence)
+- [Platform Divergences — Bidirectional Conflicts](#platform-divergences-bidirectional-conflicts)
+- [Generated Code Exclusions](#generated-code-exclusions)
+- [Definition-Use Tracing](#definition-use-tracing)
+- [State Management — Rule Extraction Points](#state-management-rule-extraction-points)
+- [Offline Sync and Connectivity](#offline-sync-and-connectivity)
+- [UI Lifecycle / Rendering Plumbing — Exclude](#ui-lifecycle-rendering-plumbing-exclude)
+- [Extraction Checklist](#extraction-checklist)
+
 ## Detection Signals
 
 - `pubspec.yaml` declares packages, versions, and dependency overrides.

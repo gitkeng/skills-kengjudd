@@ -2,6 +2,14 @@
 
 Canonical specification for every `domains/<slug>/rules.json` file.
 
+## Contents
+
+- [File Structure](#file-structure)
+- [Rule Record Fields](#rule-record-fields)
+- [Field Detail](#field-detail)
+- [ID Stability and Rerun Policy](#id-stability-and-rerun-policy)
+- [Complete Example](#complete-example)
+
 ## File Structure
 
 ```json

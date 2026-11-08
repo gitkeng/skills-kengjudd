@@ -2,6 +2,21 @@
 
 Common failure modes in business rule extraction and how to handle each.
 
+## Contents
+
+- [1. Business Logic vs Technical Plumbing](#1-business-logic-vs-technical-plumbing)
+- [2. Dead Code Masquerading as Active Rules](#2-dead-code-masquerading-as-active-rules)
+- [3. Magic Values and Hardcoded Thresholds](#3-magic-values-and-hardcoded-thresholds)
+- [4. Comment-Contradicts-Code](#4-comment-contradicts-code)
+- [5. Duplicate vs Contradictory Multi-Layer Enforcement](#5-duplicate-vs-contradictory-multi-layer-enforcement)
+- [6. Generated Code](#6-generated-code)
+- [7. Vendored and Third-Party Code](#7-vendored-and-third-party-code)
+- [8. Oversized Files](#8-oversized-files)
+- [9. Encoding and Character Set Issues](#9-encoding-and-character-set-issues)
+- [10. Monorepo Scoping](#10-monorepo-scoping)
+- [11. Framework-Default Configuration as Rules](#11-framework-default-configuration-as-rules)
+- [12. Cross-Cutting Rule Attribution](#12-cross-cutting-rule-attribution)
+
 ## 1. Business Logic vs Technical Plumbing
 
 The core difficulty of legacy rule extraction is separating business-meaningful rules from infrastructure code.

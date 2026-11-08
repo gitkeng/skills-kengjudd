@@ -2,6 +2,13 @@
 
 Strategy for extracting business rules from large codebases (50K+ LOC, 500+ source files). Implements the two-pass resumable architecture.
 
+## Contents
+
+- [Two-Pass Structure](#two-pass-structure)
+- [Chunk Size Management](#chunk-size-management)
+- [Worked Walkthrough — 100K+ LOC System](#worked-walkthrough-100k-loc-system)
+- [Performance Characteristics](#performance-characteristics)
+
 ## Two-Pass Structure
 
 ### Pass 1 — Whole-Repository Inventory (read everything once, write decomposition)

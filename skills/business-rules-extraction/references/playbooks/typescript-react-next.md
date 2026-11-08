@@ -1,5 +1,17 @@
 # Playbook: TypeScript + React + Next.js Business Rules Extraction
 
+## Contents
+
+- [Project & Package Signals](#project-package-signals)
+- [Evidence-Layer Mapping](#evidence-layer-mapping)
+- [TypeScript Types Are Candidate Facts, Not Validation Proof](#typescript-types-are-candidate-facts-not-validation-proof)
+- [Client/Server Threshold and Enforcement Differences](#clientserver-threshold-and-enforcement-differences)
+- [Compile-Time Types vs Runtime Schemas](#compile-time-types-vs-runtime-schemas)
+- [React: Forms, Hooks, Reducers, Guards](#react-forms-hooks-reducers-guards)
+- [Next.js: Routing, Middleware, Server Actions, Boundaries](#nextjs-routing-middleware-server-actions-boundaries)
+- [Dependency & Config Tracing](#dependency-config-tracing)
+- [Extraction Checklist](#extraction-checklist)
+
 ## Project & Package Signals
 
 - `tsconfig.json` → `strict`, `strictNullChecks`, `paths`, `baseUrl` reveal enforcement level and module aliasing.

@@ -2,6 +2,16 @@
 
 Stack-specific extraction guidance for COBOL, JCL, PL/I, RPG, CICS, and related artifacts.
 
+## Contents
+
+- [Detection Signals](#detection-signals)
+- [Dependency Signals](#dependency-signals)
+- [Mining Strategy](#mining-strategy)
+- [PL/I Specifics](#pli-specifics)
+- [RPG Specifics](#rpg-specifics)
+- [Encoding Considerations](#encoding-considerations)
+- [Evidence Layer Mapping](#evidence-layer-mapping)
+
 ## Detection Signals
 
 - File extensions: `.cbl`, `.cob`, `.cpy`, `.jcl`, `.proc`, `.pli`, `.pl1`, `.rpg`, `.rpgle`, `.bms`, `.mfs`

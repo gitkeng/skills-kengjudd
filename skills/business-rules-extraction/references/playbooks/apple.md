@@ -1,5 +1,21 @@
 # Apple Platforms Playbook — Swift & Objective-C Business-Rules Extraction
 
+## Contents
+
+- [1 Package / Project / Module Signals](#1-package-project-module-signals)
+- [2 Protocols / Extensions / Categories / Delegates / Selectors / Runtime Dispatch](#2-protocols-extensions-categories-delegates-selectors-runtime-dispatch)
+- [3 Swift Guards / Patterns / Property Wrappers / Errors](#3-swift-guards-patterns-property-wrappers-errors)
+- [4 Objective-C Headers / Properties / Macros](#4-objective-c-headers-properties-macros)
+- [5 UI Validation / Navigation / Visibility](#5-ui-validation-navigation-visibility)
+- [6 Persistence / Configuration](#6-persistence-configuration)
+- [7 Definition-Use Tracing](#7-definition-use-tracing)
+- [8 Client-Only Absence Signals](#8-client-only-absence-signals)
+- [9 Generated / Derived Artifacts](#9-generated-derived-artifacts)
+- [10 Lifecycle / Memory / Rendering Plumbing (Exclude)](#10-lifecycle-memory-rendering-plumbing-exclude)
+- [11 Merge / Conflict Policy](#11-merge-conflict-policy)
+- [12 Evidence Layer Mapping](#12-evidence-layer-mapping)
+- [13 Extraction Checklist](#13-extraction-checklist)
+
 ## 1 Package / Project / Module Signals
 
 | Signal | Where Found | Rule Relevance |
