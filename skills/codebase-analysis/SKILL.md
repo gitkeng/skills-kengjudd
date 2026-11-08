@@ -1,9 +1,15 @@
 ---
 name: codebase-analysis
-description: Analyze any repository offline to produce hierarchical, evidence-backed architecture documentation, behavior and API references, security and technical-debt findings, migration readiness, onboarding, and machine-auditable traceability. Use for codebase analysis, architecture docs, tech-debt reports, legacy-system understanding, security review, onboarding, or migration-readiness assessment.
+description: >-
+  Analyze any repository offline into evidence-backed documentation. Use for
+  codebase analysis, architecture docs, tech-debt reports, security review,
+  legacy-system understanding, onboarding, or migration-readiness assessment.
+  Produces hierarchical architecture, behavior and API references, security
+  and technical-debt findings cited as file:line, Mermaid diagrams, and
+  machine-auditable traceability; resumable across runs.
 metadata:
-  version: "2.0.0"
-  updated: "2026-08-31"
+  version: "2.0.1"
+  updated: "2026-11-08"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/comprehensive-codebase-analysis @7423a91"
 ---
 
@@ -196,28 +202,11 @@ Load only `references/neutrality.md`, `references/template-root.md`, and `assets
 
 ## Updating
 
-This skill is versioned via `metadata.version` (see frontmatter) and
-distributed from the private repo `gitkeng/skills-kengjudd`. Use the command
-that matches how it was installed.
+Versioned by `metadata.version`; source: private repo `gitkeng/skills-kengjudd`.
 
-**Git clone + symlink install** — run from the repository root:
+- Git clone + symlink install (from the repo root; `readlink -f` a symlinked
+  skill dir to find it): `./scripts/update.sh codebase-analysis`
+- Claude Code plugin install (`update.sh` cannot run in the plugin cache, which
+  has no `.git`): `claude plugin update kengjudd@kengjudd`
 
-```bash
-./scripts/update.sh codebase-analysis
-```
-
-If this skill directory is a symlink (the normal install), resolve it with
-`readlink -f <this-skill-dir>`; the repo root is two directories above the
-resolved path.
-
-The script fetches `origin/main`, compares this skill's `metadata.version`,
-shows this skill's pending commits, and pulls after confirmation.
-
-**Claude Code plugin install** — the plugin cache has no `.git`, so
-`update.sh` cannot run there:
-
-```bash
-claude plugin update kengjudd@kengjudd
-```
-
-After updating, restart the agent session so the new version loads.
+Then reload skills or restart the session (Claude Code: `/reload-skills`).
