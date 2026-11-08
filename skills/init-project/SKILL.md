@@ -1,24 +1,19 @@
 ---
 name: init-project
 description: >-
-  Use when asked to init or set up a project for AI coding agents, bootstrap
-  agent context files, or start a project knowledge base — "init this
-  project for Claude Code", "set up AGENTS.md", "generate CLAUDE.md /
-  GEMINI.md", "init โปรเจกต์", "ตั้งต้นโครงการให้ agent",
-  "สร้าง AGENTS.md/CLAUDE.md", "ตั้งค่า knowledge base". Interviews the user
-  (agents, task types, stack, knowledge-base folder name, Karpathy
-  guidelines opt-in), researches any selected agent or named technology not
-  already covered by its bundled reference, creates an OKF knowledge base
-  (default folder knowledge-base), generates a canonical AGENTS.md plus
-  per-agent adapters, and runs an adaptive expert review. Not for
-  scaffolding application code, running git init, an agent's own `/init`
-  command (Claude Code, Codex, Gemini CLI, opencode, Kimi CLI: each writes
-  one context file and no knowledge base), or analyzing an existing
-  codebase in depth.
+  Init or set up a project for AI coding agents: context files plus a project
+  knowledge base. Use when asked to "init this project for Claude Code", "set
+  up AGENTS.md", "generate CLAUDE.md / GEMINI.md", "init โปรเจกต์",
+  "ตั้งต้นโครงการให้ agent", "ตั้งค่า knowledge base". Interviews the user
+  (agents, task types, stack, knowledge-base folder, Karpathy opt-in),
+  researches agents and technologies its bundled reference does not cover,
+  creates an OKF knowledge base, writes a canonical AGENTS.md plus per-agent
+  adapters, and runs an adaptive expert review. Not for scaffolding code,
+  running git init, an agent's own /init command, or deep codebase analysis.
 license: MIT
 metadata:
-  version: "1.2.0"
-  updated: "2026-09-23"
+  version: "1.2.1"
+  updated: "2026-11-08"
 ---
 
 # Init Project
@@ -409,30 +404,14 @@ and the four `kb-skeleton/` files (`kb-maintenance.md` and
 
 ## Updating
 
-This skill is versioned via `metadata.version` (see frontmatter) and
-distributed from the private repo `gitkeng/skills-kengjudd`. Use the command
-that matches how it was installed.
+Versioned by `metadata.version`; source: private repo `gitkeng/skills-kengjudd`.
 
-**Git clone + symlink install** — run from the repository root:
+- Git clone + symlink install (from the repo root; `readlink -f` a symlinked
+  skill dir to find it): `./scripts/update.sh init-project`
+- Claude Code plugin install (`update.sh` cannot run in the plugin cache, which
+  has no `.git`): `claude plugin update kengjudd@kengjudd`
 
-```bash
-./scripts/update.sh init-project
-```
-
-On this channel the skill directory is a symlink: resolve it with
-`readlink -f <this-skill-dir>`; the repo root is two directories above the
-resolved path. The script fetches `origin/main`, compares this skill's
-`metadata.version`, shows this skill's pending commits, and pulls after
-confirmation.
-
-**Claude Code plugin install** — the plugin cache has no `.git`, so
-`update.sh` cannot run there:
-
-```bash
-claude plugin update kengjudd@kengjudd
-```
-
-After updating, restart the agent session so the new version loads.
+Then reload skills or restart the session (Claude Code: `/reload-skills`).
 
 Maintainers: `python3 scripts/validate_output.py --self` must exit 0 before
 `metadata.version` is bumped (the scenario list lives in the repo's
