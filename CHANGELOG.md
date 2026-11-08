@@ -7,6 +7,38 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.14.1] - 2026-11-08
+
+Knowledge-and-tooling release from the 2026-11-08 skill quality review
+(`docs/skill-quality-review-2026-11-08.md`). No skill content changed.
+
+### Tooling
+
+- `.claude-plugin/plugin.json` declares `license: MIT` and the repo gains a
+  root `LICENSE`; `claude plugin validate .` reported `LICENSE_MISSING`,
+  which the plugin directory refuses a submission for.
+- `scripts/install.sh` warns when the `kengjudd@kengjudd` plugin is installed
+  on the same machine as the symlinks (every skill listed twice, double the
+  description cost per turn), and its reminder names `/reload-skills`.
+- `CLAUDE.md` → Working with skills: one install channel per machine.
+
+### Knowledge
+
+- New Playbook `skill-authoring/context-budgets.md`: per-agent description
+  caps and listing budgets (Claude Code 1,536 chars / 1% of context, ZCode
+  ~250 chars, Kimi 240, Codex shortening, Zed 50 KB), the 5,000-token
+  post-compaction re-attach limit, and the authoring rules that follow
+  (trigger in the first 240 chars, critical rules in the first 5,000 tokens,
+  short `## Updating`).
+- New Decision `decisions/2026-11-08-eval-suite-layout.md`: `evals/` at the
+  plugin root for `claude plugin eval`, synthetic fixtures only, a trigger
+  and an anti-trigger case per skill.
+- `skill-authoring/best-practices.md` §1, §3, §6, §8; `specs/agent-skills-spec.md`
+  (AAIF donation 2026-10-22, 46-client showcase, no spec version, eval
+  tooling); `agents/skill-discovery-matrix.md` re-verified (Codex docs URL,
+  Antigravity CLI banner, Amp docs gap closed, Kimi URL, Claude Code and
+  `.agents/skills`).
+
 ## [0.14.0] - 2026-09-23
 
 ### init-project (1.1.0 → 1.2.0)
