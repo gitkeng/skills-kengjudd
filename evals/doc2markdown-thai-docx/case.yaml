@@ -7,8 +7,10 @@ description: >-
   the table.
 tags: [doc2markdown, trigger]
 expected_outcome: >-
-  brief.md exists beside the source, contains the Thai H1 and a Markdown table
-  with the three budget rows, and the run invoked scripts/probe.py or
+  brief.md exists beside the source, contains the Thai H1, the three "List
+  Bullet" items as a Markdown list (the extractor's style-inherited list
+  detection, added in 1.2.0, is what this checks), a Markdown table with the
+  three budget rows, and the run invoked scripts/probe.py or
   scripts/extract_docx.py.
 context:
   scaffold_script: scaffold.sh
