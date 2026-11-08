@@ -7,6 +7,62 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.18.0] - 2026-11-08
+
+The three items the 2026-11-08 review left open, done in one pass at the
+maintainer's request.
+
+### init-project (1.3.0 → 1.4.0)
+
+- **Body ≈4,094 tokens** (from ≈4,926; the review's 4,000 target within 2%).
+  Phase 2 and Phase 3 keep one line per step with their bold labels and move
+  their full wording to `references/phase-research.md` and
+  `references/phase-kb.md`, read when the phase starts; Phase 1, Phase 4 and
+  Phase 5 one-liners, the Edge cases and the References table are tightened;
+  the description drops to 542 characters. Every bold label other references
+  cite is still present (checked by grep); `validate_output.py --self` exit 0;
+  `kb-skeleton` markers `@1.4.0`.
+
+### doc2markdown (1.2.0 → 1.2.1)
+
+- **`pdf_text.py` recomposes a decomposed ำ split across a line break.** The
+  new Thai PDF fixture showed `ขอกํ` ending one line and `าหนด` starting the
+  next, which the adjacent-pair replacement cannot see; `_rejoin_split_sara_am`
+  runs after blocks are joined, since SARA AA never begins a line on its own.
+  `references/pdf.md` records both forms the script repairs.
+- New eval `doc2markdown-thai-pdf`: a synthetic one-page Thai memo generated
+  by `fixtures/make_brief_pdf.py` whose text layer writes every ำ as ํ + า
+  (SARA AM ratio 0.08, so the OCR fallback stays off). With 1.2.1: 2/2 runs,
+  7/7 graders (skill fired, extractor ran, composed words incl. the split
+  one, no stray NIKHAHIT, nothing unreadable). Δ against the no-skill
+  baseline is 0 — Claude reads a PDF page visually without the skill — so
+  the case guards the repair path rather than proving a baseline gap.
+
+### codebase-analysis (2.1.0 → 2.1.1)
+
+- **Parallel mode verified end to end.** New eval
+  `codebase-analysis-parallel-smoke` (slow, 1 run) analyses a synthetic
+  Python service in parallel mode: 6 subagents dispatched (Phases 2–5, then
+  6–7), `resolve_aliases.py` ran, `.work/` removed, no `{{alias:…}}` left,
+  `manifest.json` and `progress.json` at schema 2.0 — 8/8 graders, 15
+  orchestrator turns, 20 minutes, ≈$8.78, 32 findings / 14 rules / 32 test
+  cases on a 14-file fixture.
+- **Two defects the run exposed, fixed:** `validate_output.py` could not
+  parse a YAML block-scalar description (`>-`), so the output-tree run
+  reported the skill's own frontmatter as malformed — the parser now joins
+  block-scalar continuation lines (the same fix init-project got in 1.1.0);
+  `resolve_aliases.py` computed `delta` over every registry, while the
+  manifest validator requires finding keys only — restricted to `td`/`v`.
+  Re-validated on the kept output tree: 7/7 check groups pass.
+- `references/parallel-phases.md`: assign registry ownership per subagent
+  before dispatch (the run did, and had no duplicate registrations), the
+  "subagent could not write a document" fallback, and the delta note.
+
+### Knowledge
+
+- `skill-authoring/context-budgets.md` §3 and `skill-authoring/parallel-phase-skills.md`
+  updated with the new sizes and the end-to-end result; `log.md` entry.
+
 ## [0.17.0] - 2026-11-08
 
 Phase 5 of the 2026-11-08 review: speed for the heaviest skill, and the
