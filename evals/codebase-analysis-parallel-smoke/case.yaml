@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: codebase-analysis-parallel-smoke
+description: >-
+  End-to-end smoke test of codebase-analysis 2.1.0's optional parallel mode
+  on a small synthetic Python service. The run must fan Phases 2–5 and 6–7
+  out to subagents, resolve aliases with scripts/resolve_aliases.py at
+  Phase 8, delete .work/, and pass its own validator.
+tags: [codebase-analysis, parallel, e2e, slow]
+runs: 1
+expected_outcome: >-
+  ./codebase-analysis/ holds the declared tree with manifest.json and
+  progress.json at schema 2.0; Agent was dispatched at least four times;
+  resolve_aliases.py and validate_output.py ran; no .work/ files remain;
+  no {{alias:…}} placeholder survives in any document.
+context:
+  scaffold_script: scaffold.sh

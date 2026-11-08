@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: doc2markdown-thai-pdf
+description: >-
+  A Thai request to convert a one-page Thai PDF whose text layer carries the
+  decomposed SARA AM defect (ํ + า instead of ำ). The skill must fire, run
+  the bundled PDF extractor (which repairs the pairs), and produce brief.md
+  with correctly composed words and no [unreadable] marker.
+tags: [doc2markdown, trigger, thai-repair]
+expected_outcome: >-
+  brief.md exists; it contains composed words such as "สำนักงาน" and "ทำความสะอาด";
+  it contains no decomposed "ํา" sequence and no "[unreadable]"; the run
+  invoked scripts/probe.py or scripts/extract_pdf.py.
+context:
+  scaffold_script: scaffold.sh
