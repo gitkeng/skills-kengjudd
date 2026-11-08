@@ -1,5 +1,72 @@
 # Knowledge Base Log
 
+## 2026-09-23
+
+- **init-project 1.2.0** (repo v0.14.0) — the agent matrix re-verified
+  against official sources three weeks after 1.1.0, at Kongsak's request
+  ("Claude now supports AGENTS.md; bring it and the other agents up to
+  date"), and extended to fourteen agents. Research ran as six parallel
+  read-only researchers with the recorded matrix text as the diff baseline;
+  every finding that changed a field was spot-checked against the cited page
+  or source before it was written, and roughly ten researcher claims were
+  dropped or reworded at that step. Maintainer decisions (asked, not
+  assumed): **keep Claude Code as `import-adapter`**
+  (/decisions/2026-09-23-claude-code-keeps-import-adapter.md); **add GitHub
+  Copilot and Windsurf** — and, when research found Windsurf renamed, **add
+  Devin (CLI + Desktop) in its place**.
+- **What changed, per agent** (all in
+  /agents/agent-init-conventions.md and the skill's matrix):
+  Claude Code — native `AGENTS.md` since 2.1.277 (2026-09-18) only without
+  a `CLAUDE.md`/`CLAUDE.local.md` and only with feature-flag fetching;
+  `/init` offers `/import`. Codex — untrusted projects load no project
+  `AGENTS.md` (source, PR merged 2026-08-21); `/init` refuses to modify an
+  existing file; cloud-managed config layer in the docs. Cursor — reads a
+  root `CLAUDE.md` like `AGENTS.md`; `~/.cursor/rules`; more rule
+  generators. opencode — one filename chosen per path, then every file of
+  that name; `/init` edits `AGENTS.md`; repo now `anomalyco/opencode`.
+  Gemini CLI — `context.fileName` adds to `GEMINI.md`; `/init` leaves an
+  existing `GEMINI.md` alone; #28227 open; system files need secure
+  ownership since v0.60.0. Zed — unchanged except the moved config page.
+  Kiro — two self-contradictions recorded (custom-agent steering, CLI
+  inclusion modes); Configuration Sync; workspace-roots permissions.
+  Kimi CLI — archived; the section now describes Kimi Code CLI, whose
+  `/init` rewrites `AGENTS.md`. Amp — workspace and web Global AGENTS.md;
+  server-side managed settings. Goose — `@` includes documented since at
+  least 2025-12 (the record said "No"); moved to `aaif-goose/goose`.
+  ZCode — undocumented built-in `/init` that edits `AGENTS.md` (local
+  inspection of 3.14.3); subagents inject `AGENTS.md` since 3.7.1.
+  Antigravity — IDE read `AGENTS.md` from v1.20.5 (2026-03-09), closing the
+  old "when did support land" gap; Workflows retire 2026-11-01.
+- **New cross-agent fact:** Cursor, GitHub Copilot and Devin load a root
+  `CLAUDE.md`; Antigravity and Copilot a root `GEMINI.md`. The adapter
+  template now labels each note with its agent's name; Copilot CLI expands
+  `@AGENTS.md` inside `CLAUDE.md` and so loads `AGENTS.md` twice when Claude
+  Code is also selected (recorded as a known cost of the Claude Code
+  decision).
+- **Fallback rule** reworded: a literal reading of 1.1.0's step 1 made
+  Claude Code and Gemini CLI `native`. **SKILL.md** now points at the
+  extract instead of restating init-command behavior; 439 lines, 25,518
+  bytes.
+- **Local evidence** (Claude Code 2.1.280 on the maintainer's machine,
+  `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set): a directory with only
+  `AGENTS.md` gave a `claude -p` session no instructions; adding a
+  `CLAUDE.md` with `@AGENTS.md` fixed it; `/import` "isn't available in this
+  environment".
+- **Knowledge:** /agents/agent-init-conventions.md rewritten (fourteen
+  agents, "loads another agent's file" column, `stale_after` 2026-10-23);
+  /specs/agents-md-standard.md — Claude Code section rewritten, Copilot and
+  Devin rows, spec repo moved to `agentsmd/agents.md`, a stale claim that
+  Gemini CLI was the only non-Claude tool with `@` imports removed;
+  /skill-authoring/init-project-lessons.md §11; new decision record.
+- **Tests:** `validate_output.py --self` exit 0. A hand-built output with a
+  labeled `CLAUDE.md` adapter passed the validator (exit 0), and the same
+  file with an unreplaced `<Agent name>` failed C2 (exit 1). **Scenario E**
+  passed (Claude Code 2.1.280, skill copied into a scratch directory's
+  `.claude/skills/`, the 0.13.0 plugin disabled for the run): zero files
+  written; the last message was the target-root consent ask. The
+  description did not change, so trigger tests were not re-run. Scenarios
+  A and C (interactive): not run at the time of this entry.
+
 ## 2026-09-07
 
 - **init-project 1.1.0** (repo v0.13.0) — the fix wave from the six-expert

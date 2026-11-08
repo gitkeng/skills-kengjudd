@@ -17,7 +17,7 @@ Project knowledge bundle in OKF format. Canonical spec:
 # Agents
 
 * [Skill discovery matrix](agents/skill-discovery-matrix.md) - where each supported agent discovers skills, per scope
-* [Per-agent init conventions](agents/agent-init-conventions.md) - context files, init commands, config locations for the 12 init-project agents
+* [Per-agent init conventions](agents/agent-init-conventions.md) - context files, init commands, config locations for the 14 init-project agents, and which agents also load another agent's file
 
 # Skill authoring
 
@@ -33,5 +33,6 @@ Project knowledge bundle in OKF format. Canonical spec:
 
 # Decisions
 
+* [2026-09-23 Claude Code keeps the import adapter](decisions/2026-09-23-claude-code-keeps-import-adapter.md) - native AGENTS.md reading in Claude Code 2.1.277 is conditional, so init-project still writes CLAUDE.md with @AGENTS.md; Fallback rule clarified
 * [2026-08-30 plugin name kengjudd](decisions/2026-08-30-plugin-name-kengjudd.md) - plugin renamed skills-kengjudd → kengjudd so skills invoke as kengjudd:<skill>; mechanism, unchanged parts, migration
 * [2026-08-29 repository design](decisions/2026-08-29-repo-design.md) - founding decisions, spec-conflict rationale, deferred imports inventory

@@ -2,591 +2,567 @@
 type: Reference
 title: Per-agent init conventions (context files, init commands, config)
 description: >
-  For each of the 12 agents targeted by the init-project skill: which
-  instruction/context files it reads (paths + precedence), import syntax,
-  native init command, and config file locations. Feeds
+  For each of the 14 agents targeted by the init-project skill: which
+  instruction/context files it reads (paths + precedence), whether it also
+  loads another agent's file (CLAUDE.md, GEMINI.md), import syntax, native
+  init command and what it does to an existing AGENTS.md, and config file
+  locations. Re-verified 2026-09-23. Feeds
   skills/init-project/references/agent-context-matrix.md.
 tags: [agents, context-files, init, agents-md]
 sources:
   - resource: https://code.claude.com/docs/en/memory
-    title: "Claude Code docs — How Claude remembers your project (CLAUDE.md locations, @imports, /init, /import, auto memory)"
+    title: "Claude Code docs — memory (CLAUDE.md locations, @imports, the AGENTS.md section, /init, /import)"
+  - resource: https://code.claude.com/docs/en/commands
+    title: "Claude Code docs — commands (/init, /import)"
+  - resource: https://code.claude.com/docs/en/env-vars
+    title: "Claude Code docs — features that need feature-flag fetching; first session after an install or upgrade"
   - resource: https://code.claude.com/docs/en/settings
-    title: "Claude Code docs — Settings (five settings scopes and their precedence)"
+    title: "Claude Code docs — settings scopes and precedence"
+  - resource: https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+    title: "Claude Code changelog — 2.1.277 AGENTS.md support"
   - resource: https://learn.chatgpt.com/docs/agent-configuration/agents-md
-    title: "OpenAI Codex docs — AGENTS.md (global/project locations, override files, merge order, project_doc_max_bytes)"
+    title: "OpenAI Codex docs — AGENTS.md"
   - resource: https://learn.chatgpt.com/docs/config-file/config-basic
-    title: "OpenAI Codex docs — Config file basics (config.toml precedence, project/user/system scopes)"
-  - resource: https://learn.chatgpt.com/docs/developer-commands
-    title: "OpenAI Codex docs — Developer commands (built-in slash commands, incl. /init)"
+    title: "OpenAI Codex docs — config file basics (precedence incl. cloud-managed defaults)"
+  - resource: https://github.com/openai/codex/blob/main/codex-rs/core/src/agents_md.rs
+    title: "openai/codex — agents_md.rs (project root markers, untrusted projects, truncation)"
+  - resource: https://github.com/openai/codex/pull/39837
+    title: "openai/codex PR #39837 — Ignore project instructions for untrusted projects (merged 2026-08-21)"
   - resource: https://github.com/openai/codex/blob/main/codex-rs/tui/src/slash_command.rs
-    title: "openai/codex — slash_command.rs (verbatim /init description)"
+    title: "openai/codex — slash_command.rs (/init description)"
+  - resource: https://github.com/openai/codex/blob/main/codex-rs/tui/assets/prompt_for_init_command.md
+    title: "openai/codex — /init prompt (never overwrites an existing AGENTS.md)"
   - resource: https://github.com/openai/codex/issues/21932
-    title: "openai/codex issue #21932 — Allow /init to update an existing AGENTS.md (open feature request)"
+    title: "openai/codex issue #21932 — let /init update an existing AGENTS.md (open)"
   - resource: https://cursor.com/docs/rules
-    title: "Cursor docs — Rules (AGENTS.md nested support, .mdc project rules, @file references, /create-rule)"
+    title: "Cursor docs — rules (AGENTS.md root and nested, .mdc rules, application order)"
+  - resource: https://cursor.com/help/customization/rules
+    title: "Cursor help — rules (CLAUDE.md read like AGENTS.md; ~/.cursor/rules; .cursorrules legacy)"
+  - resource: https://cursor.com/docs/cli/using
+    title: "Cursor docs — using the CLI (root AGENTS.md and CLAUDE.md)"
   - resource: https://cursor.com/docs/cli/reference/configuration
-    title: "Cursor docs — CLI configuration (cli-config.json, project .cursor/cli.json)"
-  - resource: https://cursor.com/docs/cli/reference/slash-commands
-    title: "Cursor docs — CLI slash commands (no /init)"
+    title: "Cursor docs — CLI configuration"
+  - resource: https://cursor.com/docs/cli/reference/parameters
+    title: "Cursor docs — CLI parameters (generate-rule)"
   - resource: https://cursor.com/docs/cli/mcp
-    title: "Cursor docs — CLI MCP (.cursor/mcp.json, ~/.cursor/mcp.json)"
+    title: "Cursor docs — CLI MCP (project → global → nested)"
   - resource: https://opencode.ai/docs/rules/
-    title: "opencode docs — Rules (AGENTS.md, CLAUDE.md fallback, instructions array, /init)"
+    title: "opencode docs — rules"
   - resource: https://opencode.ai/docs/config/
-    title: "opencode docs — Config (opencode.json locations, merge order, managed config)"
+    title: "opencode docs — config"
+  - resource: https://github.com/anomalyco/opencode/blob/dev/packages/opencode/src/session/instruction.ts
+    title: "anomalyco/opencode — instruction.ts (lookup order)"
+  - resource: https://github.com/anomalyco/opencode/blob/dev/packages/opencode/src/command/index.ts
+    title: "anomalyco/opencode — command/index.ts and /init template"
   - resource: https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/gemini-md.md
-    title: "gemini-cli docs — Context files (GEMINI.md hierarchy, context.fileName, @file.md imports)"
-  - resource: https://github.com/google-gemini/gemini-cli/blob/main/packages/cli/src/ui/commands/initCommand.ts
-    title: "gemini-cli source — initCommand.ts (verbatim /init description)"
-  - resource: https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/settings.md
-    title: "gemini-cli docs — Settings (user and workspace settings.json)"
-  - resource: https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/enterprise.md
-    title: "gemini-cli docs — Enterprise (system settings paths, four-file precedence)"
+    title: "gemini-cli docs — context files"
+  - resource: https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/tools/memoryTool.ts
+    title: "gemini-cli source — memoryTool.ts (default filename; context.fileName adds names)"
+  - resource: https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/memport.md
+    title: "gemini-cli docs — memory import processor"
+  - resource: https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/commands/init.ts
+    title: "gemini-cli source — init.ts (existing GEMINI.md left unchanged)"
+  - resource: https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md
+    title: "gemini-cli docs — configuration reference"
+  - resource: https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/trusted-folders.md
+    title: "gemini-cli docs — trusted folders"
+  - resource: https://github.com/google-gemini/gemini-cli/blob/main/docs/changelogs/latest.md
+    title: "gemini-cli changelog — v0.60.0"
+  - resource: https://github.com/google-gemini/gemini-cli/issues/28227
+    title: "gemini-cli issue #28227 — AGENTS.md not in the default context.fileName (open)"
   - resource: https://zed.dev/docs/ai/instructions
-    title: "Zed docs — Instructions (first-match-wins file list, ~/.config/zed/AGENTS.md)"
-  - resource: https://zed.dev/docs/configuring-zed
-    title: "Zed docs — Configuring Zed (settings.json locations, .zed/settings.json)"
+    title: "Zed docs — instructions"
+  - resource: https://github.com/zed-industries/zed/blob/main/docs/src/configuring-zed.md
+    title: "Zed docs source — configuring Zed (published page now redirects)"
   - resource: https://kiro.dev/docs/steering/
-    title: "Kiro docs — Steering (.kiro/steering, inclusion modes, #[[file:...]], AGENTS.md support)"
+    title: "Kiro docs — steering"
+  - resource: https://kiro.dev/docs/custom-agents/configuration-reference/
+    title: "Kiro docs — custom agent configuration reference (default resources inherited)"
+  - resource: https://kiro.dev/docs/cli/v3/new-features/
+    title: "Kiro docs — CLI v3 new features"
   - resource: https://kiro.dev/docs/configuration/
-    title: "Kiro docs — Configuration scopes (global/project paths, KIRO_HOME, precedence)"
-  - resource: https://kiro.dev/docs/mcp/configuration/
-    title: "Kiro docs — MCP configuration (mcp.json workspace and user paths)"
-  - resource: https://github.com/MoonshotAI/kimi-cli/blob/main/docs/en/reference/slash-commands.md
-    title: "kimi-cli docs — Slash commands (verbatim /init description)"
-  - resource: https://github.com/MoonshotAI/kimi-cli/blob/main/docs/en/configuration/config-files.md
-    title: "kimi-cli docs — Config files (~/.kimi/config.toml, --config-file, legacy JSON migration)"
-  - resource: https://github.com/MoonshotAI/kimi-cli/blob/main/docs/en/configuration/data-locations.md
-    title: "kimi-cli docs — Data locations (~/.kimi tree, KIMI_SHARE_DIR)"
-  - resource: https://github.com/MoonshotAI/kimi-cli/blob/main/docs/en/customization/agents.md
-    title: "kimi-cli docs — Agents and subagents (${KIMI_AGENTS_MD} merge scope)"
-  - resource: https://www.kimi.com/code/docs/en/kimi-code-cli/customization/skills.html
-    title: "Kimi Code CLI docs — Agent Skills ($KIMI_CODE_HOME, ~/.kimi-code, extra_skill_dirs)"
+    title: "Kiro docs — configuration scopes"
+  - resource: https://github.com/MoonshotAI/kimi-code/blob/main/docs/en/customization/agents.md
+    title: "Kimi Code docs — agents and instruction files"
+  - resource: https://github.com/MoonshotAI/kimi-code/blob/main/packages/agent-core-v2/src/agent/profile/context.ts
+    title: "Kimi Code source — context.ts (AGENTS.md load order)"
+  - resource: https://github.com/MoonshotAI/kimi-code/blob/main/packages/agent-core-v2/src/features/sessionInit/profile/init.md
+    title: "Kimi Code source — /init prompt"
+  - resource: https://github.com/MoonshotAI/kimi-code/blob/main/docs/en/configuration/overrides.md
+    title: "Kimi Code docs — overrides (no project-level config)"
+  - resource: https://github.com/MoonshotAI/kimi-cli
+    title: "MoonshotAI/kimi-cli (archived; 1.52.0 installs Kimi Code)"
   - resource: https://ampcode.com/docs/customize/agents-md
-    title: "Amp docs — AGENTS.md (search locations, AGENT.md/CLAUDE.md fallback, @-mentions, agents-md list)"
+    title: "Amp docs — AGENTS.md"
   - resource: https://ampcode.com/docs/cli/settings
-    title: "Amp docs — CLI configuration (user/workspace/managed settings paths, precedence)"
-  - resource: https://ampcode.com/docs/cli
-    title: "Amp docs — CLI getting started (documented CLI surface; no init command)"
-  - resource: https://github.com/block/goose/blob/main/documentation/docs/guides/context-engineering/using-goosehints.md
-    title: "goose docs — Using goosehints (AGENTS.md + .goosehints defaults, CONTEXT_FILE_NAMES, global hints)"
-  - resource: https://github.com/block/goose/blob/main/documentation/docs/guides/config-files.md
-    title: "goose docs — Config files (config.yaml, permission.yaml, secrets.yaml paths)"
-  - resource: https://github.com/block/goose/blob/main/documentation/docs/guides/goose-cli-commands.md
-    title: "goose docs — CLI commands (full command and slash-command list; term init)"
+    title: "Amp docs — CLI settings"
+  - resource: https://goose-docs.ai/docs/guides/context-engineering/using-goosehints/
+    title: "goose docs — using goosehints (@ includes, nested hints)"
+  - resource: https://goose-docs.ai/docs/guides/environment-variables/
+    title: "goose docs — environment variables (CONTEXT_FILE_NAMES default)"
+  - resource: https://goose-docs.ai/docs/guides/config-files/
+    title: "goose docs — config files"
+  - resource: https://github.com/aaif-goose/goose
+    title: "aaif-goose/goose (moved from block/goose; AAIF at the Linux Foundation)"
   - resource: https://zcode.z.ai/en/docs/agents
-    title: "ZCode docs — AGENTS.md (two sources only, no @import expansion, no child-dir scan)"
+    title: "ZCode docs — AGENTS.md"
+  - resource: https://zcode.z.ai/en/docs/subagents
+    title: "ZCode docs — subagents (injectAgentsMd)"
   - resource: https://zcode.z.ai/en/docs/commands
-    title: "ZCode docs — Commands (/goal and /compact only; custom command paths)"
-  - resource: https://zcode.z.ai/en/docs/configuration
-    title: "ZCode docs — Configuration (~/.zcode/v2/config.json provider options)"
+    title: "ZCode docs — commands"
   - resource: https://zcode.z.ai/en/docs/mcp-services
-    title: "ZCode docs — MCP servers (~/.zcode/cli/config.json, workspace .zcode/config.json, .agents/mcp.json fallback, enable:false)"
+    title: "ZCode docs — MCP servers"
+  - resource: file:///Applications/ZCode.app/Contents/Resources/glm/zcode.cjs
+    title: "Local inspection — ZCode 3.14.3 engine (built-in /init, AGENTS.md lookup), 2026-09-23"
   - resource: https://antigravity.google/docs/rules-workflows/
-    title: "Antigravity docs — Rules and Workflows (~/.gemini/GEMINI.md, .agents/rules, 12k char limit, @filename)"
+    title: "Antigravity docs — rules"
   - resource: https://antigravity.google/docs/cli/gcli-migration/
-    title: "Antigravity docs — Migration (GEMINI.md and AGENTS.md parsed in the active directory; config paths)"
+    title: "Antigravity docs — migration from Gemini CLI"
+  - resource: https://antigravity.google/docs/cli/best-practices/
+    title: "Antigravity docs — CLI best practices"
+  - resource: https://antigravity.google/docs/migration/workflows-to-skills/
+    title: "Antigravity docs — workflows to skills (retired 2026-11-01)"
   - resource: https://antigravity.google/changelog
-    title: "Antigravity changelog — v2.11.0 (2026-08-26) @path inlining in AGENTS.md; v2.3.1 ~/.gemini/config/config.json"
+    title: "Antigravity changelog (IDE v1.20.5; 2.0 v2.11.0, v2.12.0)"
   - resource: https://antigravity.google/docs/slash-commands/
-    title: "Antigravity docs — Slash commands (built-in command list; no /init)"
-  - resource: https://antigravity.google/docs/getting-started
-    title: "Antigravity docs — Getting started (product description, docs navigation)"
+    title: "Antigravity docs — slash commands"
+  - resource: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions
+    title: "GitHub Docs — custom instructions for Copilot CLI"
+  - resource: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference
+    title: "GitHub Docs — Copilot CLI command reference"
+  - resource: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference
+    title: "GitHub Docs — Copilot CLI configuration directory"
+  - resource: https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions
+    title: "GitHub Docs — repository custom instructions (cloud agent)"
+  - resource: https://code.visualstudio.com/docs/agents/reference/ai-settings
+    title: "VS Code docs — AI settings reference"
+  - resource: https://github.com/microsoft/vscode/blob/main/extensions/copilot/assets/prompts/skills/init/SKILL.md
+    title: "microsoft/vscode — built-in init skill"
+  - resource: https://docs.devin.ai/cli/extensibility/rules
+    title: "Devin docs — rules & AGENTS.md"
+  - resource: https://docs.devin.ai/cli/reference/configuration/read-config-from
+    title: "Devin docs — configuration import (read_config_from defaults)"
+  - resource: https://docs.devin.ai/cli/reference/configuration/global-vs-local
+    title: "Devin docs — configuration precedence"
+  - resource: https://docs.devin.ai/desktop/changelog
+    title: "Devin Desktop changelog (Windsurf renamed 2026-06-02; Cascade removed 2026-09-08)"
+  - resource: https://docs.devin.ai/desktop/devin-local
+    title: "Devin docs — Devin Local (shares the Devin CLI harness)"
 generated:
-  by: claude-code/claude-opus-5
-  at: "2026-08-31T02:50:48Z"
+  by: claude-code/claude-opus-5-5
+  at: "2026-09-23T07:11:13Z"
 status: stable
+stale_after: "2026-10-23"
 ---
 
 # Per-agent init conventions
 
-What each of the 12 agents in the `init-project` v1 target list actually loads
-at session start, how it merges those files, whether it can import other files,
-whether it can generate its own context file, and where its configuration
-lives. Every section answers the same four questions:
+What each of the 14 agents in the `init-project` target list actually loads
+at session start, how it merges those files, whether it also loads another
+agent's file, whether it can import other files, whether it can generate its
+own context file, and where its configuration lives. Every section answers
+the same four questions:
 
 - **(a) Instruction/context files** — filenames, paths, precedence/merge model
 - **(b) Import syntax** — yes/no, and the exact syntax
-- **(c) Native init command** — a built-in command that writes the context file
+- **(c) Native init command** — a built-in command that writes the context
+  file, and what it does to an `AGENTS.md` that already exists
 - **(d) Config file locations** — where the agent's own settings live
 
-Facts already recorded in this bundle are cited, not restated: see
-[/specs/agents-md-standard.md](/specs/agents-md-standard.md) for the AGENTS.md
-standard and per-tool context-file behavior, and
-[/agents/skill-discovery-matrix.md](/agents/skill-discovery-matrix.md) for
-skill discovery paths. Unresolved questions are in
-[Known gaps](#known-gaps) — none of them are guessed.
+The skill's copy of these facts, with a source line per fact, is
+`skills/init-project/references/agent-context-matrix.md`; this document
+keeps the same facts in comparison form plus what only local inspection
+showed. The AGENTS.md standard itself is in
+[/specs/agents-md-standard.md](/specs/agents-md-standard.md), skill
+discovery paths in
+[/agents/skill-discovery-matrix.md](/agents/skill-discovery-matrix.md).
+Unresolved questions are in [Known gaps](#known-gaps) — none of them are
+guessed.
 
-All URL-backed facts below were verified **2026-08-31**.
+All URL-backed facts below were re-verified **2026-09-23**; the previous
+pass was 2026-08-31, and what changed between them is logged in
+[/log.md](/log.md). Facts from source code are marked *(source)*, facts
+from the installed app *(local inspection)*.
 
 ## Claude Code
 
-- **(a)** Reads `CLAUDE.md`, never `AGENTS.md`. Load order, broadest to most
-  specific: managed policy
+- **(a)** `CLAUDE.md`, and `AGENTS.md` only when no `CLAUDE.md` counts. Load
+  order, broadest to most specific: managed policy
   (`/Library/Application Support/ClaudeCode/CLAUDE.md` on macOS,
   `/etc/claude-code/CLAUDE.md` on Linux/WSL,
   `C:\Program Files\ClaudeCode\CLAUDE.md` on Windows) → user
   `~/.claude/CLAUDE.md` → project `./CLAUDE.md` **or** `./.claude/CLAUDE.md` →
-  local `./CLAUDE.local.md`. All discovered files are **concatenated**, not
-  overridden, ordered filesystem-root-down; within a directory
-  `CLAUDE.local.md` is appended after `CLAUDE.md`. Files in subdirectories load
-  on demand when Claude reads files there. Additionally `.claude/rules/*.md`
-  (project, recursive) and `~/.claude/rules/` (user) load at launch, or only
-  for matching files when they carry `paths:` frontmatter globs.
-- **(b)** **Yes** — `@path/to/import`. Relative paths resolve against the file
-  containing the import; absolute paths allowed; recursive to a **maximum depth
-  of four hops**; parsing skips code spans and fenced blocks; imported files
-  are expanded at launch. This is the mechanism behind the official
-  `CLAUDE.md` → `@AGENTS.md` adapter pattern.
-- **(c)** **Yes** — `/init` generates a starting CLAUDE.md from codebase
-  analysis; if a CLAUDE.md already exists it suggests improvements rather than
-  overwriting. Plain `/init` also reads Cursor rules (`.cursor/rules/`,
-  `.cursorrules`) and `.github/copilot-instructions.md`. With
-  `CLAUDE_CODE_NEW_INIT=1` it becomes an interactive multi-phase flow and also
-  reads `AGENTS.md`, `.devin/rules/`, `.windsurf/rules/` or `.windsurfrules`,
-  and `.clinerules`. Separately, `/import` (v2.1.213+) appends a one-time copy
-  of a supported agent's instruction file into the matching CLAUDE.md.
-- **(d)** Settings precedence, highest first: managed
-  (`managed-settings.json`, MDM, or the claude.ai console) → `claude --settings`
-  → `.claude/settings.local.json` → `.claude/settings.json` →
-  `~/.claude/settings.json`. Auto memory lives at
-  `~/.claude/projects/<project>/memory/` (relocatable with
-  `autoMemoryDirectory`).
-- Sources: [memory docs](https://code.claude.com/docs/en/memory),
-  [settings docs](https://code.claude.com/docs/en/settings);
-  background in [/specs/agents-md-standard.md](/specs/agents-md-standard.md).
+  local `./CLAUDE.local.md`; concatenated root-down, subdirectory files on
+  demand; `.claude/rules/*.md` and `~/.claude/rules/` at launch or per
+  `paths:` glob. **Native AGENTS.md since v2.1.277** (npm publish
+  2026-09-18): under the default **Project instructions** value
+  (`claude-md-or-agents-md`) every `AGENTS.md` and `.claude/AGENTS.md` from
+  the working directory up is read *only when* no `CLAUDE.md`,
+  `.claude/CLAUDE.md` or `CLAUDE.local.md` exists there; the setting lives in
+  user, `--settings` or managed settings only. Unavailable before 2.1.277,
+  without feature-flag fetching (Bedrock, Google Cloud's Agent Platform,
+  Foundry, Claude Platform on AWS, a Claude apps gateway, telemetry/traffic
+  opt-outs), in the first session after an install or upgrade, or with the
+  built-in `agents-md` plugin disabled. Full detail:
+  [/specs/agents-md-standard.md](/specs/agents-md-standard.md).
+- **(b)** **Yes** — `@path/to/import`; relative to the importing file,
+  absolute allowed, four hops deep, skipped inside code, expanded at launch;
+  also expanded inside an `AGENTS.md` read natively.
+- **(c)** **Yes** — `/init` "Initialize project with a `CLAUDE.md` guide";
+  an existing CLAUDE.md gets suggested improvements, not an overwrite. When
+  it finds Codex or Gemini CLI configuration it offers `/import`, which
+  appends a one-time copy of `AGENTS.md` to `CLAUDE.md` — beside an
+  `@AGENTS.md` import that copy repeats the content and goes stale.
+  `/import` needs feature-flag fetching; on this maintainer's machine it
+  reported "/import isn't available in this environment" (2026-09-23).
+- **(d)** Settings precedence, highest first: managed → `--settings` →
+  `.claude/settings.local.json` → `.claude/settings.json` →
+  `~/.claude/settings.json`. Auto memory at
+  `~/.claude/projects/<project>/memory/` (`autoMemoryDirectory` relocates it).
+- **Local check, 2026-09-23** (Claude Code 2.1.280,
+  `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set): with only an `AGENTS.md`,
+  `claude -p` saw no project instructions; with a `CLAUDE.md` containing
+  `@AGENTS.md` it did. See
+  [/decisions/2026-09-23-claude-code-keeps-import-adapter.md](/decisions/2026-09-23-claude-code-keeps-import-adapter.md).
 
 ## Codex
 
-- **(a)** Reads `AGENTS.md`. The global/project override chain, the root-down
-  concatenation order, and the `project_doc_max_bytes` /
-  `project_doc_fallback_filenames` settings are already recorded in the Codex
-  row of [/specs/agents-md-standard.md](/specs/agents-md-standard.md#which-tools-read-agentsmd-natively)
-  — not restated here. Two details that row does not cover: **discovery stops
-  at the current directory** (subdirectories below it are never scanned), and
-  Codex **skips empty files and stops adding files** once the combined size
-  reaches the limit, so a truncated tail is silent.
-- **(b)** **No** — no `@import`/include mechanism is documented for Codex
-  instruction files.
-- **(c)** **Yes** — `/init`, described verbatim in the CLI source as
-  "create an AGENTS.md file with instructions for Codex". Open feature request
-  openai/codex#21932 asks for it to also update an existing AGENTS.md.
-- **(d)** `config.toml`, precedence highest first: CLI flags and `--config`
-  overrides → project `.codex/config.toml` (git root down to cwd, trusted
-  projects only) → profile files `~/.codex/<profile>.config.toml` → user
-  `~/.codex/config.toml` → system `/etc/codex/config.toml` (Unix) → built-in
-  defaults. Managed machines may add an organization `requirements.toml`.
-  `CODEX_HOME` relocates the `~/.codex` directory.
-- Sources: [/specs/agents-md-standard.md](/specs/agents-md-standard.md) for (a);
-  [AGENTS.md docs](https://learn.chatgpt.com/docs/agent-configuration/agents-md),
-  [config basics](https://learn.chatgpt.com/docs/config-file/config-basic),
-  [developer commands](https://learn.chatgpt.com/docs/developer-commands),
-  [slash_command.rs](https://github.com/openai/codex/blob/main/codex-rs/tui/src/slash_command.rs),
-  [issue #21932](https://github.com/openai/codex/issues/21932).
+- **(a)** `AGENTS.md`. Global `~/.codex/AGENTS.override.md` or
+  `~/.codex/AGENTS.md`, then per-directory `AGENTS.override.md`/`AGENTS.md`
+  from the project root (nearest parent with a `project_root_markers` entry,
+  default `.git`) down to the working directory, concatenated root-down;
+  nothing below the working directory. **An untrusted project loads no
+  project `AGENTS.md`** *(source; PR #39837, merged 2026-08-21 — the docs do
+  not say so)*. Project files share `project_doc_max_bytes` (32 KiB); empty
+  files are skipped and the file crossing the limit is truncated with only a
+  log message *(source)*. Fallback names via `project_doc_fallback_filenames`.
+- **(b)** **No** import mechanism.
+- **(c)** **Yes** — `/init` "create an AGENTS.md file with instructions for
+  Codex"; its prompt forbids overwriting or modifying an existing
+  `AGENTS.md` (a model instruction, not a code check). Issue #21932 (update
+  an existing file) is still open.
+- **(d)** `config.toml`, highest first: CLI flags/`--config` → project
+  `.codex/config.toml` (trusted projects only) → profile files → user
+  `~/.codex/config.toml` → cloud-managed defaults for the signed-in
+  workspace → system `/etc/codex/config.toml` → built-in defaults; managed
+  machines may add `requirements.toml`; `CODEX_HOME` relocates `~/.codex`.
 
 ## Cursor
 
-- **(a)** Reads `AGENTS.md` at the project root and in subdirectories, nearest
-  winning — see the Cursor row of
-  [/specs/agents-md-standard.md](/specs/agents-md-standard.md#which-tools-read-agentsmd-natively),
-  which also covers the coexisting `.cursor/rules/*.mdc` format. New here: those
-  `.mdc` project rules take frontmatter keys `alwaysApply`, `description`,
-  `globs`; **User Rules and Team Rules are configured through the Cursor UI and
-  dashboard, not repo files**, so an init flow cannot write them; and the
-  documented application order is **Team Rules → Project Rules → User Rules**.
-- **(b)** **Yes, inside rules** — "Use `@filename.ts` to include files in your
-  rule's context." Whether the same expansion applies inside `AGENTS.md` is not
-  documented (see Known gaps).
-- **(c)** **No `/init`.** The documented generator is `/create-rule` in Agent
-  chat, which writes a rule file with proper frontmatter into `.cursor/rules`.
-  The Cursor CLI slash-command reference lists no `/init` and no AGENTS.md
-  generator.
-- **(d)** CLI settings `~/.cursor/cli-config.json` (global; only permissions can
-  be set per project, at `<project>/.cursor/cli.json`). MCP servers at
-  `.cursor/mcp.json` (project) and `~/.cursor/mcp.json` (global), with
-  project → global → nested precedence. Rules at `.cursor/rules/`.
-- Sources: [/specs/agents-md-standard.md](/specs/agents-md-standard.md) for (a);
-  [Rules](https://cursor.com/docs/rules),
-  [CLI configuration](https://cursor.com/docs/cli/reference/configuration),
-  [CLI slash commands](https://cursor.com/docs/cli/reference/slash-commands),
-  [CLI MCP](https://cursor.com/docs/cli/mcp).
+- **(a)** `AGENTS.md` at the root and in subdirectories, combined, nearest
+  wins. **Also reads a root `CLAUDE.md` "the same way it reads `AGENTS.md`"**,
+  always applied; the CLI reads root `AGENTS.md` and `CLAUDE.md`.
+  `.cursor/rules/*.mdc` (`alwaysApply`, `description`, `globs`; plain `.md`
+  ignored); `.cursorrules` is legacy. User Rules in the UI (synced) or
+  `~/.cursor/rules` (local); Team Rules in the dashboard. Order: Team →
+  Project → User.
+- **(b)** `@filename` inside `.mdc` rules; inside `AGENTS.md`/`CLAUDE.md`
+  not documented.
+- **(c)** **No `/init`**, no AGENTS.md generator; rule generators only
+  (`/create-rule`, CLI `agent generate-rule`, palette **New Cursor Rule**).
+- **(d)** `~/.cursor/cli-config.json` (`CURSOR_CONFIG_DIR`,
+  `$XDG_CONFIG_HOME/cursor/` on Linux/BSD); per-project permissions only, in
+  `.cursor/cli.json`; MCP `.cursor/mcp.json` and `~/.cursor/mcp.json`
+  (project → global → nested).
 
 ## opencode
 
-- **(a)** Reads `AGENTS.md` with a `CLAUDE.md` fallback, plus the global
-  `~/.config/opencode/AGENTS.md` — see the opencode row of
-  [/specs/agents-md-standard.md](/specs/agents-md-standard.md#which-tools-read-agentsmd-natively).
-  New here: the local lookup **walks up from the current directory** rather than
-  checking only the project root, the search is **first-match-wins per level**,
-  and there is a fourth step — `~/.claude/CLAUDE.md` as a Claude Code
-  compatibility fallback, unless disabled.
-- **(b)** **No** — "opencode doesn't automatically parse file references" in
-  AGENTS.md. Additional files are pulled in through the `instructions` array in
-  `opencode.json`, which accepts local paths, glob patterns, and remote URLs
-  (5-second fetch timeout).
-- **(c)** **Yes** — `/init` generates or updates `AGENTS.md` by scanning the
-  repository and asking targeted questions.
-- **(d)** Config files are **merged**, not replaced, in this order (lowest to
-  highest): remote `.well-known/opencode` → global
-  `~/.config/opencode/opencode.json` → custom path from `OPENCODE_CONFIG` →
-  project `opencode.json` → `.opencode/` directories → inline
-  `OPENCODE_CONFIG_CONTENT` → managed files
-  (`/Library/Application Support/opencode/` macOS, `/etc/opencode/` Linux,
-  `%ProgramData%\opencode` Windows) → macOS managed preferences (highest,
-  non-overridable). `.jsonc` is accepted everywhere `.json` is.
-- Sources: [/specs/agents-md-standard.md](/specs/agents-md-standard.md) for (a);
-  [Rules](https://opencode.ai/docs/rules/),
-  [Config](https://opencode.ai/docs/config/).
+- **(a)** `AGENTS.md`, falling back to `CLAUDE.md` (and a deprecated
+  `CONTEXT.md`), plus `~/.config/opencode/AGENTS.md` and, unless disabled,
+  `~/.claude/CLAUDE.md`. Docs: "The first matching file wins in each
+  category." *(source)* From the working directory up to the worktree root
+  it takes the first filename found anywhere on the path and loads every
+  file of that name — so `CLAUDE.md` only when no `AGENTS.md` exists on the
+  path. Subdirectory files attach when the agent reads files there.
+- **(b)** **No** — "doesn't automatically parse file references"; the
+  `instructions` array in `opencode.json` adds paths, globs, URLs.
+- **(c)** **Yes** — `/init` ("guided AGENTS.md setup"): "Create or update
+  `AGENTS.md` for this repository." — edits an existing file.
+- **(d)** Merged, lowest to highest: remote `.well-known/opencode` → global
+  `~/.config/opencode/opencode.json` → `OPENCODE_CONFIG` → project
+  `opencode.json` → `.opencode/` → `OPENCODE_CONFIG_CONTENT` → managed files
+  → macOS managed preferences; `OPENCODE_CONFIG_DIR` loads after the global
+  and `.opencode` directories; TUI settings in `tui.json`.
 
 ## Gemini CLI
 
-- **(a)** Default context filename is `GEMINI.md`; the `context.fileName`
-  setting takes a list and **can include `AGENTS.md`** (documented example:
-  `["AGENTS.md", "CONTEXT.md", "GEMINI.md"]`). **Name change, reconciled
-  2026-08-31:** the older flat `contextFileName` (recorded on 2026-08-29 from
-  the docs site) has been replaced by this nested name in
-  [/specs/agents-md-standard.md](/specs/agents-md-standard.md); the change
-  matches Gemini CLI's move to a nested `settings.json` structure, though no
-  official changelog entry names the rename (see Known gaps). Hierarchy: global
-  `~/.gemini/GEMINI.md`, then configured workspace directories and their
-  parents, plus just-in-time scanning — when a tool touches a file or
-  directory, the CLI scans that directory and its ancestors. All found files
-  are **concatenated** and sent with every prompt. Gemini CLI does not read
-  AGENTS.md by default (see [/specs/agents-md-standard.md](/specs/agents-md-standard.md)).
-- **(b)** **Yes** — `@file.md`, supporting relative (`@./components/x.md`) and
-  absolute paths.
-- **(c)** **Yes** — `/init`, described verbatim in the source as "Analyzes the
-  project and creates a tailored GEMINI.md file"; it writes an empty
-  `GEMINI.md` in the target directory and then populates it from project
-  analysis. `/memory show` and `/memory reload` inspect and re-scan context
-  files.
-- **(d)** Four `settings.json` files, precedence lowest to highest: system
-  defaults (`system-defaults.json`) → user `~/.gemini/settings.json` →
-  workspace `<project>/.gemini/settings.json` → system overrides
-  (`/etc/gemini-cli/settings.json` Linux,
-  `C:\ProgramData\gemini-cli\settings.json` Windows,
-  `/Library/Application Support/GeminiCli/settings.json` macOS) — the system
-  overrides file has the final say. `GEMINI_CLI_SYSTEM_SETTINGS_PATH` overrides
-  the system path; `GEMINI_CLI_HOME` relocates the `.gemini` directory. Arrays
-  and objects merge rather than replace.
-- Sources: [context files](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/gemini-md.md),
-  [initCommand.ts](https://github.com/google-gemini/gemini-cli/blob/main/packages/cli/src/ui/commands/initCommand.ts),
-  [settings](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/settings.md),
-  [enterprise](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/enterprise.md).
+- **(a)** `GEMINI.md` by default; `context.fileName` **adds** names in front
+  of `GEMINI.md` and can include `AGENTS.md`. Not read by default: #12345
+  closed not planned (2026-05-08), #28227 open, nothing merged. Global
+  `~/.gemini/GEMINI.md`, workspace directories and parents, plus
+  just-in-time scanning up to a trusted root; all concatenated.
+- **(b)** **Yes** — `@file.md` (relative or absolute; a bare `@AGENTS.md`
+  passes validation); ignored inside code spans and blocks.
+- **(c)** **Yes** — `/init` "Analyzes the project and creates a tailored
+  GEMINI.md file"; with a `GEMINI.md` present it stops: "No changes were
+  made." `/memory show|list|reload` (alias `refresh`).
+- **(d)** Four `settings.json` layers: system defaults → user → workspace →
+  system overrides; `GEMINI_CLI_SYSTEM_SETTINGS_PATH`,
+  `GEMINI_CLI_SYSTEM_DEFAULTS_PATH`, `GEMINI_CLI_HOME`. Since v0.60.0
+  (2026-09-15) the system files are skipped unless securely owned. A
+  project `.gemini/settings.json` is not loaded from an untrusted folder
+  while folder trust is on.
 
 ## Zed
 
-- **(a)** Project instructions use a **first-match-wins** list whose exact
-  order — and the shadowing hazard where a stray `.cursorrules` hides
-  `AGENTS.md` — is already recorded in the Zed row of
-  [/specs/agents-md-standard.md](/specs/agents-md-standard.md#which-tools-read-agentsmd-natively).
-  New here: Zed also has a **personal** instruction file at
-  `~/.config/zed/AGENTS.md` (`%APPDATA%\Zed\AGENTS.md` on Windows) applying
-  across all projects, and **project instructions override personal
-  instructions when they conflict**.
-- **(b)** **No** — no file-reference or import mechanism is documented for
-  instruction files.
-- **(c)** **None documented.** The instructions docs tell the user to create or
-  edit the file manually; no generator command appears in them.
-- **(d)** User settings `~/.config/zed/settings.json` (macOS and Linux),
-  `%APPDATA%\Zed\settings.json` (Windows); project settings
-  `.zed/settings.json`; key bindings in `keymap.json`.
-- Sources: [/specs/agents-md-standard.md](/specs/agents-md-standard.md) for the
-  (a) filename list; [Instructions](https://zed.dev/docs/ai/instructions),
-  [Configuring Zed](https://zed.dev/docs/configuring-zed).
+- **(a)** First-match-wins list: `.rules`, `.cursorrules`, `.windsurfrules`,
+  `.clinerules`, `.github/copilot-instructions.md`, `AGENT.md`, `AGENTS.md`,
+  `CLAUDE.md`, `GEMINI.md` — a stray `.cursorrules` shadows `AGENTS.md`.
+  Personal `~/.config/zed/AGENTS.md`; project overrides personal. The list
+  governs the Zed Agent only; External Agents and Terminal Threads "may read
+  their own native instruction files directly".
+- **(b)** **No** import mechanism *(source: loaded as plain text)*.
+- **(c)** **None documented.**
+- **(d)** `~/.config/zed/settings.json` (Linux also
+  `$XDG_CONFIG_HOME/zed/`), `%APPDATA%\Zed\settings.json`; `.zed/settings.json`
+  (also in subdirectories); `keymap.json`. The published
+  `zed.dev/docs/configuring-zed` now redirects to the all-settings
+  reference, which omits these paths — cite the docs source file.
 
 ## Kiro
 
-- **(a)** Kiro's native mechanism is **steering files**: workspace
-  `.kiro/steering/*.md` and global `~/.kiro/steering/`. Three foundation files
-  (`product.md`, `tech.md`, `structure.md`) are included in every interaction
-  by default. Inclusion is controlled by YAML frontmatter — `inclusion: always`,
-  `inclusion: fileMatch` with `fileMatchPattern`, `inclusion: manual` (invoked
-  as `#steering-file-name`), or `inclusion: auto` with `name`/`description`.
-  **`AGENTS.md` is supported** as a steering directive source: same markdown,
-  but it does **not** support inclusion modes and is **always included**; place
-  it in `~/.kiro/steering/` or the workspace root, with discovery in
-  subdirectories. Two caveats: custom agents do **not** auto-include steering —
-  they must list `file://.kiro/steering/**/*.md` in their `resources` field —
-  and Kiro CLI does not support inclusion modes, loading everything in
-  `.kiro/steering/`. Steering and skills **merge** across scopes rather than
-  replacing.
-- **(b)** **Yes** — `#[[file:relative/path/to/file.ext]]` embeds a live
-  workspace file inside a steering document (e.g. `#[[file:api/openapi.yaml]]`).
-- **(c)** **No slash command.** The IDE has a **Generate Steering Docs** button
-  (Steering section) that creates the three foundation files in
-  `.kiro/steering/`.
-- **(d)** Global scope under `~/.kiro/`: `settings/mcp.json`,
-  `settings/permissions.yaml`, `settings/cli.json`, `agents/`, `steering/`,
-  `skills/`, `hooks/`, `powers/`. Project scope under `.kiro/`:
-  `settings/mcp.json`, `agents/`, `steering/`, `skills/`, `hooks/`, `specs/`.
-  Precedence is **Agent > Project > Global** (permissions are the exception:
-  deny wins at any scope). `KIRO_HOME` redirects the global `~/.kiro`
-  directory. Discovery paths for skills: see
-  [/agents/skill-discovery-matrix.md](/agents/skill-discovery-matrix.md).
-- Sources: [Steering](https://kiro.dev/docs/steering/),
-  [Configuration scopes](https://kiro.dev/docs/configuration/),
-  [MCP configuration](https://kiro.dev/docs/mcp/configuration/).
+- **(a)** Steering: `.kiro/steering/*.md` and `~/.kiro/steering/`; the three
+  foundation files; inclusion `always` / `fileMatch` / `manual` / `auto`.
+  `AGENTS.md` is supported, "always included", no inclusion modes. Scopes
+  merge; Agent > Project > Global. **Two official contradictions:** custom
+  agents do not auto-include steering (steering page) vs. inherit steering,
+  skills and `AGENTS.md` by default unless
+  `chat.disableInheritingDefaultResources` (configuration reference); no
+  inclusion modes on the CLI (steering page) vs. front-matter inclusion
+  modes in the opt-in CLI v3. Configuration Sync can load cloud steering
+  into new local CLI sessions.
+- **(b)** **Yes, in steering** — `#[[file:relative/path]]`.
+- **(c)** **No slash command**; the IDE's **Generate Steering Docs** button
+  writes the foundation files, not `AGENTS.md`.
+- **(d)** `~/.kiro/` (`settings/mcp.json`, `settings/permissions.yaml`,
+  `settings/cli.json`, `agents/`, `steering/`, `skills/`, `hooks/`,
+  `powers/`) and `.kiro/` (plus `.kiro/settings/cli.json` overrides);
+  project permissions per user at
+  `~/.kiro/workspace-roots/<hash>/permissions.yaml`; deny wins at any
+  scope; `KIRO_HOME`; `/config` in V3 sessions.
 
 ## Kimi CLI
 
-- **(a)** Reads `AGENTS.md`. The agent template variable `${KIMI_AGENTS_MD}` is
-  documented as "Merged `AGENTS.md` content from project root to working
-  directory (including `.kimi/AGENTS.md`)" — so the merge spans project root
-  down to cwd and includes a `.kimi/AGENTS.md`. Cross-tool AGENTS.md discovery
-  beyond that is covered in
-  [/specs/agents-md-standard.md](/specs/agents-md-standard.md).
-- **(b)** **Not documented** — no `@file`/import expansion for AGENTS.md
-  appears in the official docs (see Known gaps).
-- **(c)** **Yes** — `/init`, verbatim: "Analyze the current project and
-  generate an `AGENTS.md` file." It runs a temporary sub-session to examine the
-  codebase and write the file; the getting-started guide frames it as the fix
-  for a project that has no AGENTS.md yet.
-- **(d)** `~/.kimi/config.toml` is the main configuration file, auto-created on
-  first run; a legacy `~/.kimi/config.json` is migrated to TOML with a
-  `config.json.bak` backup. Overrides: `--config-file <path>` and inline
-  `--config '<json>'`. Runtime data lives under `~/.kimi/` (`kimi.json`,
-  `mcp.json`, `credentials/`, `sessions/`, `plans/`, `user-history/`, `logs/`);
-  `KIMI_SHARE_DIR` relocates that runtime data but explicitly **not** the Agent
-  Skills search paths. The Kimi Code build documents a separate home,
-  `$KIMI_CODE_HOME` (default `~/.kimi-code/`), for skills roots plus
-  `extra_skill_dirs` in `config.toml` — see Known gaps for the two path
-  families.
-- Sources: [slash commands](https://github.com/MoonshotAI/kimi-cli/blob/main/docs/en/reference/slash-commands.md),
-  [config files](https://github.com/MoonshotAI/kimi-cli/blob/main/docs/en/configuration/config-files.md),
-  [data locations](https://github.com/MoonshotAI/kimi-cli/blob/main/docs/en/configuration/data-locations.md),
-  [agents](https://github.com/MoonshotAI/kimi-cli/blob/main/docs/en/customization/agents.md),
-  [Kimi Code skills](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/skills.html).
+Now **Kimi Code CLI** (`MoonshotAI/kimi-code`). The Python `kimi-cli`
+repository is archived; its 1.52.0 (2026-09-22) makes a bare `kimi` install
+Kimi Code, and its README says existing installations "will stop working".
+
+- **(a)** `AGENTS.md`: global `$KIMI_CODE_HOME/AGENTS.md` (default
+  `~/.kimi-code/AGENTS.md`), cross-tool `~/.agents/AGENTS.md`, project
+  `.kimi-code/AGENTS.md` or `AGENTS.md`. *(source)* Read in that order,
+  project files per directory from the git root down to the working
+  directory (lowercase `agents.md` accepted), all joined, a warning above a
+  recommended 32 KiB total; no `CLAUDE.md`, `GEMINI.md` or `.kimi/AGENTS.md`.
+- **(b)** **Not documented**; *(source)* text is inserted as-is.
+- **(c)** **Yes** — `/init` "Analyze the current codebase and generate
+  `AGENTS.md`"; *(source)* its prompt writes the root file "replacing the
+  file's previous content" after carrying forward what is still accurate —
+  it rewrites an existing `AGENTS.md`.
+- **(d)** One user-level `~/.kimi-code/config.toml` (+ `tui.toml`); "no
+  project-level config file mechanism"; `KIMI_CODE_HOME` relocates it; MCP
+  in `~/.kimi-code/mcp.json` or a project `.kimi-code/mcp.json`. `~/.kimi/`
+  belongs to the archived CLI and is read only to migrate.
 
 ## Amp
 
-- **(a)** Reads `AGENTS.md` from the widest set of locations of any agent here:
-  the current working directory (or editor workspace roots) **and parent
-  directories up to `$HOME`**; subtree `AGENTS.md` files, included when the
-  agent accesses files in those directories; user config
-  `$HOME/.config/amp/AGENTS.md` and `$HOME/.config/AGENTS.md`; and system-wide
-  `/etc/ampcode/AGENTS.md`, `/Library/Application Support/ampcode/AGENTS.md`,
-  `%ProgramData%\ampcode\AGENTS.md`. Fallback, verbatim: "If no `AGENTS.md`
-  exists in a directory, but a file named `AGENT.md` (without an `S`) or
-  `CLAUDE.md` does exist, that file will be included."
-- **(b)** **Yes** — `@`-mentions inside AGENTS.md support relative paths,
-  absolute paths, `@~/some/path`, and globs such as `@doc/*.md`; `@`-mentions
-  inside code blocks are ignored.
-- **(c)** **None documented.** `agents-md list` in the command palette shows
-  which AGENTS.md files Amp is currently using, but no command generates one.
-- **(d)** User settings `~/.config/amp/settings.json` or `.jsonc`
-  (`%USERPROFILE%\.config\amp\...` on Windows); workspace
-  `.amp/settings.json`/`.jsonc`, resolved to the nearest match searching upward
-  to the repository root; `--settings-file <path>` for a custom file;
-  enterprise managed settings at
-  `/Library/Application Support/ampcode/managed-settings.json` (macOS),
-  `/etc/ampcode/managed-settings.json` (Linux),
-  `%ProgramData%\ampcode\managed-settings.json` (Windows). **Workspace settings
-  override user settings**; all keys use the `amp.` prefix.
-- Sources: [AGENTS.md](https://ampcode.com/docs/customize/agents-md),
-  [CLI configuration](https://ampcode.com/docs/cli/settings),
-  [CLI docs](https://ampcode.com/docs/cli).
+- **(a)** `AGENTS.md` in the working directory and parents up to `$HOME`,
+  subtree files on access, `$HOME/.config/amp/AGENTS.md`,
+  `$HOME/.config/AGENTS.md`, system-wide files, a personal Global AGENTS.md
+  in the web app, and a workspace-wide Global AGENTS.md set by admins
+  (included before personal and repository guidance). `AGENT.md` or
+  `CLAUDE.md` only where a directory has no `AGENTS.md`.
+- **(b)** **Yes** — `@`-mentions (relative, absolute, `@~/`, globs); a
+  mentioned file with `globs` frontmatter loads only after a matching file
+  is read.
+- **(c)** **None documented**; Amp "offers to generate an `AGENTS.md` file
+  for you if none exists"; `agents-md list` shows what is loaded.
+- **(d)** `~/.config/amp/settings.json(c)`, workspace `.amp/settings.json(c)`
+  (overrides user), `--settings-file`, managed `managed-settings.json`
+  per OS, and for Enterprise a server-side managed document the local file
+  outranks; keys prefixed `amp.`.
 
 ## Goose
 
-- **(a)** Default context filenames are **both** `AGENTS.md` and `.goosehints`:
-  "By default, goose looks for both `AGENTS.md` and `.goosehints` at each
-  level." Files load from the working directory **up to the repository root**,
-  and goose additionally discovers hint files in nested subdirectories when it
-  works there. Global hints live at `~/.config/goose/.goosehints` and apply to
-  every session; when global and local conflict, **local wins**. The filename
-  list is configurable with the `CONTEXT_FILE_NAMES` environment variable, a
-  JSON array whose default is `["AGENTS.md", ".goosehints"]` (documented
-  examples reuse other tools' files, e.g.
-  `["CLAUDE.md", ".goosehints", "project_rules.txt"]`).
-- **(b)** **No** — no import expansion. The docs' guidance is to reference other
-  files by path (e.g. `/docs/style.md`) so goose reads them with its own tools.
-- **(c)** **None.** The CLI command list contains no context-file generator;
-  the similarly named `goose term init <SHELL>` only prints a shell integration
-  script.
-- **(d)** macOS/Linux: `~/.config/goose/config.yaml` (provider, model,
-  extensions, general settings), `permission.yaml`, `secrets.yaml`,
-  `permissions/tool_permissions.json`, `prompts/`. Windows: the same tree under
-  `%APPDATA%\Block\goose\config\`.
-- Sources: [using goosehints](https://github.com/block/goose/blob/main/documentation/docs/guides/context-engineering/using-goosehints.md),
-  [config files](https://github.com/block/goose/blob/main/documentation/docs/guides/config-files.md),
-  [CLI commands](https://github.com/block/goose/blob/main/documentation/docs/guides/goose-cli-commands.md).
+Moved from `block/goose` to `aaif-goose/goose` (Agentic AI Foundation, Linux
+Foundation); docs at `goose-docs.ai`.
+
+- **(a)** `AGENTS.md` and `.goosehints` at each level, from the working
+  directory up to the repository root, nested ones on access; global
+  `~/.config/goose/.goosehints`, local beats global. `CONTEXT_FILE_NAMES`
+  sets the list; its default order is stated both ways
+  (`["AGENTS.md", ".goosehints"]` in the hints guide,
+  `[".goosehints", "AGENTS.md"]` in the environment-variables reference).
+- **(b)** **Yes** — `@` "Automatically includes the file content"; plain
+  paths are read on demand. *Correction:* recorded as "No" until 2026-09-23.
+- **(c)** **None** (`goose term init` prints a shell script).
+- **(d)** `~/.config/goose/config.yaml` and siblings
+  (`%APPDATA%\Block\goose\config\` on Windows); environment variables beat
+  the config file, which beats defaults.
 
 ## ZCode
 
-- **(a)** `AGENTS.md` and only `AGENTS.md`, from exactly two sources: the user
-  global `~/.zcode/AGENTS.md` and the current workspace `AGENTS.md`. Verbatim:
-  "When both sources exist, ZCode appends the user global instructions first,
-  then the workspace instructions." The docs are equally explicit about what it
-  does not do: "It does not merge multiple `AGENTS.md` files across directory
-  levels. It also does not scan child directories, expand `@import` /
-  `@include`, or choose rule files automatically by task type." `CLAUDE.md` is
-  a **one-time onboarding migration source only**, never read at runtime —
-  engine-level confirmation and the hidden workspace alternates
-  (`.zcode/AGENTS.md`, `.agents/AGENTS.md`) are recorded in
-  [/agents/skill-discovery-matrix.md](/agents/skill-discovery-matrix.md).
-- **(b)** **No** — `@import`/`@include` expansion is explicitly not performed.
-  This makes ZCode the load-bearing case for a canonical AGENTS.md carrying its
-  own content (rationale in [/specs/agents-md-standard.md](/specs/agents-md-standard.md)).
-- **(c)** **None.** ZCode Agent ships two built-in slash commands, `/goal` and
-  `/compact`; there is no `/init` and no documented AGENTS.md generator.
-- **(d)** Two distinct user-scope files, not one: `~/.zcode/v2/config.json`
-  holds model/provider connection settings (a provider's `options` recognizes
-  only `apiKey`, `baseURL`, `apiKeyRequired`, `headers`), while
-  `~/.zcode/cli/config.json` is the user-scope file for the `mcp.servers` key —
-  the same file this bundle already recorded for per-skill `enable: false`.
-  Workspace equivalent: `<project root>/.zcode/config.json`. Custom commands are
-  `.md` files under `~/.zcode/commands` (user) or the project directory
-  (workspace). `.agents/mcp.json` (standard `mcpServers` shape) is a **fallback
-  only**: "as long as any MCP server is read from a `.zcode` config file, the
-  `.agents/mcp.json` in the same scope is skipped entirely" — no merging.
-  Disabling a server writes `"enable": false` into its config object; absent the
-  field, a server counts as enabled.
-- Sources: [AGENTS.md](https://zcode.z.ai/en/docs/agents),
-  [Commands](https://zcode.z.ai/en/docs/commands),
-  [Configuration](https://zcode.z.ai/en/docs/configuration),
-  [MCP servers](https://zcode.z.ai/en/docs/mcp-services).
+- **(a)** `AGENTS.md` only: `~/.zcode/AGENTS.md` then the workspace
+  `AGENTS.md`, no merging across levels, no child scan, no rule selection by
+  task; subagents inject both since v3.7.1 (`injectAgentsMd: false` opts
+  out). `CLAUDE.md` is a one-time onboarding source only. *(local
+  inspection, 3.14.3)* The candidate list is exactly `["AGENTS.md"]`; the
+  workspace file is the first found walking up from the working directory
+  to the git root; each file is read up to 100 KiB.
+- **(b)** **No** — explicitly.
+- **(c)** **Yes, undocumented.** The commands page still lists `/goal` and
+  `/compact` only; *(local inspection, 3.14.3)* the engine ships `/init`
+  ("Create or update workspace AGENTS.md instructions.", `/init [notes]`),
+  whose prompt edits an existing root `AGENTS.md` "instead of replacing it
+  wholesale", creates one when absent, never writes `~/.zcode/AGENTS.md`,
+  and stops if `.zcode/AGENTS.md` or `.agents/AGENTS.md` exists.
+- **(d)** `~/.zcode/v2/config.json` (providers), `~/.zcode/cli/config.json`
+  (`mcp.servers`), workspace `.zcode/config.json`, `.agents/mcp.json` as a
+  fallback only; a user MCP server beats a project one of the same name.
 
 ## Antigravity
 
-Google's agentic IDE ("an AI agent platform that operates within defined
-projects to access folders and repositories"; agents work in local mode or in
-isolated git worktrees). It ships both an IDE surface and a TUI, the
-Antigravity CLI.
+- **(a)** `GEMINI.md` and `AGENTS.md` in the active directory (migration
+  page; CLI best practices); the IDE added `AGENTS.md` in v1.20.5
+  (2026-03-09). Global `~/.gemini/GEMINI.md` on every product, plus
+  `~/.gemini/antigravity-cli/rules/` on the CLI. Rules in `.agents/rules`
+  (12,000 characters each, four activation modes). Workflows are IDE-only
+  and retire on 2026-11-01. `AGENTS.md`-vs-`GEMINI.md` precedence and
+  nested discovery are not documented.
+- **(b)** **Yes** — `@path/to/file` inside `AGENTS.md` and rule files
+  (2.0 changelog v2.11.0 only).
+- **(c)** **None** (`/learn` distills rules or skills; `/boost` and
+  `/migrate-workflows` are new).
+- **(d)** `~/.gemini/config/` (`config.json`, `mcp_config.json`, agents),
+  workspace `.agents/` (MCP, agents, skills), CLI
+  `~/.gemini/antigravity-cli/settings.json`; `~/.gemini/settings.json` is
+  legacy Gemini CLI.
 
-- **(a)** Workspace context: the agent "continues to parse and enforce rule
-  constraints defined inside your active directory's `GEMINI.md` and
-  `AGENTS.md` files" — so **both** filenames are read. Global context: "The
-  agent automatically consults and enforces your global constraints located at
-  `~/.gemini/GEMINI.md`." Separately, Antigravity's own **Rules** are markdown
-  files under the workspace `.agents/rules` folder (with backward compatibility
-  for `.agent/rules`), capped at **12,000 characters each**, with four
-  activation modes: Manual (`@`-mention), Always On, Model Decision (chosen from
-  a natural-language description), and Glob (file patterns such as
-  `src/**/*.ts`). Workflows are the same format, invoked as `/workflow-name`,
-  with the same 12,000-character limit. Precedence between AGENTS.md and
-  GEMINI.md is not documented (see Known gaps).
-- **(b)** **Yes** — `@path/to/file` references and inlines external files
-  "within `AGENTS.md` and custom rule files" (changelog v2.11.0, 2026-08-26).
-  A relative path resolves against the location of the rules file; an absolute
-  form such as `@/path/to/file.md` resolves to `/path/to/file.md` first and
-  falls back to `workspace/path/to/file.md`.
-- **(c)** **None.** The documented built-in slash commands are
-  `/teamwork-preview`, `/goal`, `/plan`, `/grill-me`, `/learn`, `/schedule`,
-  `/browser`, `/btw` (plus CLI-side `/agents`, `/codesearch`, `/credits`,
-  `/diff`, `/permissions`, `/resume`, `/statusline`, `/title`, `/usage`,
-  `/voice`) — no `/init` or context-file generator. The closest mechanism is
-  `/learn`, which "distills session feedback and corrections into persistent
-  Rules or Skills". Onboarding offers a one-time import of existing Gemini CLI
-  extensions, skills, and settings.
-- **(d)** `~/.gemini/config/` holds `config.json` (a malformed one blocked
-  startup in the v2.3.1 fix). Global MCP servers at
-  `~/.gemini/config/mcp_config.json`; workspace MCP at `.agents/mcp_config.json`.
-  Global custom agents at `~/.gemini/config/agents/<agent_name>/agent.md`;
-  workspace agents at `.agents/agents/<name>.md` or
-  `.agents/agents/<name>/agent.md`. Workspace skills at `.agents/skills/`
-  (backward compat `.agent/skills/`); global CLI skills at
-  `~/.gemini/antigravity-cli/skills/`. Since v2.11.0 Antigravity also discovers
-  custom skills, agents, and rules declared in `skills.json`, `agents.json`, and
-  `rules.json` files inside project subdirectories. `~/.gemini/settings.json` is
-  named as legacy Gemini CLI configuration.
-- Sources: [Rules and Workflows](https://antigravity.google/docs/rules-workflows/),
-  [Migration](https://antigravity.google/docs/cli/gcli-migration/),
-  [Changelog](https://antigravity.google/changelog),
-  [Slash commands](https://antigravity.google/docs/slash-commands/),
-  [Getting started](https://antigravity.google/docs/getting-started).
+## GitHub Copilot
+
+- **(a)** `AGENTS.md` by default on every surface. **CLI:** merges
+  `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`,
+  `.github/instructions/**/*.instructions.md` and user files, with no
+  general precedence (identical duplicates removed). **VS Code** (Local
+  harness): root `AGENTS.md` (`chat.useAgentsMdFile` true), nested only with
+  `chat.useNestedAgentsMdFiles`, `CLAUDE.md` (`chat.useClaudeMdFile` true),
+  `.github/copilot-instructions.md`, `*.instructions.md`. **Cloud agent:**
+  `**/AGENTS.md`, nearest wins; a root `CLAUDE.md` or `GEMINI.md`
+  "alternatively". Personal > repository > organization on GitHub.com, all
+  provided.
+- **(b)** **CLI:** `@relative/path` in `AGENTS.md`, `CLAUDE.md`,
+  `copilot-instructions.md` — not in `GEMINI.md`. **VS Code:** Markdown
+  links, auto-added only with `chat.includeReferencedInstructions`. Cloud
+  agent: not documented.
+- **(c)** **CLI:** `copilot init` / `/init` write or update
+  `.github/copilot-instructions.md`. **VS Code:** `/init`; its built-in skill
+  prefers `AGENTS.md` and updates an existing one. **Cloud agent:** an
+  onboarding prompt opens a PR adding `.github/copilot-instructions.md`.
+- **(d)** CLI `~/.copilot` (`COPILOT_HOME`), `.github/copilot/settings.json`
+  and `.local.json`, MCP in `~/.copilot/mcp-config.json`, `.mcp.json`,
+  `.github/mcp.json`; VS Code `settings.json`/`.vscode/settings.json`,
+  `.vscode/mcp.json`; cloud agent `copilot-setup-steps.yml` and repository
+  settings.
+
+## Devin
+
+Formerly **Windsurf**: renamed Devin Desktop on 2026-06-02; its Cascade agent
+was removed on 2026-09-08, leaving Devin Local, which shares the Devin CLI
+harness.
+
+- **(a)** `AGENTS.md` read automatically; `AGENTS.local.md`, `AGENT.md`,
+  `.windsurfrules` and `CLAUDE.md` are "treated identically" as always-on
+  rules; nested files on access; global `~/.config/devin/AGENTS.md` and
+  `~/.claude/CLAUDE.md`; `.devin/rules/`, `.windsurf/rules/`,
+  `.cursor/rules/`. No documented winner on conflict. 32 KiB cap per
+  always-on file. `read_config_from.agents_standard` / `.claude` (default
+  true) switch families off.
+- **(b)** **Not documented.**
+- **(c)** **None documented** (`devin rules list|show|paths`).
+- **(d)** `~/.config/devin/config.json`, `.devin/config.json`,
+  `.devin/config.local.json`; Organization/Team > session > local > project
+  > user; MCP in `mcp_config.json` files.
 
 ## Cross-cutting summary
 
-For the `init-project` skill, the operative question is how a canonical
-`AGENTS.md` reaches each agent. Three classes emerge:
+| Agent | Reads AGENTS.md natively | Also loads another agent's file | Import syntax | Native init command → effect on an existing AGENTS.md |
+|---|---|---|---|---|
+| Claude Code | Yes, conditionally (no CLAUDE.md; feature flag) | — | `@path` (4 hops) | `/init` writes CLAUDE.md; offers `/import`, which copies AGENTS.md into CLAUDE.md |
+| Codex | Yes (trusted projects) | — | No | `/init` refuses to touch it (prompt-level) |
+| Cursor | Yes | root `CLAUDE.md` | `@file` in `.mdc` only | none |
+| opencode | Yes | `CLAUDE.md` only without AGENTS.md | No | `/init` updates it |
+| Gemini CLI | Only via `context.fileName` | — | `@file.md` | `/init` writes GEMINI.md; no-op if one exists |
+| Zed | Yes (first match) | only without AGENTS.md | No | none |
+| Kiro | Yes (always-included steering) | — | `#[[file:…]]` in steering | none (IDE button writes steering) |
+| Kimi CLI (Kimi Code) | Yes | — | Not documented | `/init` rewrites it |
+| Amp | Yes | `CLAUDE.md` only without AGENTS.md | `@path`, `@~/`, globs | none (offers one if missing) |
+| Goose | Yes (with `.goosehints`) | — | `@path` | none |
+| ZCode | Yes (only AGENTS.md) | — | No (explicitly) | `/init` edits it (undocumented, 3.14.3) |
+| Antigravity | Yes (with GEMINI.md) | root `GEMINI.md` | `@path/to/file` | none |
+| GitHub Copilot | Yes | `CLAUDE.md`, `GEMINI.md` | CLI `@path`; VS Code links | CLI writes copilot-instructions.md; VS Code `/init` updates it |
+| Devin | Yes | `CLAUDE.md` | Not documented | none |
 
-| Agent | Reads AGENTS.md natively | Import syntax | Native init command |
-|---|---|---|---|
-| Claude Code | No (`CLAUDE.md`) | `@path` (4 hops) | `/init`, `/import` |
-| Codex | Yes | No | `/init` |
-| Cursor | Yes | `@filename` in rules | `/create-rule` only |
-| opencode | Yes (`CLAUDE.md` fallback) | No (`instructions` array) | `/init` |
-| Gemini CLI | Only via `context.fileName` | `@file.md` | `/init` (writes GEMINI.md) |
-| Zed | Yes (first-match-wins list) | No | None |
-| Kiro | Yes (always-included steering) | `#[[file:...]]` in steering | IDE button only |
-| Kimi CLI | Yes | Not documented | `/init` |
-| Amp | Yes (+ `AGENT.md`/`CLAUDE.md` fallback) | `@path`, `@~/…`, globs | None |
-| Goose | Yes (with `.goosehints`) | No | None |
-| ZCode | Yes (only AGENTS.md) | No (explicitly) | None |
-| Antigravity | Yes (with `GEMINI.md`) | `@path/to/file` | None |
+What this means for `init-project`:
 
-Two consequences worth carrying into the skill:
-
-- **Only Claude Code and Gemini CLI need an import adapter** (`CLAUDE.md` with
-  `@AGENTS.md`; `GEMINI.md` with `@AGENTS.md`) — every other agent here reads
-  `AGENTS.md` itself, in some form. Gemini CLI is the borderline case: it reads
-  `AGENTS.md` only if `context.fileName` is configured to include it, so the
-  adapter is the zero-configuration path.
-- **The canonical file must be self-contained.** ZCode, Codex, opencode, Zed,
-  and Goose expand no imports at all, so an `AGENTS.md` that delegates its
-  substance to `@`-referenced files loses that substance on five of twelve
-  agents. Imports are an adapter mechanism, not a content-organization one.
+- **Only Claude Code and Gemini CLI get an import adapter** — Gemini CLI
+  because it does not read `AGENTS.md` by default, Claude Code because its
+  native reading is conditional where the import is not.
+- **Adapters are read by other agents.** Cursor, GitHub Copilot and Devin
+  load a root `CLAUDE.md`; Antigravity and Copilot load a root `GEMINI.md`.
+  Adapter notes therefore carry their agent's name (the template does it),
+  and Copilot CLI, which expands `@AGENTS.md` inside `CLAUDE.md`, loads
+  `AGENTS.md` twice when Claude Code is also selected.
+- **The canonical file must be self-contained.** Codex, opencode, Zed and
+  ZCode expand no imports; Cursor, Kimi Code, Kiro (outside its steering
+  syntax) and Devin document none for `AGENTS.md`; VS Code Copilot follows
+  links only with a setting that is off by default. An `AGENTS.md` that
+  delegates substance to `@`-referenced files loses it on four agents for
+  certain and on up to five more.
+- **Four init commands rewrite or edit `AGENTS.md`** — opencode, Kimi Code,
+  ZCode and VS Code Copilot — so their "do not run `/init` here" note
+  matters; Codex's refuses by prompt, the others write a different file.
 
 ## Known gaps
 
-Recorded per CLAUDE.md rule 1 — these are unresolved from official sources as
-of 2026-08-31, not assumptions:
+Unresolved from official sources as of 2026-09-23 — not assumptions:
 
-- **Antigravity, AGENTS.md vs GEMINI.md precedence.** The migration docs say
-  both are parsed in the active directory and that `~/.gemini/GEMINI.md`
-  supplies global constraints, but no official page states which wins on
-  conflict, or how workspace files combine with `.agents/rules`. The
-  `rules-workflows` page does not mention `AGENTS.md` at all.
-- **Antigravity, when AGENTS.md support landed.** The changelog entry that
-  names `AGENTS.md` is v2.11.0 (2026-08-26), and it describes `@path` inlining
-  *within* AGENTS.md rather than the introduction of AGENTS.md reading. No
-  official entry establishes the version at which Antigravity began reading
-  AGENTS.md. (Third-party guides give a version number; not usable per rule 1.)
-- **Antigravity, whether nested/parent AGENTS.md files are discovered.** The
-  docs say "your active directory's" files — neither an upward walk nor a
-  subtree scan is documented.
-- **Gemini CLI, when `contextFileName` became `context.fileName`.** Both this
-  document and [/specs/agents-md-standard.md](/specs/agents-md-standard.md) now
-  record the nested `context.fileName`, verified against
-  `docs/cli/gemini-md.md` on 2026-08-31 (the bundle-internal conflict with the
-  flat `contextFileName`, recorded 2026-08-29, was resolved on 2026-08-31). The
-  most likely explanation is the documented migration of `settings.json` to a
-  nested structure, but no official changelog entry naming the rename was
-  found, so neither the old name's removal nor a compatibility alias is
-  confirmed — a config written against the flat key may or may not still work.
-- **Cursor, `@filename` inside AGENTS.md.** The `@filename.ts` include is
-  documented for `.mdc` rules; whether Cursor expands it inside `AGENTS.md` is
-  not stated.
-- **Kimi CLI, import syntax.** No `@file`/include mechanism for AGENTS.md
-  appears in the official docs. Absence of documentation, not documented
-  absence.
-- **Kimi CLI, two config homes.** The `MoonshotAI/kimi-cli` docs put
-  configuration and runtime data in `~/.kimi/` (`config.toml`), while the
-  kimi.com Kimi Code docs use `$KIMI_CODE_HOME`, default `~/.kimi-code/`, for
-  skill roots. Which applies depends on the build (Kimi Code CLI is documented
-  as evolving into Kimi Code), and no single official page reconciles the two.
-- **ZCode, the split between its two user-scope config files.** Official docs
-  use `~/.zcode/v2/config.json` for provider/model connection settings and
-  `~/.zcode/cli/config.json` for `mcp.servers`; this bundle separately recorded
-  `~/.zcode/cli/config.json` for per-skill `enable: false` from local engine
-  inspection ([/agents/skill-discovery-matrix.md](/agents/skill-discovery-matrix.md)).
-  No page states the general rule for which keys belong in which file, so
-  neither is safe to treat as "the" ZCode config.
-- **Goose, ordering between `AGENTS.md` and `.goosehints` at the same level.**
-  Both are loaded at each level and local beats global, but the docs do not say
-  which of the two filenames wins if they contradict each other in one
-  directory.
-- **Zed and Amp, absence of a generator command.** Neither vendor documents a
-  command that writes an instructions file, and neither states that none
-  exists. These are "not documented" rather than "confirmed absent" — the same
-  caveat applies to Antigravity's `/init` and to Cursor's AGENTS.md generation.
+- **Antigravity:** `AGENTS.md`-vs-`GEMINI.md` precedence; nested or parent
+  `AGENTS.md` discovery; whether `@` imports work inside `AGENTS.md` on the
+  CLI and IDE (only the 2.0 changelog says so); `/learn` names
+  `.antigravity/rules.md` as a target while the Rules page uses
+  `.agents/rules/`.
+- **Gemini CLI:** whether a file both imported by `GEMINI.md` and listed in
+  `context.fileName` loads once; when the flat `contextFileName` became
+  `context.fileName` (no changelog entry names the rename).
+- **Cursor and Devin:** whether `@AGENTS.md` inside a `CLAUDE.md` is
+  expanded — which decides whether the Claude Code adapter makes them load
+  `AGENTS.md` twice.
+- **GitHub Copilot:** the Copilot harness in VS Code documents no discovery
+  rules; the CLI pages disagree on discovery scope ("standard locations" vs
+  "Git root and cwd") and on absolute import paths; the cloud agent's
+  handling of root plus nested `AGENTS.md`, and of `AGENTS.md` next to
+  `CLAUDE.md`/`GEMINI.md`, is not stated.
+- **Devin:** rule order and conflict resolution (same directory, root vs
+  nested, global vs project); whether the 32 KiB cap still holds after the
+  later "tighter injection limits".
+- **Goose:** the default `CONTEXT_FILE_NAMES` order (the docs disagree) and
+  which of `AGENTS.md`/`.goosehints` wins in one directory.
+- **Kiro:** the two contradictions in (a) — custom-agent steering
+  inheritance and CLI inclusion modes.
+- **ZCode:** `/init` is found only by local inspection; no official page or
+  changelog entry names it or the release that added it. The split between
+  its two user config files has no documented rule.
+- **Codex:** the untrusted-project rule exists only in source and the
+  merged PR, not in the docs.
+- **Zed, Amp, Cursor, Devin, Antigravity, Kiro:** absence of an
+  `AGENTS.md` generator is "not documented", not confirmed.
 
 ## Related documents
 
-- [/specs/agents-md-standard.md](/specs/agents-md-standard.md) — the AGENTS.md
-  standard, per-tool context-file behavior, and why Claude Code needs an
-  import adapter
+- [/specs/agents-md-standard.md](/specs/agents-md-standard.md) — the
+  AGENTS.md standard, per-tool behavior, and Claude Code's conditional
+  native reading
+- [/decisions/2026-09-23-claude-code-keeps-import-adapter.md](/decisions/2026-09-23-claude-code-keeps-import-adapter.md)
+  — why Claude Code still gets a `@AGENTS.md` adapter
 - [/agents/skill-discovery-matrix.md](/agents/skill-discovery-matrix.md) —
   where the same agents discover Agent Skills
 - [/specs/agent-skills-spec.md](/specs/agent-skills-spec.md) — the SKILL.md

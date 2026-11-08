@@ -6,8 +6,9 @@ description: >-
   adapters (and why imports cannot carry content), bounding every loop rather
   than only specifying it, the dead-end classes only an end-to-end run finds,
   the cost/re-run/harness classes only a review panel finds, marker
-  idempotency, verbatim-vs-language conflicts, and trigger wording against a
-  built-in command.
+  idempotency, verbatim-vs-language conflicts, trigger wording against a
+  built-in command, and how fast agent facts expire (native support that is
+  conditional, renamed products, adapters other agents also read).
 tags:
   - skills
   - authoring
@@ -17,7 +18,9 @@ tags:
   - playbook
 sources:
   - resource: ../../skills/init-project/SKILL.md
-    title: The skill this playbook is about (init-project 1.1.0, repo v0.13.0)
+    title: The skill this playbook is about (init-project 1.2.0, repo v0.14.0)
+  - resource: ../../skills/init-project/references/agent-context-matrix.md
+    title: The per-agent matrix re-verified on 2026-09-23 (section 11 below)
   - resource: ../../docs/init-project-expert-review-2026-09-06.md
     title: The six-expert review whose 56 proposals produced 1.1.0 (section 10 below)
   - resource: ../../skills/init-project/references/expert-review-protocol.md
@@ -63,10 +66,16 @@ fact below is sourced in
   substance to `@`-referenced files silently loses that substance on nearly
   half the target set.
 
+(Counts as of 1.0.0. The 2026-09-23 re-verification — section 11 — made the
+target set 14; still only Claude Code and Gemini CLI get an adapter, Goose
+turned out to expand `@` after all, and four agents are now confirmed not to
+expand imports with five more undocumented or opt-in.)
+
 Hence the rule the skill enforces: **imports are an adapter mechanism, not a
 content-organization one — the canonical file must be self-contained**, and an
 adapter contains the import line plus only what is true of that agent and false
-of the others.
+of the others — labeled with that agent's name since 1.2.0, because other
+agents load the same file (section 11).
 
 Generalizing: when a skill emits files for several consumers, the research
 question is not "does consumer X read this file" but "does X read it *the same
@@ -325,6 +334,51 @@ seam fix needs a place to live** (a reference section, a record key, a
 validator check) — a sentence in SKILL.md is where the last review's fixes
 went to conflict with each other.
 
+## 11. Agent facts expire in weeks — re-verify, and read "native" as a condition
+
+The matrix was verified on 2026-08-31. Re-verifying it on 2026-09-23 (1.2.0)
+found, in three weeks:
+
+- **The headline change was conditional.** Claude Code 2.1.277 reads
+  `AGENTS.md` natively — but only without a `CLAUDE.md` or
+  `CLAUDE.local.md`, and only in sessions that fetch feature flags. On the
+  maintainer's own machine the flag fetch was off, and a `claude -p` session
+  in a directory holding only `AGENTS.md` saw no instructions. Following the
+  headline ("now native, drop the adapter") would have silently disabled
+  the skill's output for its own author. The Fallback rule now asks whether
+  direct reading can be switched off by conditions the agent's own file is
+  not subject to
+  ([/decisions/2026-09-23-claude-code-keeps-import-adapter.md](/decisions/2026-09-23-claude-code-keeps-import-adapter.md)).
+- **Products are facts too.** Windsurf had become Devin Desktop (2026-06-02)
+  and its agent was removed (2026-09-08); the Python Kimi CLI was archived
+  in favor of Kimi Code; Goose and the AGENTS.md spec repo changed GitHub
+  organizations. A re-verification must check identity and ownership, not
+  only field values — a researcher told to "document Windsurf" correctly
+  stopped at the rename and asked.
+- **Readers of other agents' files.** Cursor, GitHub Copilot and Devin load
+  a root `CLAUDE.md` next to `AGENTS.md`; Antigravity and Copilot load
+  `GEMINI.md`. An adapter's notes, written as "true of this agent and false
+  of the others", therefore reach the others. The fix went into the asset
+  (each note line carries `**<Agent name>:**`) rather than into prose —
+  SKILL.md had 82 bytes of headroom, and a template line cannot be skipped.
+- **Undocumented behavior ships.** ZCode 3.14.3 has a built-in `/init` that
+  edits `AGENTS.md`; its docs still list two other commands. Only local
+  inspection of the installed app found it. Codex's "untrusted projects load
+  no project instructions" exists only in source and a merged PR.
+- **An old record can simply be wrong.** Goose's `@` include had been
+  documented since at least 2025-12, yet the matrix said "No". Every "No" and
+  "none" in a matrix deserves the same re-check as every "Yes".
+- **Restatements drift first.** SKILL.md's edge case restated each agent's
+  init-command behavior; it was the first sentence to go stale, and now
+  points at the extract instead.
+
+Practice that came out of it: fan the re-verification out per agent group
+with the recorded text as the diff baseline, demand a verbatim quote and URL
+for every change, then spot-check each finding that changes a decision
+before writing it down — about ten researcher claims were reworded or
+dropped at that step because the cited page did not say them. The concept that mirrors the matrix now carries
+`stale_after`.
+
 ## Checklist for the next orchestrator-sized skill
 
 1. For every consumer of a generated artifact, record *how* it reads the file,
@@ -349,6 +403,9 @@ went to conflict with each other.
     slot; give run state a file with a parser-safe shape; give every
     deterministic check a script; and give every rule a single home that the
     generated output can still reach after the skill is gone.
+11. Date every third-party fact and re-verify the set before each release;
+    treat "supports X" as a list of conditions, check product identity as
+    well as fields, and ask which *other* consumers read each file you emit.
 
 ## Related
 

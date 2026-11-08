@@ -3,9 +3,11 @@ type: Spec Summary
 title: AGENTS.md standard and CLAUDE.md interop
 description: >
   What the AGENTS.md open standard is (and is not), which agents read it
-  natively, how per-tool precedence semantics differ, why Claude Code does not
-  read it, the official interop options, and why this repository inverts the
-  usual pattern (CLAUDE.md canonical, AGENTS.md as thin adapter).
+  natively, how per-tool precedence semantics differ, when Claude Code reads
+  it (natively since v2.1.277, but only without a CLAUDE.md and only in
+  sessions that fetch feature flags), the official interop options, and why
+  this repository inverts the usual pattern (CLAUDE.md canonical, AGENTS.md
+  as thin adapter).
 tags:
   - agents-md
   - claude-code
@@ -15,14 +17,22 @@ tags:
 sources:
   - resource: https://agents.md
     title: AGENTS.md official site (spec, FAQ, supported tools)
-  - resource: https://github.com/openai/agents.md
-    title: openai/agents.md spec repository (GitHub)
+  - resource: https://github.com/agentsmd/agents.md
+    title: agentsmd/agents.md spec repository (GitHub; moved from openai/agents.md, verified 2026-09-23)
   - resource: https://code.claude.com/docs/en/memory
-    title: Claude Code docs — How Claude remembers your project (AGENTS.md section, @imports, symlink, /import, /init)
+    title: "Claude Code docs — How Claude remembers your project (AGENTS.md section: when it loads, Project instructions values, when unavailable, earlier workarounds, sharing one file; @imports, symlink, /import, /init; verified 2026-09-23)"
+  - resource: https://code.claude.com/docs/en/env-vars
+    title: "Claude Code docs — Environment variables (features that need feature-flag fetching, incl. AGENTS.md reading; first session after an install or upgrade; verified 2026-09-23)"
+  - resource: https://code.claude.com/docs/en/commands
+    title: "Claude Code docs — Commands (/init, /import; verified 2026-09-23)"
+  - resource: https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+    title: "Claude Code changelog — 2.1.277 \"Added AGENTS.md support\" (verified 2026-09-23)"
+  - resource: https://registry.npmjs.org/@anthropic-ai/claude-code
+    title: "npm registry — @anthropic-ai/claude-code publish times (2.1.277 published 2026-09-18)"
   - resource: https://github.com/anthropics/claude-code/issues/6235
-    title: anthropics/claude-code issue #6235 — Support AGENTS.md (closed "completed" 2026-08-17; docs still show no native support)
+    title: anthropics/claude-code issue #6235 — Support AGENTS.md (closed "completed" 2026-08-17; native reading shipped in 2.1.277)
   - resource: https://github.com/anthropics/claude-code/issues/34235
-    title: anthropics/claude-code issue #34235 — support AGENTS.md as native context file
+    title: anthropics/claude-code issue #34235 — support AGENTS.md as native context file alongside CLAUDE.md (open, verified 2026-09-23)
   - resource: https://learn.chatgpt.com/docs/agent-configuration/agents-md
     title: OpenAI Codex docs — AGENTS.md configuration (locations, precedence, size limits)
   - resource: https://google-gemini.github.io/gemini-cli/docs/cli/gemini-md.html
@@ -41,13 +51,30 @@ sources:
     title: Zed repo — rules.md ("Rules have been replaced by Skills and Instructions")
   - resource: https://cursor.com/docs/rules
     title: Cursor docs — Rules (AGENTS.md root and nested support)
+  - resource: https://cursor.com/help/customization/rules
+    title: "Cursor help — Rules (CLAUDE.md read the same way as AGENTS.md; verified 2026-09-23)"
+  - resource: https://github.com/openai/codex/pull/39837
+    title: "openai/codex PR #39837 — Ignore project instructions for untrusted projects (merged 2026-08-21)"
+  - resource: https://github.com/google-gemini/gemini-cli/issues/28227
+    title: "google-gemini/gemini-cli issue #28227 — AGENTS.md not in the default context.fileName (open, 2026-09-23)"
+  - resource: https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/tools/memoryTool.ts
+    title: "gemini-cli source — memoryTool.ts (context.fileName adds names to GEMINI.md)"
+  - resource: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions
+    title: "GitHub Docs — Copilot CLI custom instructions (AGENTS.md, CLAUDE.md, GEMINI.md merged; @ imports)"
+  - resource: https://docs.devin.ai/cli/extensibility/rules
+    title: "Devin docs — Rules & AGENTS.md (CLAUDE.md and others treated identically)"
+  - resource: https://docs.devin.ai/desktop/changelog
+    title: "Devin Desktop changelog — v3.0.12 \"Windsurf is now Devin Desktop\" (2026-06-02)"
+  - resource: https://github.com/MoonshotAI/kimi-code/blob/main/docs/en/customization/agents.md
+    title: "Kimi Code docs — agents and instruction files (successor of the archived kimi-cli)"
   - resource: https://github.com/MoonshotAI/kimi-cli
-    title: MoonshotAI/kimi-cli — Kimi Code CLI (AGENTS.md via /init)
-  - resource: https://gist.github.com/yurukusa/d36197848911f025add142abefcde685
-    title: "Gist: Does Claude Code read AGENTS.md? Sync patterns for the #6235 cluster"
+    title: MoonshotAI/kimi-cli — archived Python Kimi CLI (AGENTS.md via /init)
 generated:
   by: claude-code/claude-fable-5
   at: 2026-08-29T10:44:54Z
+verified:
+  - by: claude-code/claude-opus-5-5
+    at: "2026-09-23T07:11:13Z"
 status: stable
 ---
 
@@ -59,8 +86,10 @@ AGENTS.md is an open, tool-agnostic, plain-Markdown instruction file for
 coding agents — "a README for agents." It was created collaboratively by
 OpenAI Codex, Amp (Sourcegraph), Jules (Google), Cursor, and Factory, and is
 now stewarded by the **Agentic AI Foundation under the Linux Foundation**.
-The spec repo is `github.com/openai/agents.md` (MIT-licensed, ~24k stars);
-the site reports 60,000+ open-source projects using the file.
+The spec repo is `github.com/agentsmd/agents.md` (moved from
+`openai/agents.md`, which now redirects; MIT-licensed, ~24.5k stars,
+verified 2026-09-23); the site reports 60k+ open-source projects using the
+file.
 
 Key properties of the spec:
 
@@ -79,67 +108,134 @@ Key properties of the spec:
 
 ## Which tools read AGENTS.md natively
 
-Listed on agents.md as supporting it: Codex, Jules, Factory, Aider, goose,
-opencode, Zed, Warp, VS Code, Devin, Junie, Amp, Cursor, RooCode, Gemini CLI,
-Kilo Code, Phoenix, Semgrep, GitHub Copilot coding agent, Ona, Windsurf,
-Augment Code. Kimi CLI (Moonshot) also generates and reads AGENTS.md via its
-`/init` command.
+Listed on agents.md as supporting it (verified 2026-09-23): Codex, Jules,
+Factory, Aider, goose, opencode, Zed, Warp, VS Code, Devin, Autopilot & Coded
+Agents (UiPath), Junie, Amp, Cursor, RooCode, Gemini CLI, Kilo Code, Phoenix,
+Semgrep, GitHub Copilot coding agent, Ona, Windsurf, Augment Code. The site
+does not list Claude Code. Windsurf itself has since become Devin Desktop
+(2026-06-02). Kimi Code CLI (Moonshot; successor of the archived Kimi CLI)
+also reads AGENTS.md and generates it with `/init`.
 
-Notable per-tool behavior:
+Notable per-tool behavior (per-agent detail and sources:
+/agents/agent-init-conventions.md):
 
 | Tool | Behavior |
 | --- | --- |
-| **Codex** | Reads `~/.codex/AGENTS.override.md` or `~/.codex/AGENTS.md` globally, then per-directory `AGENTS.override.md`/`AGENTS.md` from git root down to cwd, concatenated root-down (closer files later, overriding). Capped at `project_doc_max_bytes` (32 KiB default); fallback filenames configurable via `project_doc_fallback_filenames` in `~/.codex/config.toml`. No import syntax. |
-| **Cursor** | Reads AGENTS.md at project root and in subdirectories; nested files combined, nearest wins. `.cursor/rules/*.mdc` remains for glob-scoped/manually-invoked rules. |
+| **Codex** | Reads `~/.codex/AGENTS.override.md` or `~/.codex/AGENTS.md` globally, then per-directory `AGENTS.override.md`/`AGENTS.md` from the project root down to cwd, concatenated root-down (closer files later, overriding). Capped at `project_doc_max_bytes` (32 KiB default); fallback filenames configurable via `project_doc_fallback_filenames` in `~/.codex/config.toml`. An untrusted project loads no project AGENTS.md (source, 2026-08-21). No import syntax. |
+| **Cursor** | Reads AGENTS.md at project root and in subdirectories; nested files combined, nearest wins. Also reads a root CLAUDE.md "the same way it reads AGENTS.md". `.cursor/rules/*.mdc` remains for glob-scoped/manually-invoked rules. |
 | **opencode** | Reads project AGENTS.md (falls back to CLAUDE.md for Claude Code compatibility) plus global `~/.config/opencode/AGENTS.md`. Explicitly "doesn't automatically parse file references in AGENTS.md" — extra files come via the `instructions` array in `opencode.json` (globs and URLs supported). |
 | **Zed** | First-match-wins list: `.rules`, `.cursorrules`, `.windsurfrules`, `.clinerules`, `.github/copilot-instructions.md`, `AGENT.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`. A stray `.cursorrules` silently shadows AGENTS.md. |
-| **Gemini CLI** | Does **not** read AGENTS.md by default (default context file is GEMINI.md); requires opting in via the nested `context.fileName` setting, which takes a list and can include `AGENTS.md` (documented example `["AGENTS.md", "CONTEXT.md", "GEMINI.md"]`). Verified 2026-08-31 against the repo docs; this entry previously recorded the flat `contextFileName` from the docs site on 2026-08-29, consistent with Gemini CLI's move to a nested `settings.json` structure — no official changelog entry names the rename, so neither removal of the old key nor a compatibility alias is confirmed. Issue google-gemini/gemini-cli#12345 requesting AGENTS.md by default was closed as not planned. Gemini CLI's context files are the only non-Claude ones with `@file.md` import syntax. |
+| **Gemini CLI** | Does **not** read AGENTS.md by default (default context file is GEMINI.md); requires opting in via the nested `context.fileName` setting, which takes a list, **adds** to `GEMINI.md` rather than replacing it, and can include `AGENTS.md` (documented example `["AGENTS.md", "CONTEXT.md", "GEMINI.md"]`). This entry recorded the flat `contextFileName` from the docs site on 2026-08-29, consistent with Gemini CLI's move to a nested `settings.json` structure — no official changelog entry names the rename, so neither removal of the old key nor a compatibility alias is confirmed. Issue google-gemini/gemini-cli#12345 (AGENTS.md by default) was closed as not planned; the later bug report #28227 asking the same is open (2026-09-23). Supports `@file.md` imports. |
+| **GitHub Copilot** | CLI, VS Code and the cloud agent all read AGENTS.md by default. The CLI merges AGENTS.md, CLAUDE.md and GEMINI.md with `.github/copilot-instructions.md` and expands `@path` in AGENTS.md and CLAUDE.md (not GEMINI.md); VS Code also reads CLAUDE.md by default; the cloud agent uses the nearest AGENTS.md. |
+| **Devin** (formerly Windsurf) | Devin CLI and Devin Desktop's Devin Local read AGENTS.md automatically, and treat `AGENTS.local.md`, `AGENT.md`, `.windsurfrules` and CLAUDE.md "identically" as always-on rules. No import syntax is documented. |
 | **ZCode** (Z.ai) | Reads **AGENTS.md only** — the engine's candidate-filename list is the single entry `["AGENTS.md"]` (verified in `/Applications/ZCode.app/Contents/Resources/glm/zcode.cjs`, v3.9.2). User default `~/.zcode/AGENTS.md` is injected first, then the workspace `<repo>/AGENTS.md` is searched from cwd upward to the project root and overrides it; hidden alternates `<repo>/.zcode/AGENTS.md` and `<repo>/.agents/AGENTS.md` also resolve. **CLAUDE.md is never read at runtime** — the Z.ai docs use it only during onboarding as a one-time migration source. |
-| **Claude Code** | Does **not** read AGENTS.md at all — see below. |
+| **Claude Code** | Reads AGENTS.md natively since **v2.1.277** (published 2026-09-18), but by default **only when no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the working directory or above it**, and only in sessions that fetch feature flags — see below. |
 
 ### Precedence semantics are NOT standardized
 
 Beyond "closest file wins," each tool implements its own merge model:
 
-- **Claude Code** concatenates all discovered CLAUDE.md files broad-to-specific.
+- **Claude Code** concatenates all discovered CLAUDE.md files broad-to-specific,
+  and by default reads AGENTS.md only when no CLAUDE.md counts anywhere from
+  the working directory up — the inverse of the opencode and Amp fallbacks
+  (AGENTS.md first, CLAUDE.md only where AGENTS.md is missing).
 - **Codex** concatenates root-down, later (closer) files overriding.
-- **Zed** and **opencode** use first-match-wins file *selection* (one file).
+- **Zed** uses first-match-wins file *selection* (one file); **opencode**
+  picks one filename (AGENTS.md, else CLAUDE.md) and then loads every file of
+  that name from the working directory up to the worktree root.
 - **Cursor** merges nested files with nearest winning.
+- **GitHub Copilot CLI** merges everything it finds and "does not define a
+  general precedence order"; **Devin** loads every rule file as always-on
+  and documents no winner.
 
 Do not assume instructions in a nested file behave the same across agents.
 
-## Claude Code does not read AGENTS.md
+## Claude Code reads AGENTS.md — conditionally (since v2.1.277)
 
-The official Claude Code memory docs (code.claude.com/docs/en/memory) state
-plainly: "Claude Code reads CLAUDE.md, not AGENTS.md." Native support was the
-tracker's most-reacted feature request — anthropics/claude-code
-**issue #6235**, 6,500+ reactions — which was **closed as "completed" on
-2026-08-17**; yet the memory docs still state Claude Code reads CLAUDE.md,
-not AGENTS.md (re-verified 2026-08-29), so no native AGENTS.md reading has
-shipped. Successor issue #34235 remains open (verified 2026-08-29).
+Until 2026-09 the Claude Code memory docs said plainly that Claude Code reads
+CLAUDE.md, not AGENTS.md (last verified in that form 2026-08-29). The
+tracker's most-reacted request, anthropics/claude-code **issue #6235**, was
+closed as "completed" on 2026-08-17; the feature itself shipped in
+**v2.1.277** (npm publish 2026-09-18), whose changelog reads: "Added
+AGENTS.md support: in a project with no CLAUDE.md, Claude Code reads
+AGENTS.md instead." Issue #34235 ("support AGENTS.md as a native context file
+alongside CLAUDE.md") is still open (verified 2026-09-23). What the memory
+docs now state (verified 2026-09-23):
+
+- **When.** Under the default **Project instructions** value
+  `claude-md-or-agents-md`, Claude reads AGENTS.md "only when you have no
+  CLAUDE.md in your working directory or above it". A `CLAUDE.md`,
+  `.claude/CLAUDE.md` or `CLAUDE.local.md` there counts; `~/.claude/CLAUDE.md`,
+  the managed CLAUDE.md and `.claude/rules/` do not. The docs warn that
+  adding a `CLAUDE.local.md` to a project that relies on AGENTS.md "stops
+  Claude from reading AGENTS.md for you".
+- **What.** Every `AGENTS.md` and `.claude/AGENTS.md` from the working
+  directory upward at session start; a subdirectory's AGENTS.md on demand
+  when Claude reads a file there. `@path` imports inside it are expanded.
+  Never read: `AGENTS.local.md`, `AGENTS.override.md`, anything under
+  `.agents/`.
+- **Setting.** `claude-md-and-agents-md` reads both (each directory's
+  CLAUDE.md first; an AGENTS.md already loaded through an import or symlink
+  is skipped), `claude-md` reads CLAUDE.md only, `managed-only` loads only
+  the managed CLAUDE.md and auto memory at launch. Set in `/config` or under
+  `pluginConfigs` → `agents-md@builtin` in user, `--settings` or managed
+  settings — ignored in project and local settings, so **a repository cannot
+  change the value for its users**.
+- **When unavailable** (CLAUDE.md only, and the setting is hidden): before
+  v2.1.277; in sessions that do not fetch feature flags — Amazon Bedrock,
+  Claude Platform on AWS, Google Cloud's Agent Platform, Microsoft Foundry, a
+  Claude apps gateway, or `DISABLE_TELEMETRY` / `DO_NOT_TRACK` /
+  `DISABLE_GROWTHBOOK` / `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set to a
+  value that turns fetching off (env-vars docs); in the first session after
+  an install or upgrade; with the built-in `agents-md` plugin disabled.
+- **Differences from CLAUDE.md** when read through the setting:
+  `InstructionsLoaded` hooks don't fire, `--add-dir` directories don't load
+  their AGENTS.md, and an external `@path` import loads only if external
+  imports were already approved for the project, with no prompt.
 
 ### Official interop options (from the Claude Code docs)
 
-1. **Import adapter:** create a CLAUDE.md containing `@AGENTS.md` — Claude
-   Code's `@file` import pulls the file in, and Claude-specific instructions
-   can be appended below the import. `@file` imports work anywhere in
-   CLAUDE.md, take relative or absolute paths, recurse up to 4 hops, are
-   skipped inside code spans/fenced blocks, and load at launch.
-2. **Symlink:** `ln -s AGENTS.md CLAUDE.md`. On Windows, symlinks need
-   Administrator privileges or Developer Mode, so the docs prefer option 1
-   there.
-3. **One-time migration:** `/import` (Claude Code v2.1.213+) appends a copy
-   of AGENTS.md into CLAUDE.md and carries over MCP servers, commands,
-   subagents, and skills. Also, `/init` with `CLAUDE_CODE_NEW_INIT=1` reads
-   AGENTS.md (plus `.devin/rules/`, Windsurf rules, and `.clinerules`) when
-   generating CLAUDE.md; plain `/init` already reads Cursor and Copilot rules.
+1. **Native reading** — nothing to add, when every session qualifies (above).
+2. **Import adapter:** a CLAUDE.md containing `@AGENTS.md`, with
+   Claude-specific instructions below the import. The docs prescribe it
+   "when Claude isn't reading your AGENTS.md directly" — a project that also
+   has a CLAUDE.md, the `claude-md` setting, or a session that can't load
+   AGENTS.md — and state that "Keeping the import never makes Claude read
+   AGENTS.md twice, whichever Project instructions value you use." `@file`
+   imports work anywhere in CLAUDE.md, take relative or absolute paths,
+   recurse up to 4 hops, are skipped inside code spans/fenced blocks, and
+   load at launch.
+3. **Symlink:** `ln -s AGENTS.md CLAUDE.md`. The Edit and Write tools refuse
+   to write through the link (the refusal points Claude at AGENTS.md), and
+   on Windows symlinks need Administrator privileges or Developer Mode and a
+   clone without `core.symlinks` gets a one-line CLAUDE.md — so the docs say
+   to use the import whenever anyone works on Windows.
+4. **One-time migration:** `/import [codex|gemini|cursor]` (v2.1.213+;
+   Cursor v2.1.265+; unavailable without feature-flag fetching) appends a
+   one-time copy of instruction files such as AGENTS.md to the matching
+   CLAUDE.md and carries over MCP servers, commands, subagents, and skills;
+   `/init` offers it when it finds Codex or Gemini CLI configuration. Plain
+   `/init` reads Cursor and Copilot rules; with `CLAUDE_CODE_NEW_INIT=1` it
+   also reads AGENTS.md, `.devin/rules/`, Windsurf rules and `.clinerules`.
 
-The docs' recommended *sync* pattern for multi-agent repos is AGENTS.md as
-the canonical source of truth with CLAUDE.md as a thin `@AGENTS.md` adapter —
-because the import capability exists only on the Claude side (Codex defines
-no import syntax; opencode does not auto-parse `@` references; only Gemini
-CLI supports `@file.md` imports, and it doesn't read AGENTS.md by default
-anyway).
+The docs list the earlier workarounds and what to do with each now: a
+`CLAUDE.md` containing `@AGENTS.md` can stay (remove it only if it holds
+nothing else *and* no session needs it); a CLAUDE.md that only tells Claude
+in words to read AGENTS.md should be deleted or given an `@AGENTS.md` import;
+a symlink can stay; a `SessionStart` hook that prints AGENTS.md should go, as
+it would now add a second copy.
+
+**Consequence for multi-agent repos:** the canonical-AGENTS.md +
+thin-`@AGENTS.md`-CLAUDE.md pattern stays the robust one — native reading is
+feature-flagged and switched off by any project CLAUDE.md or
+CLAUDE.local.md, while the import works in every session and never
+double-reads. Local confirmation (2026-09-23, Claude Code 2.1.280 with
+`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set in `~/.claude/settings.json`):
+with only an AGENTS.md, a `claude -p` session saw no project instructions;
+with a CLAUDE.md containing `@AGENTS.md` it saw them; `/import` reported it
+"isn't available in this environment". The init-project skill keeps Claude
+Code as an `import-adapter` for this reason
+(/decisions/2026-09-23-claude-code-keeps-import-adapter.md).
 
 ## Why THIS repo inverts the usual pattern
 
@@ -163,6 +259,10 @@ Rationale:
 - Tools that select a single rules file (Zed, opencode) find either file
   anyway — both list CLAUDE.md in their lookup chains — and tools that read
   only AGENTS.md get the pointer.
+- Claude Code's native AGENTS.md reading (v2.1.277) changes nothing here:
+  the root CLAUDE.md counts, so under the default setting Claude reads
+  CLAUDE.md only and never the pointer; under `claude-md-and-agents-md` it
+  would also read the pointer, which only repeats "read CLAUDE.md".
 - **ZCode makes the adapter load-bearing, not merely acceptable.** It is a
   concrete, verified agent whose candidate-filename list is exactly
   `["AGENTS.md"]`: CLAUDE.md is never loaded automatically, and unlike Zed or
@@ -177,15 +277,16 @@ Full founding rationale: /decisions/2026-08-29-repo-design.md.
 
 ## Open questions
 
-- What the "completed" closure of #6235 (2026-08-17) actually shipped — the
-  official docs still show no native AGENTS.md reading as of 2026-08-29;
-  successor issue #34235 remains open.
+- *Resolved 2026-09-23:* what the "completed" closure of #6235 (2026-08-17)
+  shipped — conditional native AGENTS.md reading in v2.1.277 (above).
+  Issue #34235 remains open (verified 2026-09-23); why is not recorded here.
 - Whether the Agentic AI Foundation formalizes precedence/merge semantics or
   an import syntax — currently each tool implements its own.
 - Interop for the companion skills convention (`.agents/skills/` vs
   `.claude/skills/`): anthropics/claude-code#50778 was closed as "completed"
-  on 2026-04-19, but as of 2026-08-29 the official Claude Code skills docs
-  still list no `.agents/skills` discovery location, so the gap persists —
+  on 2026-04-19, but as of 2026-09-23 the official Claude Code skills docs
+  still list no `.agents/skills` discovery location (and the memory docs say
+  nothing under `.agents/` is read as instructions), so the gap persists —
   outside the AGENTS.md file spec itself; see /agents/skill-discovery-matrix.md.
 
 ## Related documents
@@ -193,3 +294,5 @@ Full founding rationale: /decisions/2026-08-29-repo-design.md.
 - /specs/agent-skills-spec.md — the Agent Skills (SKILL.md) specification
 - /agents/skill-discovery-matrix.md — where each agent discovers skills
 - /decisions/2026-08-29-repo-design.md — why CLAUDE.md is canonical here
+- /decisions/2026-09-23-claude-code-keeps-import-adapter.md — why
+  init-project still gives Claude Code a `@AGENTS.md` adapter
