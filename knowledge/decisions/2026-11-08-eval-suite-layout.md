@@ -43,19 +43,28 @@ This repo gets an eval suite that `claude plugin eval` can run. Layout:
 
 ```text
 evals/
+  README.md                how to run the suite, the grants it needs
   <skill>-<case>/          one directory per skill and scenario
-    prompt.md              the user prompt, realistic, may be Thai
+    prompt.md              the user prompt, realistic, may be Thai; run limits
+    case.yaml              only when the case needs context.scaffold_script
+    scaffold.sh            seeds the empty run workspace (git repo, a .docx)
+    fixtures/              the synthetic inputs and the script that made them
     graders/*.md           tool_used / regex / file_exists / llm graders
-  fixtures/                synthetic inputs the cases point at
-    <skill>/...            e.g. a tiny git repo tarball, a generated .docx
   results/                 written by the runner; ignored by git
 ```
+
+Fixtures live **inside the case directory**, because that is the only place
+the runner reads from: each run starts in an empty workspace, and a
+`scaffold_script` named in `case.yaml` (run only with `--scaffold`) is what
+puts files there. A scaffold embeds its payload (base64 for a binary) rather
+than reading a path, since it runs with a minimal environment.
 
 Rules:
 
 1. **Fixtures are synthetic.** Never a real document, a real repository, or
    anything carrying personal or client data. A fixture is built by a script
-   or by hand from invented content and is small enough to read in a review.
+   (kept beside it, e.g. `fixtures/make_brief.py`) from invented content and
+   is small enough to read in a review.
 2. **Every skill gets at least one trigger case and one anti-trigger case.**
    The trigger case asserts `tool_used: Skill` with the skill's name; the
    anti-trigger case uses a near-miss prompt (adjacent task, shared keywords)
@@ -64,6 +73,11 @@ Rules:
 3. **Manual fresh-session trigger tests stay only as the fallback** for agents
    without eval tooling; on Claude Code the authoring checklist calls the
    runner instead.
+   The anti-trigger assertion is `tool_used: Skill` with `min: 0`, `max: 0`,
+   `arm: both`; a plain `tool_used: Skill` is a plugin-fired indicator the
+   runner excludes from the two-arm score. Behaviour graders that only the
+   skill can satisfy (e.g. "ran the bundled extractor") carry
+   `arm: with-only`.
 4. The suite is a repo convention, not part of any skill: it lives outside
    `skills/` so it never travels with a symlink or into another agent's
    skill directory, and `.claude-plugin/plugin.json` does not list it.

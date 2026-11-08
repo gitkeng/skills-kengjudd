@@ -2,6 +2,30 @@
 
 ## 2026-11-08
 
+- **Phase 3 of the review — first eval suite** (repo v0.15.1, no skill
+  changed). Four cases under `evals/` for `claude plugin eval` (Claude Code
+  2.1.319), run the same day with 3 runs per arm, `--threshold 0.8`: **4/4
+  cases pass, suite score 1.00, cost ≈ $3.95, 200 s at `-j 4`**. Per case:
+  `git-commit-thai-commit` with 1.00 / without 0.33, **Δ +0.67** — without
+  the skill Claude never produced an emoji + type subject and never split
+  the two concerns, with it 3/3 runs proposed two commits and stopped for
+  approval (no `git commit` ran in any arm); `doc2markdown-thai-docx` with
+  1.00 / without 1.00, **Δ 0** — the skill fired and ran the bundled
+  extractor every time, but on a clean python-docx fixture the baseline
+  wrote its own docx reader and reached the same graders in 6 turns / 26 s
+  against 9 turns / 60 s with the skill, so this fixture does not exercise
+  what the scripts exist for (Thai SARA AM repair, body order, OCR); both
+  anti-trigger cases 1.00 in both arms (the skills stayed silent, the task
+  was still done). Runner lessons: a pattern grant such as `Bash(git *)`
+  fails as soon as a skill chains commands with `&&`, so the suite grants
+  `Bash` whole and relies on the sandbox; Apple's `/usr/bin/git` shim cannot
+  write its xcrun cache inside the sandbox, and the agent fell back to
+  Homebrew git on its own; `--case` takes one glob. Skill defect observed:
+  `extract_docx.py` rendered Word bullet items as plain paragraphs and the
+  agent fixed them by hand (3/3 runs) — a candidate for doc2markdown 1.2.0.
+  Decision /decisions/2026-11-08-eval-suite-layout.md amended to the layout
+  the runner supports (fixtures inside the case directory via `scaffold.sh`).
+
 - **Phase 2 of the review** (repo v0.15.0; every skill a patch,
   creating-skills 1.3.0) — the shared format: `## Updating` cut to the
   template's short form in all seven skills (≈100 tokens saved per
