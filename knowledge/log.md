@@ -2,6 +2,22 @@
 
 ## 2026-11-08
 
+- **Phase 4 of the review** (repo v0.16.0; doc2markdown 1.2.0, init-project
+  1.3.0). doc2markdown: the eval fixture exposed two extractor defects — list
+  items numbered through the paragraph *style* came out as paragraphs, and
+  merged-cell detection keyed on `id()` of lxml proxies blanked unrelated
+  table cells — both fixed in `extract_docx.py` and pinned by a new
+  `bullets-preserved` grader; SKILL.md split into `references/{pdf,docx-xlsx,
+  pptx}.md` read by kind (≈4,320 → ≈2,311 tokens). Eval
+  `doc2markdown-thai-docx` with 1.2.0: 3/3 runs, 5/5 graders, 42–50 s, ≈$0.22
+  per run. init-project: Phase 1 topics and Phase 4 steps summarised to one
+  line each with full text in `references/phase-interview.md` and
+  `references/phase-context-files.md` (≈6,350 → ≈4,926 tokens, under the
+  5,000-token re-attach budget; the 4,000 target would need Phase 2–3 moved
+  too — not done); `--self` gate exit 0. Technique note: the bold step
+  labels other references cite stayed in SKILL.md so no cross-reference
+  broke — checked by grep before the gate.
+
 - **Phase 3 of the review — first eval suite** (repo v0.15.1, no skill
   changed). Four cases under `evals/` for `claude plugin eval` (Claude Code
   2.1.319), run the same day with 3 runs per arm, `--threshold 0.8`: **4/4
