@@ -35,7 +35,10 @@ Sibling references — `agent-context-matrix.md`, `okf-kb-guide.md`,
 - Import-adapters (e.g. `CLAUDE.md` containing `@AGENTS.md`, `GEMINI.md`
   containing `@AGENTS.md`): **≤ 10 lines and ≤ 1 KB** — the import line
   plus at most two short agent-specific notes below it
-  (`assets/adapter-template.md`).
+  (`assets/adapter-template.md`), each labeled with its agent's name
+  because other agents load the same file (`agent-context-matrix.md`
+  explains which — a root `CLAUDE.md` reaches Cursor, GitHub Copilot and
+  Devin too).
 - A **full-copy** adapter (`agent-context-matrix.md` `## Fallback rule`, for
   an agent with neither native `AGENTS.md` reading nor an import mechanism)
   is not an adapter in the sense above — it duplicates `AGENTS.md`'s content

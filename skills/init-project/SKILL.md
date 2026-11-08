@@ -17,8 +17,8 @@ description: >-
   codebase in depth.
 license: MIT
 metadata:
-  version: "1.1.0"
-  updated: "2026-09-07"
+  version: "1.2.0"
+  updated: "2026-09-23"
 ---
 
 # Init Project
@@ -114,10 +114,11 @@ and respect its **hard ceiling of 25 interview questions** and its
    `## Edge cases` and offer that draft. For an empty directory ask
    outright. Both are required: the assets carry `<Project name>` tokens
    that must not survive.
-2. **Agents.** Multi-select from the twelve agents covered in
+2. **Agents.** Multi-select from the fourteen agents covered in
    [references/agent-context-matrix.md](references/agent-context-matrix.md)
    — Claude Code, Codex, Cursor, opencode, Gemini CLI, Zed, Kiro, Kimi CLI,
-   Amp, Goose, ZCode, Antigravity — plus free text for any other agent.
+   Amp, Goose, ZCode, Antigravity, GitHub Copilot, Devin (formerly
+   Windsurf) — plus free text for any other agent.
 3. **Task types.** Multi-select from the four presets in
    [references/task-type-presets.md](references/task-type-presets.md) —
    `## coding`, `## frontend`, `## project management`,
@@ -364,11 +365,10 @@ reading the sections named below, only once Phases 3 and 4 are complete:
 
 - **A context file already exists** → the Phase 3 **Write plan**.
 - **An agent's own init command would overwrite this run's output.** Quote
-  its behavior from the matrix extract, never paraphrase (Codex, Kimi CLI
-  and opencode write `AGENTS.md`, Gemini CLI writes `GEMINI.md`, Claude Code
-  suggests improvements to an existing `CLAUDE.md`). Warn in the report and
-  record the "do not run `<command>` here" note in `## Agent notes`. Never
-  assert init behavior the matrix does not state.
+  its behavior from the extract's **Native init command** field, never
+  paraphrase. Warn in the report and record the "do not run `<command>`
+  here" note in `## Agent notes`. Never assert init behavior the matrix
+  does not state.
 - **Another run is writing at the same time** → the *foreign* state of
   Phase 4 **Baseline and block diff**: stop instead of merging blind.
 - **An existing OKF knowledge base at an older `okf_version`** → Phase 3
