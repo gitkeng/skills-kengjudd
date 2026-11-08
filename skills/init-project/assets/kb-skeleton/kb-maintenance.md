@@ -15,7 +15,7 @@ sources:
 generated:
   by: "<agent>/<model>"
   at: "<ISO 8601 UTC>"
-init_project_asset: "assets/kb-skeleton/kb-maintenance.md@1.3.0"
+init_project_asset: "assets/kb-skeleton/kb-maintenance.md@1.4.0"
 ---
 
 # Maintaining this knowledge base
