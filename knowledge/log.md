@@ -1,5 +1,41 @@
 # Knowledge Base Log
 
+## 2026-11-08
+
+- **Skill quality review** (repo v0.14.1, no skill changed) — all seven
+  skills reviewed against the Agent Skills spec and Claude Code 2.1.319 at
+  Kongsak's request ("review the current skills, research how to raise
+  quality, save tokens, work faster; remove what is outdated"). Research ran
+  as two parallel researchers over the official pages; every number kept was
+  read on the cited page that day. Proposal and the maintainer's four
+  decisions: `docs/skill-quality-review-2026-11-08.md` (outside this bundle).
+  Findings that became knowledge: new Playbook
+  /skill-authoring/context-budgets.md (Claude Code lists at most 1,536 chars
+  of a description inside a 1% listing budget and re-attaches only the first
+  5,000 tokens of a skill after compaction; ZCode shows ~250 chars, Kimi 240,
+  Codex shortens first; one install channel per machine — this machine had
+  the project symlinks and the `kengjudd` plugin both active, doubling the
+  description cost); new Decision
+  /decisions/2026-11-08-eval-suite-layout.md (`evals/` at the plugin root for
+  `claude plugin eval`, synthetic fixtures, trigger + anti-trigger case per
+  skill), closing the question /skill-authoring/best-practices.md §6 had
+  parked. /skill-authoring/best-practices.md §1, §3, §6, §8 updated;
+  /specs/agent-skills-spec.md records the 2026-10-22 donation to the Agentic
+  AI Foundation, the 46-client showcase, the absence of a spec version, and
+  `claude plugin eval`; /agents/skill-discovery-matrix.md re-verified: Codex
+  docs moved to learn.chatgpt.com, Gemini CLI page carries the Antigravity
+  CLI banner, Amp's official docs now exist (gap closed), Kimi docs URL
+  updated, Claude Code still does not read `.agents/skills/` (#31005).
+- **Tooling:** `plugin.json` gains `license: MIT` and the repo a root
+  `LICENSE` (the plugin directory refuses a submission without one);
+  `install.sh` warns when the plugin is installed alongside the symlinks;
+  CLAUDE.md states the one-channel rule.
+- **Deferred to the next releases** (plan in the review doc §8): shorter
+  `## Updating` in every skill, descriptions rewritten so the trigger sits in
+  the first 240 chars, `allowed-tools` as a string in git-commit, TOCs in 14
+  reference files, the first eval cases, doc2markdown split by document
+  type, init-project body under 4,000 tokens.
+
 ## 2026-09-23
 
 - **init-project 1.2.0** (repo v0.14.0) — the agent matrix re-verified

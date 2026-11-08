@@ -29,10 +29,12 @@ Project knowledge bundle in OKF format. Canonical spec:
 * [Self-checks inside imported skills](skill-authoring/imported-self-checks.md) - when an imported skill's own validation gate rejects this repo's mandated provenance, over-reaches past the artifact it guards, or encodes one fixture's shape
 * [Validating generated artifacts](skill-authoring/validating-generated-artifacts.md) - why a hand-written checker drifts from "will the consumer accept this", how to calibrate it against the real parser, and how progressive disclosure starves cross-cutting rules
 * [init-project lessons](skill-authoring/init-project-lessons.md) - building an orchestrator-sized skill: canonical file plus adapters, bounding every loop, what e2e runs catch that inspection cannot, what a review panel catches that runs cannot, marker idempotency, and what a verified second review adds (seams, question types, run state, checks as scripts)
+* [Context budgets](skill-authoring/context-budgets.md) - what each agent loads from a skill and when: description caps (Claude Code 1,536, ZCode 250, Kimi 240), listing budgets, the 5,000-token post-compaction re-attach, and the authoring rules that follow
 * [init-project scenarios](skill-authoring/init-project-scenarios.md) - the five end-to-end scenarios (empty dir, existing codebase, re-run, 1.0.0 output, headless) and the `validate_output.py --self` gate a release must pass
 
 # Decisions
 
+* [2026-11-08 Eval suite layout](decisions/2026-11-08-eval-suite-layout.md) - evals/ at the plugin root for `claude plugin eval`, synthetic fixtures only, a trigger and an anti-trigger case per skill; manual fresh-session tests stay only as the fallback
 * [2026-09-23 Claude Code keeps the import adapter](decisions/2026-09-23-claude-code-keeps-import-adapter.md) - native AGENTS.md reading in Claude Code 2.1.277 is conditional, so init-project still writes CLAUDE.md with @AGENTS.md; Fallback rule clarified
 * [2026-08-30 plugin name kengjudd](decisions/2026-08-30-plugin-name-kengjudd.md) - plugin renamed skills-kengjudd → kengjudd so skills invoke as kengjudd:<skill>; mechanism, unchanged parts, migration
 * [2026-08-29 repository design](decisions/2026-08-29-repo-design.md) - founding decisions, spec-conflict rationale, deferred imports inventory

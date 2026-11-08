@@ -28,16 +28,24 @@ sources:
     title: Agent Skills Specification
   - resource: https://code.claude.com/docs/en/skills
     title: "Claude Code: Extend Claude with skills"
-  - resource: https://developers.openai.com/codex/skills/
-    title: OpenAI Codex Skills docs
+  - resource: https://learn.chatgpt.com/docs/build-skills.md
+    title: OpenAI Codex — Build skills (developers.openai.com/codex/skills redirects here since 2026)
   - resource: https://cursor.com/docs/context/skills
     title: Cursor Skills docs
   - resource: https://opencode.ai/docs/skills/
     title: opencode Skills docs
-  - resource: https://geminicli.com/docs/cli/skills/
-    title: Gemini CLI Skills docs
+  - resource: https://geminicli.com/docs/cli/creating-skills/
+    title: Gemini CLI — Creating skills (updated 2026-04-30; banner: Antigravity CLI replaces Gemini CLI for unpaid and Google One tiers from 2026-06-18)
   - resource: https://ampcode.com/news/agent-skills
     title: "Amp: Agent Skills announcement"
+  - resource: https://ampcode.com/docs/customize/skills
+    title: "Amp: Skills docs (discovery paths, 200 files per skill, mcpServers frontmatter)"
+  - resource: https://cursor.com/docs/skills
+    title: Cursor Skills docs (current URL; paths replaces the deprecated globs)
+  - resource: https://moonshotai.github.io/kimi-cli/en/customization/skills.html
+    title: "Kimi CLI: Skills docs (current URL)"
+  - resource: https://github.com/anthropics/claude-code/issues/31005
+    title: "Claude Code issue #31005 — .agents/skills not read (open, reopened 2026-09-28)"
   - resource: https://kiro.dev/docs/skills/
     title: Kiro Skills docs
   - resource: https://goose-docs.ai/docs/guides/context-engineering/using-skills/
@@ -63,6 +71,9 @@ sources:
 generated:
   by: claude-code/claude-fable-5
   at: 2026-08-29T10:45:34Z
+verified:
+  - by: claude-code/claude-fable-5-1
+    at: "2026-11-08T06:38:06Z"
 status: stable
 ---
 
@@ -83,7 +94,7 @@ In every path, a skill lives at `<dir>/<skill-name>/SKILL.md`.
 
 | Project-scope path(s) | User-scope path(s) | Invocation style | Notes |
 |---|---|---|---|
-| `.claude/skills/` — loaded from cwd and every parent up to repo root; nested `.claude/skills` in subdirs load lazily when Claude touches files there (namespaced `subdir:skill`); also `.claude/skills/` of any `--add-dir` directory | `~/.claude/skills/` (personal); `~/.claude/skills/synced/` for claude.ai-synced skills (via `CLAUDE_CODE_SYNC_SKILLS=1` in a `-p` run); enterprise via managed settings dir (e.g. `/etc/claude-code/.claude/skills/` on Linux); plugins at `<plugin>/skills/<name>/` | Automatic by description match, or explicit `/skill-name`. For personal/project skills the **directory name** (not frontmatter `name`) is the command; plugin skills are `/plugin-name:skill-name` | Symlinked skill dirs are followed. Precedence: enterprise > personal > project; skills override same-name `.claude/commands` files. Supports many extension frontmatter fields beyond the six-spec set — those are forbidden in this repo's portable skills (CLAUDE.md rule 6). Plugin packaging: see [/specs/claude-code-plugins.md](/specs/claude-code-plugins.md) |
+| `.claude/skills/` — loaded from cwd and every parent up to repo root; nested `.claude/skills` in subdirs load lazily when Claude touches files there (namespaced `subdir:skill`); also `.claude/skills/` of any `--add-dir` directory. **Does not read `.agents/skills/`** (issue #31005, open as of 2026-11-08) | `~/.claude/skills/` (personal); `~/.claude/skills/synced/` for claude.ai-synced skills (via `CLAUDE_CODE_SYNC_SKILLS=1` in a `-p` run); enterprise via managed settings dir (e.g. `/etc/claude-code/.claude/skills/` on Linux); plugins at `<plugin>/skills/<name>/` | Automatic by description match, or explicit `/skill-name`. For personal/project skills the **directory name** (not frontmatter `name`) is the command; plugin skills are `/plugin-name:skill-name` | Symlinked skill dirs are followed. Precedence: enterprise > personal > project; skills override same-name `.claude/commands` files. Supports many extension frontmatter fields beyond the six-spec set — those are forbidden in this repo's portable skills (CLAUDE.md rule 6). Plugin packaging: see [/specs/claude-code-plugins.md](/specs/claude-code-plugins.md) |
 
 ### OpenAI Codex
 
@@ -107,7 +118,7 @@ In every path, a skill lives at `<dir>/<skill-name>/SKILL.md`.
 
 | Project-scope path(s) | User-scope path(s) | Invocation style | Notes |
 |---|---|---|---|
-| Workspace: `.gemini/skills/` or `.agents/skills/` | `~/.gemini/skills/` or `~/.agents/skills/` | Via an `activate_skill` tool with user confirmation; managed with `/skills list\|link\|enable\|disable\|reload` and `gemini skills install <git-url> --consent` | Precedence (lowest → highest): built-in < extension skills < user < workspace; within a tier the `.agents` alias wins |
+| Workspace: `.gemini/skills/` or `.agents/skills/` | `~/.gemini/skills/` or `~/.agents/skills/` | Via an `activate_skill` tool with user confirmation; managed with `/skills list\|link\|enable\|disable\|reload` and `gemini skills install <git-url> --consent` | Precedence (lowest → highest): built-in < extension skills < user < workspace; within a tier the `.agents` alias wins. The docs carry a banner that Antigravity CLI replaced Gemini CLI for unpaid and Google One tiers on 2026-06-18; the skill paths above are unchanged on the page (verified 2026-11-08) |
 
 ### Zed
 
@@ -131,7 +142,7 @@ In every path, a skill lives at `<dir>/<skill-name>/SKILL.md`.
 
 | Project-scope path(s) | User-scope path(s) | Invocation style | Notes |
 |---|---|---|---|
-| `.agents/skills/` (default install target); compat `.claude/skills/` | `~/.config/agents/skills/` and `~/.config/amp/skills/`; compat `~/.claude/skills/` | Install via `amp skill add owner/repo`; explicit invocation syntax not documented in verified sources | Precedence: project overrides user overrides built-in. Exact frontmatter field support unconfirmed (see Known gaps) |
+| `.agents/skills/` (and parents); compat `.claude/skills/` | `~/.config/agents/skills/`, `~/.agents/skills/`, `~/.config/amp/skills/`; compat `~/.claude/skills/` and `~/.claude/plugins/cache/` | Install via `amp skill add owner/repo`; explicit invocation syntax not documented | Precedence: project overrides user overrides built-in. Official docs (`ampcode.com/docs/customize/skills`, verified 2026-11-08): reads SKILL.md, adds a non-spec `mcpServers` frontmatter key, limits a skill to 200 files and discovery to 5 levels |
 
 ### Goose
 
@@ -202,8 +213,12 @@ Script behavior worth knowing:
 - Idempotent: a link already pointing at this repo's skill is skipped.
 - An existing file/dir/foreign link at the target is **not** replaced unless
   `--force` is passed (it prints `SKIP ... Use --force to replace.`).
-- After linking, restart or reload the agent session — skills are discovered
-  at startup (Zed being the live-reload exception).
+- After linking, reload or restart the agent session — most agents discover
+  skills at startup (Zed live-reloads; Claude Code hot-reloads an edited
+  SKILL.md but needs `/reload-skills` or a new session for a new directory).
+- The script warns when the `kengjudd` Claude Code plugin is installed on the
+  same machine: two channels list every skill twice
+  ([/skill-authoring/context-budgets.md](/skill-authoring/context-budgets.md)).
 
 ## Known gaps
 
@@ -215,11 +230,15 @@ primary docs before relying on these points:
   `.agents/skills` — `docs.github.com/en/copilot/concepts/agents/about-agent-skills`
   would settle it). It is therefore absent from the matrix and from
   `install.sh`.
-- **Amp frontmatter support**: exact supported fields could not be confirmed
-  from primary docs (`ampcode.com/manual` redirected; `ampcode.com/docs/skills`
-  returned 404 at research time). Discovery paths above come from the
-  official announcement (`ampcode.com/news/agent-skills`) plus secondary
-  guides.
+- **Amp frontmatter support**: resolved 2026-11-08 — the official docs page
+  now exists and is cited above (SKILL.md plus a non-spec `mcpServers` key).
+- **Kimi**: the Kimi CLI repo the earlier source pointed at is archived; the
+  current docs (cited above) describe Kimi Code CLI, whose discovery paths
+  match the row. Re-verify the row's `~/.kimi-code/skills/` default against
+  the current page before relying on it.
+- **Gemini CLI vs Antigravity CLI**: the Gemini CLI docs say Antigravity CLI
+  replaced Gemini CLI for unpaid and Google One tiers on 2026-06-18;
+  Antigravity CLI's own skill discovery paths were not verified.
 - **`allowed-tools` semantics**: the spec marks the field experimental
   ("support may vary between agent implementations"); whether it acts as a
   permission grant or a restriction is not standardized per agent. Confirmed

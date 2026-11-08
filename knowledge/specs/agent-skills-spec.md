@@ -29,20 +29,33 @@ sources:
     title: anthropics/skills (GitHub)
   - resource: https://opencode.ai/docs/skills/
     title: opencode Skills docs — spec-fields-only frontmatter
+  - resource: https://www.anthropic.com/news/donating-agent-skills-to-the-agentic-ai-foundation
+    title: "Anthropic, 2026-10-22: Donating Agent Skills to the Agentic AI Foundation"
+  - resource: https://github.com/agentskills/agentskills/commits/main/docs/specification.mdx
+    title: Commit history of the specification page (last edits 2026-08-03/04; no releases or tags)
 generated:
   by: claude-code/claude-fable-5
   at: 2026-08-29T10:44:54Z
+verified:
+  - by: claude-code/claude-fable-5-1
+    at: "2026-11-08T06:38:06Z"
 status: stable
 ---
 
 # Agent Skills specification
 
 Agent Skills is an open format for packaging procedural knowledge for AI
-agents. Originally developed by Anthropic, it is now maintained as an open
+agents. Originally developed by Anthropic, it is maintained as an open
 standard at [agentskills.io](https://agentskills.io) (GitHub:
-`agentskills/agentskills`). The format is adopted by 25+ agents, including
+`agentskills/agentskills`); on 2026-10-22 Anthropic donated it to the
+Agentic AI Foundation under the Linux Foundation, with a roadmap that
+mentions versioned releases — as of 2026-11-08 the spec still carries no
+version number or changelog (last substantive edits to
+`docs/specification.mdx`: 2026-08-03/04, clarifying `metadata` and the open
+directory structure). The site's client showcase lists 46 clients, including
 Claude Code, OpenAI Codex/ChatGPT, Cursor, opencode, Gemini CLI, Amp, Goose,
-Kiro, Zed, and Kimi CLI. Per-agent discovery paths and quirks are catalogued
+Kiro, VS Code and GitHub Copilot; Zed documents support but is not in the
+showcase. Per-agent discovery paths and quirks are catalogued
 in [/agents/skill-discovery-matrix.md](/agents/skill-discovery-matrix.md).
 
 ## Skill anatomy
@@ -138,7 +151,14 @@ Authoring guidance that builds on this lives in
   against the open spec; use this as the portability gate.
 - `claude plugin validate <dir>` — Claude Code's own validator
   (v2.1.233+); useful when packaging this repo as a plugin (see
-  [/specs/claude-code-plugins.md](/specs/claude-code-plugins.md)).
+  [/specs/claude-code-plugins.md](/specs/claude-code-plugins.md)). It also
+  runs the plugin directory's submission checks (a `LICENSE` or
+  `plugin.json` `license` is required there).
+- `claude plugin eval` (v2.1.269+) — runs the eval suite described in
+  [/decisions/2026-11-08-eval-suite-layout.md](/decisions/2026-11-08-eval-suite-layout.md).
+- Per-agent limits on how much of a skill is actually loaded (description
+  caps, listing budgets, post-compaction re-attach) are collected in
+  [/skill-authoring/context-budgets.md](/skill-authoring/context-budgets.md).
 
 ## Authoring guidance from the spec ecosystem (summary)
 

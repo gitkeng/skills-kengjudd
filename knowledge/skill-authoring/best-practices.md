@@ -47,6 +47,12 @@ outside this knowledge bundle).
 
 The description is the only thing the agent sees at discovery time (~100 tokens
 per skill preloaded at startup), so it alone decides whether the skill fires.
+Several agents show even less of it: ZCode injects about the first 250
+characters per turn, Kimi CLI truncates its fallback at 240, Codex shortens
+descriptions when its 2% budget is full, and Claude Code caps the listing at
+1,536 characters and drops the descriptions of least-invoked skills when the
+list exceeds 1% of the context window. The numbers and sources are in
+[/skill-authoring/context-budgets.md](/skill-authoring/context-budgets.md).
 
 Do:
 
@@ -57,7 +63,11 @@ Do:
 - **Use concrete keywords** a user's request would actually contain (file
   extensions, tool names, verbs like "convert", "extract", "deploy") so
   description matching has something to latch onto.
-- Stay within the spec limit: 1–1024 characters, non-empty.
+- **Finish the trigger inside the first 240 characters** — capability, "Use
+  when", and the words (including Thai) a user types — then explain mechanism
+  and "Not for …" exclusions. Aim for 300–600 characters in total.
+- Stay within the spec limit: 1–1024 characters, non-empty (ZCode drops a
+  skill whose description exceeds it).
 
 Anti-patterns:
 
@@ -100,8 +110,11 @@ Skills load in three stages; write for the stage each piece of content lives in:
 
 Discipline that follows from this:
 
-- **Keep SKILL.md under 500 lines.** Anything longer belongs in `references/`
-  and should be pulled in only when needed.
+- **Keep SKILL.md under 500 lines and under 5,000 tokens.** Anything longer
+  belongs in `references/` and should be pulled in only when needed. Claude
+  Code re-attaches only the first 5,000 tokens of a skill after context
+  compaction and does not re-read SKILL.md on later turns, so rules that must
+  hold for the whole task go near the top, never after the long workflow.
 - **Keep file references one level deep from SKILL.md.** Don't make the agent
   chase reference-to-reference chains; link every needed file directly from the
   skill body, using relative paths with forward slashes.
@@ -147,25 +160,25 @@ for plugin-marketplace installs, where `update.sh` cannot work because the
 plugin cache has no `.git` directory and the script exits 1. See
 [/skill-authoring/update-mechanism.md](/skill-authoring/update-mechanism.md).)
 
-## 6. Evals: upstream guidance, optional in this repo
+## 6. Evals: `claude plugin eval` is this repo's harness
 
 Anthropic's official authoring guidance says to build evaluations *before*
-writing extensive documentation, then write the docs to pass them. Its tooling
-(`skill-creator`) expresses that with `evals/evals.json` test cases run in
-isolated subagents, `grading.json` for scoring, and `benchmark.json` for
-with-skill vs without-skill comparison.
+writing extensive documentation, then write the docs to pass them. Two
+harnesses exist: the `skill-creator` skill's `evals/evals.json` /
+`grading.json` / `benchmark.json` loop run by subagents, and Claude Code's
+built-in `claude plugin eval` (v2.1.269+), which reads `evals/<case>/prompt.md`
+plus declarative grader files, runs each case several times with and without
+the plugin, and reports a score delta, tokens and duration in `report.html`.
+Neither reads the other's files.
 
-Those filenames belong to that upstream tooling. **This repo has no eval
-convention of its own**, and the `creating-skills` skill never asks for one.
-What a skill must pass here before shipping is the smaller loop in sections 7
-and 8: the trigger and anti-trigger tests in
-`skills/creating-skills/references/authoring-checklist.md`, plus
-`skills-ref validate`. A formal eval suite is **optional** — if you want one,
-agree its layout with the repo owner and record the decision under
-`knowledge/decisions/` rather than assuming any of the filenames above are
-expected here.
+**This repo uses the built-in runner.** The layout, the synthetic-fixture rule,
+and the trigger/anti-trigger pair every skill owes are recorded in
+[/decisions/2026-11-08-eval-suite-layout.md](/decisions/2026-11-08-eval-suite-layout.md).
+The manual fresh-session trigger test in
+`skills/creating-skills/references/authoring-checklist.md` remains the fallback
+for agents without eval tooling.
 
-The upstream ideas worth borrowing even without an eval harness:
+The upstream ideas worth borrowing in either harness:
 
 - Compare **with and without the skill** — a skill that doesn't beat the
   no-skill baseline is overhead, not help.
@@ -190,9 +203,12 @@ Iterate until both sets pass.
 ## 8. Validate before shipping
 
 - Run `skills-ref validate ./my-skill` (reference validator from
-  `agentskills/agentskills`).
+  `agentskills/agentskills`; an unknown frontmatter key is an error, not a
+  warning).
 - In Claude Code, `claude plugin validate <dir>` (v2.1.233+) also validates
-  packaged skills.
+  packaged skills, and `claude plugin eval` (v2.1.269+) runs the eval suite
+  of section 6. `/skill-doctor` (v2.1.261+) shows what each installed skill
+  costs in context and how often it fires.
 - For this repo, additionally walk the full operational checklist at
   `skills/creating-skills/references/authoring-checklist.md` — it layers the
   repo's registration, versioning, and knowledge-capture requirements on top of
