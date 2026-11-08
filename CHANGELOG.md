@@ -7,6 +7,44 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.17.0] - 2026-11-08
+
+Phase 5 of the 2026-11-08 review: speed for the heaviest skill, and the
+second spec under the freshness gate.
+
+### codebase-analysis (2.0.1 → 2.1.0)
+
+- **Optional parallel mode.** A new `## Execution modes` section (placed
+  before Phase 0, inside the first 5,000 tokens) lets Phases 2–5 and then
+  6–7 run as concurrent subagents when the harness can spawn them;
+  sequential mode stays the default and is unchanged. Protocol in
+  `references/parallel-phases.md`: subagents register entries by canonical
+  key in `.work/entries-<phase>.json` and write `{{alias:<key>}}`
+  placeholders instead of minting; the orchestrator alone checkpoints.
+- **`scripts/resolve_aliases.py`** mints aliases once at Phase 8 — reusing
+  the prior manifest's, minting above its maximum in sorted-key order —
+  substitutes every placeholder in the documents and fragments, computes
+  `delta` and `severity_counts`, and exits 1 on an unregistered key. Tested
+  on synthetic fragments (reuse, minting, substitution, regressed severity,
+  dangling placeholder → exit 1, conflicting duplicate → exit 2). An
+  end-to-end parallel run on a real repository is **not yet verified**.
+
+### Tooling
+
+- `scripts/check-spec-versions.sh` now also checks the Agent Skills spec:
+  `knowledge/specs/agent-skills-spec.md` records `spec_source_commit`, the
+  short SHA of the last commit touching `docs/specification.mdx` in
+  `agentskills/agentskills` (the spec publishes no version), and the script
+  compares it with the GitHub commits API. Exit code is the worse of the two
+  checks; CLAUDE.md rule 5 now covers both specs.
+
+### Knowledge
+
+- New Playbook `skill-authoring/parallel-phase-skills.md`: the pattern, the
+  rejected alternatives, the cost, and what is still unverified.
+- `specs/agent-skills-spec.md` gains the `## Freshness check` section and
+  the two frontmatter keys.
+
 ## [0.16.0] - 2026-11-08
 
 Phase 4 of the 2026-11-08 review: the two skills whose bodies cost the most
