@@ -8,7 +8,7 @@ description: >-
   and technical-debt findings cited as file:line, Mermaid diagrams, and
   machine-auditable traceability; resumable across runs.
 metadata:
-  version: "2.1.0"
+  version: "2.1.1"
   updated: "2026-11-08"
   upstream: "gitkeng/aws-kiro-atx-lab .kiro/skills/comprehensive-codebase-analysis @7423a91"
 ---

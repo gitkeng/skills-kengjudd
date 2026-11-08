@@ -155,17 +155,18 @@ def walk_strings(obj, fn):
 
 
 def compute_delta(merged: dict, alias_of: dict, prior: dict | None) -> dict:
+    """Delta over *findings* only (td/v), as the manifest validator requires:
+    every delta key must be a current or prior finding, and a first run's
+    `new` must list exactly the current findings."""
     cur_sev = {k: e.get("severity") for k, e in merged["findings"].items()}
-    cur_keys = set(k for s in ("business_rules", "findings", "components", "test_cases") for k in merged[s])
+    cur_keys = set(merged["findings"])
     prior_keys, prior_sev = set(), {}
     if prior:
-        for section in ("business_rules", "findings", "components", "test_cases"):
-            for e in prior.get(section, []) or []:
-                k = e.get("canonical_key")
-                if isinstance(k, str):
-                    prior_keys.add(k)
-                    if section == "findings":
-                        prior_sev[k] = e.get("severity")
+        for e in prior.get("findings", []) or []:
+            k = e.get("canonical_key")
+            if isinstance(k, str):
+                prior_keys.add(k)
+                prior_sev[k] = e.get("severity")
     new = sorted(cur_keys - prior_keys)
     resolved = sorted(prior_keys - cur_keys)
     both = cur_keys & prior_keys

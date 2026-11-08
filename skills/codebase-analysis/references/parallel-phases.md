@@ -43,6 +43,15 @@ Each subagent loads only the references its phase lists in SKILL.md, writes
 only its phase's documents, and never touches `manifest.json`,
 `progress.json`, `README.md` or another phase's files.
 
+**Assign registry ownership before dispatching.** Tell each subagent which
+registries it may register — normally `cmp` to Phase 1 (already done),
+`br` to Phase 3, `td` to Phase 4 for code-level debt and to Phase 5 for
+dependency, security and operational debt, `v` to Phase 5, `tc` to Phase 7 —
+and that anything it notices outside its registries goes into its report,
+not its fragment. The first end-to-end run did this and finished with no
+duplicate registrations; without it the resolver's "registered twice with
+different content" error is the likely outcome.
+
 ## What a subagent may and may not do
 
 - **May** read the repository, the Phase 1 checkpoint (`progress.json`), the
@@ -135,8 +144,8 @@ Give every subagent this, filled in, followed by SKILL.md's
    every placeholder in the documents, and writes
    `.work/entries.resolved.json` with `business_rules`, `findings`,
    `components`, `test_cases`, `traceability`, `severity_counts` and
-   `delta`. Exit 1 means unresolved placeholders: fix the fragment or the
-   document, re-run. Then build `manifest.json` from the resolved entries
+   `delta` (findings only, as the validator requires). Exit 1 means
+   unresolved placeholders: fix the fragment or the document, re-run. Then build `manifest.json` from the resolved entries
    plus `coverage` and `documents` as SKILL.md's Phase 8 says, write the
    root documents and README, and **delete `<output-root>/.work/`** — the
    validator rejects unexpected files. Finish with
@@ -150,6 +159,10 @@ Give every subagent this, filled in, followed by SKILL.md's
   reported complete keep their fragments; on resume re-dispatch the missing
   ones. Never resume Phase 8 from a partial `.work/` — all six fragments
   must be present.
+- A subagent may report that it could not write one of its documents (a
+  harness hook or sandbox rule refused the path). Its fragment is still
+  valid; the orchestrator writes that document from the content the
+  subagent returned, then continues.
 - A resolver error about a key "registered twice with different content"
   means two phases described the same defect differently. Keep one
   description (usually the phase that owns the registry: `br` → behavior,

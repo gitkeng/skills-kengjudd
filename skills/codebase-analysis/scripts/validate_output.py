@@ -119,11 +119,19 @@ def check_skill_frontmatter(skill_root):
     # `metadata` a free-form string map, which distributing repositories use to
     # carry version and provenance. Flattening the block would read
     # `metadata.version` as a top-level key and reject a conforming skill.
-    fields, metadata, in_metadata = {}, {}, False
+    # YAML block scalars (`description: >-` followed by indented lines, or `|`)
+    # are legal frontmatter and the form this repository uses for long
+    # descriptions; their continuation lines are joined into the value instead
+    # of being parsed as keys.
+    fields, metadata, in_metadata, block_key = {}, {}, False, None
     for line in lines[1:end]:
         if not line.strip():
             continue
         indented = line[:1] in (" ", "\t")
+        if indented and block_key is not None:
+            fields[block_key] = (fields[block_key] + " " + line.strip()).strip()
+            continue
+        block_key = None
         if ":" not in line:
             errors.append(f"SKILL.md frontmatter: malformed line {line!r}")
             continue
@@ -136,6 +144,8 @@ def check_skill_frontmatter(skill_root):
                 errors.append(f"SKILL.md frontmatter: unexpected indented key {key!r}")
             continue
         in_metadata = key == "metadata"
+        if value in (">", ">-", "|", "|-"):
+            block_key, value = key, ""
         fields[key] = value
     unknown = set(fields) - ALLOWED_FRONTMATTER_FIELDS
     if unknown:
