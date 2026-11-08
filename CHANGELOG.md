@@ -7,6 +7,66 @@ Per-skill versions live in each skill's `SKILL.md` under `metadata.version`.
 When a skill changes, bump both the skill's `metadata.version` and this repo's `VERSION`,
 and record the change here under the skill's name.
 
+## [0.14.0] - 2026-09-23
+
+### init-project (1.1.0 → 1.2.0)
+
+**Changed — agent matrix re-verified against official sources on
+2026-09-23 and extended from twelve agents to fourteen.** Minor bump: two
+agents added, output of 1.1.0 is still detected and re-run over.
+
+- **Claude Code.** Since v2.1.277 (2026-09-18) Claude Code reads `AGENTS.md`
+  natively — but only when no `CLAUDE.md`, `.claude/CLAUDE.md` or
+  `CLAUDE.local.md` exists from the working directory up, and only in
+  sessions that fetch feature flags (not on Bedrock, Google Cloud's Agent
+  Platform, Foundry, Claude Platform on AWS, a Claude apps gateway, with
+  telemetry/traffic opt-outs, or in the first session after an install or
+  upgrade). The adapter rule stays `import-adapter` (`CLAUDE.md` with
+  `@AGENTS.md`), which the docs say never double-reads; the matrix records
+  the native path, its conditions, and `/init` now offering `/import`.
+  Decision: `knowledge/decisions/2026-09-23-claude-code-keeps-import-adapter.md`.
+- **New agents.** GitHub Copilot (CLI, VS Code, cloud agent) and Devin
+  (Devin CLI and Devin Desktop — Windsurf was renamed Devin Desktop on
+  2026-06-02 and its Cascade agent removed on 2026-09-08). Both `native`.
+- **Adapters are read by other agents.** Cursor, GitHub Copilot and Devin
+  also load a root `CLAUDE.md`; Antigravity and Copilot a root `GEMINI.md`.
+  `assets/adapter-template.md` now labels each note line with its agent's
+  name (`- **<Agent name>:** <note>`), and the matrix states the case per
+  agent; Copilot CLI expands the adapter's `@AGENTS.md`, so with Claude Code
+  also selected it loads `AGENTS.md` twice.
+- **Fallback rule.** Step 1 now reads "in its default configuration", with
+  two limits: a configurable file list counts only when its default holds
+  `AGENTS.md`, and direct reading that can be switched off by conditions the
+  agent's own file is not subject to goes to the import adapter. A literal
+  reading of the old step 1 made Claude Code and Gemini CLI `native`.
+- **Facts corrected or added per agent** (full list in
+  `knowledge/log.md`): Codex ignores project `AGENTS.md` in untrusted
+  projects and its `/init` refuses to modify an existing file; Kimi CLI is
+  archived — the section now describes Kimi Code CLI, whose `/init`
+  rewrites `AGENTS.md`; ZCode 3.14.3 ships an undocumented `/init` that
+  edits `AGENTS.md` (local inspection); Goose expands `@` includes (was
+  recorded as "No") and moved to `aaif-goose/goose`; Cursor reads
+  `CLAUDE.md` like `AGENTS.md`; opencode's `/init` edits `AGENTS.md`;
+  Gemini CLI's `/init` leaves an existing `GEMINI.md` alone and
+  `context.fileName` adds to `GEMINI.md`; Antigravity added `AGENTS.md` in
+  IDE v1.20.5 and retires Workflows on 2026-11-01; Kiro's docs contradict
+  themselves on custom-agent steering and CLI inclusion modes; Amp gained
+  workspace-level Global AGENTS.md; Zed's config page moved.
+- **SKILL.md.** The agent list names the fourteen; the init-command edge
+  case points at the extract's **Native init command** field instead of
+  restating each agent's behavior (the restatement was what went stale).
+  25,518 bytes, `validate_output.py --self` exit 0.
+
+### Knowledge
+
+- `agents/agent-init-conventions.md` rewritten for fourteen agents with a
+  "loads another agent's file" column and `stale_after: 2026-10-23`;
+  `specs/agents-md-standard.md` rewrites the Claude Code section (native
+  reading, its conditions, the official workarounds), adds Copilot and
+  Devin rows, and records the spec repo's move to `agentsmd/agents.md`;
+  new decision record; `skill-authoring/init-project-lessons.md` §11 (agent
+  facts expire in weeks).
+
 ## [0.13.0] - 2026-09-07
 
 ### init-project (1.0.0 → 1.1.0)
