@@ -77,6 +77,14 @@ Every `skills/<name>/SKILL.md` MUST contain (CLAUDE.md binding rule 3):
    `## Updating` section that documents only one of the two channels sends
    half the users to a command that cannot work for them.
 
+   Since repo v0.15.0 (2026-11-08) the section uses the template's **short
+   form** — one sentence of provenance, the two commands as bullets, one
+   reload sentence (Claude Code hot-reloads an edited SKILL.md; a new
+   directory needs `/reload-skills`) — about eight lines instead of
+   twenty-seven. The section is loaded on every activation of every skill, so
+   its length is a per-use tax; the rule only requires that both channels be
+   covered ([/skill-authoring/context-budgets.md](/skill-authoring/context-budgets.md)).
+
 2. **`metadata.version`** in the frontmatter — a SemVer string, quoted
    (e.g. `version: "1.0.0"`). The Agent Skills spec has *no* standard version
    field; the only spec-legal place for a version is the free-form `metadata`

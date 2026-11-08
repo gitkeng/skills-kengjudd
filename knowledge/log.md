@@ -2,6 +2,24 @@
 
 ## 2026-11-08
 
+- **Phase 2 of the review** (repo v0.15.0; every skill a patch,
+  creating-skills 1.3.0) — the shared format: `## Updating` cut to the
+  template's short form in all seven skills (≈100 tokens saved per
+  activation each) and the reload fact corrected (hot reload, `/reload-skills`
+  for new dirs); five descriptions rewritten so the trigger sits in the first
+  240 characters (business-rules-extraction's "Triggers on:" started at ~300;
+  init-project 915 → 654 chars; git-commit 611 → 488); git-commit's
+  `allowed-tools` converted to the spec's space-separated string after the
+  Claude Code docs confirmed they accept "a space- or comma-separated string,
+  or a YAML list" while the spec and other agents define only the string; a
+  `## Contents` list added to the 14 reference files over 100 lines that lacked
+  one; creating-skills gained the first-240 and 5,000-token rules, eval steps
+  pointing at `evals/`, and moved its ~50-line Skill prefixes section to
+  `references/skill-prefixes.md`. Hot reload observed live: the new
+  descriptions appeared in the running session's skill list without a
+  restart, and disabling the plugin removed the `kengjudd:` duplicates.
+  /skill-authoring/update-mechanism.md records the short form.
+
 - **Skill quality review** (repo v0.14.1, no skill changed) — all seven
   skills reviewed against the Agent Skills spec and Claude Code 2.1.319 at
   Kongsak's request ("review the current skills, research how to raise
