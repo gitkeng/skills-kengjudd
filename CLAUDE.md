@@ -88,7 +88,12 @@ README.md                human docs
   repo's own skills are not discoverable here until installed. To make them
   discoverable while working in this repo, run once:
   `./scripts/install.sh --tool claude --project .` (this also enables the
-  trigger tests in the authoring checklist).
+  trigger tests in the authoring checklist). **One channel per machine:**
+  with the `kengjudd` plugin also enabled, every skill is listed twice —
+  double the description cost each turn and two same-named skills competing
+  to trigger — so disable the plugin here (`claude plugin disable
+  kengjudd@kengjudd`) or skip the project symlinks. Budgets and the reason:
+  `knowledge/skill-authoring/context-budgets.md`.
 - **Register:** every new skill must be added to `.claude-plugin/plugin.json`
   → `skills` array as `"./skills/<name>"` (`./` prefix + directory path).
 - **Skill naming:** directory name == frontmatter `name`; lowercase `a-z0-9-`,

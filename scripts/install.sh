@@ -108,4 +108,21 @@ while IFS= read -r target_dir; do
 done < <(targets_for_tool "$TOOL")
 
 echo "Done: $linked linked, $skipped skipped."
-echo "Reminder: restart or reload your agent session so newly linked skills are discovered."
+echo "Reminder: reload skills or restart your agent session so newly linked skills are discovered (Claude Code: /reload-skills)."
+
+# A symlink install plus the kengjudd plugin on the same machine lists every
+# skill twice (double description cost per turn, two same-named skills
+# competing to trigger). Warn when Claude Code has the plugin installed.
+if [[ "$TOOL" == "claude" || "$TOOL" == "all" ]]; then
+  installed="$HOME/.claude/plugins/installed_plugins.json"
+  settings="$HOME/.claude/settings.json"
+  plugin_installed=0; plugin_disabled=0
+  [[ -f "$installed" ]] && grep -q '"kengjudd@kengjudd"' "$installed" && plugin_installed=1
+  # Claude Code records a disabled plugin as "kengjudd@kengjudd": false under enabledPlugins.
+  [[ -f "$settings" ]] && grep -Eq '"kengjudd@kengjudd"[[:space:]]*:[[:space:]]*false' "$settings" && plugin_disabled=1
+  if [[ "$plugin_installed" -eq 1 && "$plugin_disabled" -eq 0 ]]; then
+    echo "WARN  The kengjudd@kengjudd plugin is installed in Claude Code. Use one channel per machine:" >&2
+    echo "      disable it with 'claude plugin disable kengjudd@kengjudd' or remove these symlinks." >&2
+    echo "      See knowledge/skill-authoring/context-budgets.md." >&2
+  fi
+fi
