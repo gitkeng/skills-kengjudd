@@ -12,7 +12,7 @@ description: >-
   running git init, an agent's own /init command, or deep codebase analysis.
 license: MIT
 metadata:
-  version: "1.2.1"
+  version: "1.3.0"
   updated: "2026-11-08"
 ---
 
@@ -103,71 +103,36 @@ question ceiling`, show the cost before spending it as that section says,
 and respect its **hard ceiling of 25 interview questions** and its
 `### Re-ask bound`.
 
-1. **Project identity.** Ask for the project's **name** and a one-or-two
-   sentence **purpose**. Recommend the target directory's own name; for an
-   existing codebase also draft the purpose from its README per
-   `## Edge cases` and offer that draft. For an empty directory ask
-   outright. Both are required: the assets carry `<Project name>` tokens
-   that must not survive.
-2. **Agents.** Multi-select from the fourteen agents covered in
+1. **Project identity.** Name and a one-or-two-sentence purpose; recommend
+   the directory's name and, for an existing codebase, a purpose drafted from
+   its README.
+2. **Agents.** Multi-select from the fourteen agents in
    [references/agent-context-matrix.md](references/agent-context-matrix.md)
-   — Claude Code, Codex, Cursor, opencode, Gemini CLI, Zed, Kiro, Kimi CLI,
-   Amp, Goose, ZCode, Antigravity, GitHub Copilot, Devin (formerly
-   Windsurf) — plus free text for any other agent.
+   plus free text.
 3. **Task types.** Multi-select from the four presets in
-   [references/task-type-presets.md](references/task-type-presets.md) —
-   `## coding`, `## frontend`, `## project management`,
-   `## knowledge base` — plus free text, which goes through that file's
-   `## Free-text task types`: draft by analogy, confirm in one question,
-   at most one revision round.
-4. **Gap checklists.** For every selected task type, read only its preset
-   section plus `## Gap rules`, and ask its items by key, one at a time,
-   recommendation first, until no gaps remain — including the one-level
-   expansion items an answer naming a technology adds. Items the user
-   defers join the **running gap list**, flushed to `<kb>/log.md` at Phase 3
-   **Skeleton, run record, gap flush** and reported in Phase 6; nothing is
-   written before then.
-5. **Knowledge-base folder name.** Recommend `knowledge-base`, then ask.
-   This is `<kb>` everywhere below. Accept only a **single path segment
-   matching `[a-z0-9._-]+`** — no spaces, no `/`, no leading `.` alone, no
-   absolute path, no `..`; re-ask with the constraint stated (re-ask
-   bound). Check for an existing folder of that name
-   **case-insensitively** with the probe in
-   [references/run-lifecycle.md](references/run-lifecycle.md)
-   `## Detection signals`, because macOS and Windows treat `Docs` and
-   `docs` as the same directory. If the name is taken by a folder this run
-   must not write into, stop and ask: propose exactly one alternative
-   (`<chosen>-okf`) and let the user accept it or name another. Never adjust
-   the user's chosen name silently.
-6. **Legacy knowledge folders.** When the root has depth-1 directories that
-   look like documentation and are not OKF bundles (`docs`, `doc`,
-   `documentation`, `notes`, `wiki`, `adr`, `decisions`, the folder that
-   collided in the previous topic, any directory named under
-   `coding/existing-conventions`), list them and ask which to index as
-   legacy from the new bundle (key `knowledge-base/legacy-folders`,
-   multi-select, "none" allowed; the user may add paths). A folder that
-   **is** an OKF bundle is offered as an external KB instead. Skip the
-   question when no candidate exists.
-7. **Karpathy guidelines opt-in.** Ask whenever the project involves
-   **writing code** — the `coding` preset, the `frontend` preset, or a
-   confirmed code-flavored free-text checklist. It is an item of the
-   `## coding` checklist (`coding/karpathy-opt-in`); a run that selected
-   `coding` has answered it there — carry that answer forward. Ask here only
-   if no code-writing checklist covered it; the default is to include.
-   Including it never installs the upstream skill.
-8. **Language of generated files.** Recommend the language the user is
-   writing in, then ask. Every file this run writes uses the answer
-   **except** the items in
-   [references/context-file-guidelines.md](references/context-file-guidelines.md)
-   `## Never translated` — chiefly the standing-rules and Karpathy blocks,
-   the four HTML markers, YAML keys and `type:` values, and every key or
-   token a later run parses. When the answer is not English, put the notice
-   line that section describes above each fixed block.
-9. **Pre-existing artifacts.** Nothing is asked here. Every existing path
-   is decided once, on the Phase 3 **Write plan**, per
-   [references/context-file-guidelines.md](references/context-file-guidelines.md)
-   `## Merge semantics`; additive writes into an existing OKF bundle are
-   never asked about.
+   [references/task-type-presets.md](references/task-type-presets.md) plus
+   free text (drafted by analogy, confirmed once).
+4. **Gap checklists.** For every selected task type ask its preset items by
+   key, one at a time, recommendation first; deferred items join the running
+   gap list.
+5. **Knowledge-base folder name.** Recommend `knowledge-base`, then ask; this
+   is `<kb>` everywhere below. Single path segment `[a-z0-9._-]+`, checked
+   case-insensitively against existing folders; on a collision propose
+   exactly one alternative (`<chosen>-okf`).
+6. **Legacy knowledge folders.** Offer depth-1 documentation-looking folders
+   that are not OKF bundles for indexing as legacy (key
+   `knowledge-base/legacy-folders`, multi-select, "none" allowed).
+7. **Karpathy guidelines opt-in.** Asked whenever the project writes code,
+   normally as `coding/karpathy-opt-in`; default include; never installs the
+   upstream skill.
+8. **Language of generated files.** Recommend the user's language, then ask;
+   the never-translated items stay English with a notice line above them.
+9. **Pre-existing artifacts.** Nothing asked here — every existing path is
+   decided once on the Phase 3 **Write plan**.
+
+Full wording, constraints and edge rules of all nine topics:
+[references/phase-interview.md](references/phase-interview.md) — read it when
+Phase 1 starts.
 
 End the phase by emitting the chat ledger
 ([references/run-lifecycle.md](references/run-lifecycle.md)
@@ -248,75 +213,36 @@ This is a **draft** — Phase 5 reviews and corrects it before the report.
 
 ### Phase 4 — Generate context files
 
-1. **Baseline and block diff.** Re-read every context-file target on the
-   plan immediately before writing. For every **marked** file compute the
-   in-block lines the regenerated block would drop, compare the standing
-   block against
-   [references/standing-rules-history.md](references/standing-rules-history.md),
-   and put the whole set to the user as **one** confirmation per
-   `## Merge semantics` **Marked files**. A marker or log entry this run did
-   not write, found now, is the *foreign* state: stop. Never write a
-   context file before this answer.
-2. **Canonical file.** Instantiate `assets/agents-md-template.md` as
-   `AGENTS.md` at the root. Fill `## Project` from the interview (and the
-   light analysis of `## Edge cases` for an existing codebase);
-   `## Commands` from the commands confirmed under `coding/commands` only,
-   deleting lines the project has no command for and the whole section
-   when it has none; `## Project knowledge base` with `<kb>`, plus one line
-   per legacy folder linking its concept; `## Agent notes` per **Adapters**.
-   Copy the template's `## Working rules` block unchanged — the single
-   source of the standing-rules block,
-   [references/context-file-guidelines.md](references/context-file-guidelines.md)
-   `## Standing rules block` — and add the facts each preset's **Output
-   delta** calls for, the convention-document pointers, and any
-   `## Scaffolder collisions` bullet **below the verbatim block, as
-   additional bullets, never interleaved with it**.
-3. **Markers.** Everything this skill writes into `AGENTS.md` and every
-   adapter sits between `<!-- init-project:start -->` and
-   `<!-- init-project:end -->`, on a fresh run exactly as on a merge; only
-   the file's H1 stays outside. Keep the template's pair, add no second
-   pair, let `karpathy:*` nest inside
-   ([references/run-lifecycle.md](references/run-lifecycle.md)
-   `## Marker forms`). This is what lets a re-run regenerate instead of
-   duplicate.
-4. **Karpathy block.** Opted in: keep the block between its markers. Opted
-   out, or never asked because no code-writing task type was selected:
-   delete the whole marked block, markers included.
-5. **Adapters.** For each selected agent take its **Adapter rule** from the
-   Phase 2 extract. Before writing for a `native` agent, check the root for
-   files that shadow or duplicate `AGENTS.md` using that agent's
-   **Context file(s) & precedence** field (Zed's first-match-wins list,
-   Goose's `.goosehints`, the `GEMINI.md` Antigravity also reads); every hit
-   is a row on the write plan, never a silent write.
-   - `native` — no adapter file. Record the agent in `## Agent notes`.
-   - `import-adapter` — instantiate `assets/adapter-template.md` as that
-     agent's own file: the import line verbatim from the extract, at most
-     two notes true of that agent and false of the others, the notice line
-     on a non-English run. Do not restate that `AGENTS.md` is canonical.
-   - `full-copy` — that agent's own file as a full copy of `AGENTS.md`'s
-     content with the provenance header from `## Fallback rule`; flagged in
-     the report.
+1. **Baseline and block diff.** Re-read every context-file target right
+   before writing; for marked files show the in-block lines the regenerated
+   block would drop and get **one** confirmation; a marker this run did not
+   write is the *foreign* state — stop.
+2. **Canonical file.** Instantiate `assets/agents-md-template.md` as the root
+   `AGENTS.md`: `## Project` and `## Commands` from the interview, the
+   `## Working rules` block copied **unchanged** (the single source of the
+   standing-rules block), preset output deltas and collision bullets added
+   below it, never interleaved.
+3. **Markers.** Everything this skill writes sits between
+   `<!-- init-project:start -->` and `<!-- init-project:end -->`, one pair per
+   file, `karpathy:*` nested inside — this is what lets a re-run regenerate
+   instead of duplicate.
+4. **Karpathy block.** Opted in: keep it between its markers. Opted out or
+   never asked: delete the whole marked block, markers included.
+5. **Adapters.** Per selected agent, the **Adapter rule** from its Phase 2
+   extract — `native` (notes only), `import-adapter` (its own file importing
+   `AGENTS.md`), `full-copy` (flagged in the report) — after checking the root
+   for files that shadow `AGENTS.md`; every hit is a write-plan row.
 
-   `## Agent notes` carries one bullet per selected agent, an imperative
-   constraint for the agents that read the file later; for a `native` agent
-   it names the single quirk from the closed list in the template's
-   comment, with any init command copied **verbatim** from the extract's
-   **Native init command** field, never paraphrased. At most one further
-   bullet may carry a cross-agent warning; anything else belongs in `<kb>/`.
-6. **Budget.** Respect
-   [references/context-file-guidelines.md](references/context-file-guidelines.md)
-   `## Content budget` in both units (a full-copy adapter inherits
-   `AGENTS.md`'s caps). Over budget: never trim a fact silently — follow
-   that section's **cut order**, moving detail into `<kb>/` as a concept of
-   `## Concept kinds` (a delta row on the plan; frontmatter, index bullet,
-   log bullet), deciding what goes where with `## Context vs KB`. Re-check
-   after every edit.
+6. **Budget.** Stay inside the content budget of
+   [references/context-file-guidelines.md](references/context-file-guidelines.md);
+   over budget, follow its cut order into `<kb>/`, never trim a fact silently.
 7. **Self-check.** Run `scripts/validate_output.py <root> --kb <kb> --plan
-   <kb>/init-project-run.md` ([references/self-check.md](references/self-check.md))
-   — markers, placeholders, budget, frontmatter, links, standing block,
-   adapter import, index. Fix and re-run within its `## Fix loop` bound;
-   report what survives as a gap. Without `python3`, walk the checklist by
-   hand and say so.
+   <kb>/init-project-run.md` ([references/self-check.md](references/self-check.md));
+   fix within its fix loop, report what survives as a gap.
+
+Full wording of all seven steps, including the `## Agent notes` rules:
+[references/phase-context-files.md](references/phase-context-files.md) — read
+it when Phase 4 starts.
 
 ### Phase 5 — Expert review + apply
 
@@ -385,15 +311,17 @@ reading the sections named below, only once Phases 3 and 4 are complete:
 
 | File | What it answers |
 | --- | --- |
-| [run-lifecycle.md](references/run-lifecycle.md) | Target root, detection, marker forms, Phase 0 states, run record, write plan, resume, rollback, headless gate, chat ledger. |
-| [agent-context-matrix.md](references/agent-context-matrix.md) | Per-agent context files, import syntax, adapter rule, init command, config locations, sources; `## Fallback rule`. |
-| [task-type-presets.md](references/task-type-presets.md) | Keyed checklists, output deltas, free-text task types, cost preview, ceiling and consent-ask set, re-ask bound, expansion. |
-| [okf-kb-guide.md](references/okf-kb-guide.md) | Version check, bundle creation and index union, concept kinds, skill-owned concepts, log grammar, migration, legacy folders, technology template. |
-| [context-file-guidelines.md](references/context-file-guidelines.md) | Content budget and cut order, context vs KB, standing-rules block, never-translated list, scaffolder collisions, merge semantics. |
-| [expert-review-protocol.md](references/expert-review-protocol.md) | Capability heuristic, roster, reviewer brief, checklists, adjudication, convergence, stabilize. |
-| [self-check.md](references/self-check.md) | The validator's checks, parser subset, fix loop, and the `--self` gate. |
+| [phase-interview.md](references/phase-interview.md) | Phase 1, all nine topics in full. |
+| [phase-context-files.md](references/phase-context-files.md) | Phase 4, all seven steps in full, incl. `## Agent notes`. |
+| [run-lifecycle.md](references/run-lifecycle.md) | Target root, detection, markers, Phase 0 states, run record, write plan, resume, rollback, headless gate, chat ledger. |
+| [agent-context-matrix.md](references/agent-context-matrix.md) | Per-agent context files, import syntax, adapter rule, init command, sources; `## Fallback rule`. |
+| [task-type-presets.md](references/task-type-presets.md) | Keyed checklists, output deltas, free-text task types, cost preview, question ceiling, re-ask bound. |
+| [okf-kb-guide.md](references/okf-kb-guide.md) | Version check, bundle creation, concept kinds, log grammar, migration, legacy folders, technology template. |
+| [context-file-guidelines.md](references/context-file-guidelines.md) | Content budget and cut order, context vs KB, standing-rules block, never-translated list, merge semantics. |
+| [expert-review-protocol.md](references/expert-review-protocol.md) | Reviewer roster, brief, checklists, adjudication, convergence. |
+| [self-check.md](references/self-check.md) | The validator's checks, fix loop, `--self` gate. |
 | [report-format.md](references/report-format.md) | The twelve report sections. |
-| [standing-rules-history.md](references/standing-rules-history.md) | Every shipped standing-rules block, for matching on a re-run. |
+| [standing-rules-history.md](references/standing-rules-history.md) | Every shipped standing-rules block, for re-run matching. |
 
 The **skill directory** is the directory containing this SKILL.md as your
 harness loaded it; resolve `assets/`, `references/` and `scripts/` from
