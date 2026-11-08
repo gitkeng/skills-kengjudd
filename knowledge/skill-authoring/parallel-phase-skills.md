@@ -100,8 +100,14 @@ for small repositories or when a human wants to watch alias matches.
   substitution in documents and in `source_refs` / `traceability`, delta
   with a regressed severity, exit 1 on an unregistered key, exit 2 on a
   conflicting duplicate.
-- **Not yet verified:** an end-to-end parallel run of the skill on a real
-  repository through `claude plugin eval`. The sequential path is unchanged,
-  so 2.1.0 adds an option rather than altering the default; the first
-  end-to-end run should be recorded in /log.md before parallel mode is
-  recommended by default.
+- Verified (2026-11-08, later the same day): one end-to-end parallel run
+  through `claude plugin eval` on a synthetic 14-file service — 6 subagents,
+  resolver and validator ran, `.work/` removed, no placeholder left, 8/8
+  graders, 20 minutes, ≈$8.78 (`evals/codebase-analysis-parallel-smoke`).
+  It exposed a validator parser gap (block-scalar description) and a delta
+  scope bug in the resolver, both fixed in 2.1.1, and taught two protocol
+  rules: assign registry ownership per subagent before dispatch, and let the
+  orchestrator write a document a subagent was refused.
+- **Still open:** a run on a real repository with a prior manifest (alias
+  reuse across runs has only the synthetic resolver test), and the token
+  cost of parallel versus sequential on the same repository.

@@ -112,8 +112,10 @@ rules that must hold for the whole task — iron rules, stop conditions, the
 reference table — in the first screenfuls, never after the long workflow. Of
 this repo's skills, only `init-project` exceeded the limit in Nov 2026
 (≈6,350 tokens); release 0.16.0 moved Phase 1 and Phase 4 detail into two
-references (≈4,926 tokens) and split `doc2markdown` by document type
-(≈4,320 → ≈2,311 tokens), with the eval suite confirming no behaviour loss.
+references (≈4,926 tokens), 0.18.0 did the same for Phases 2–3 and tightened
+the rest (≈4,094 tokens, 304 lines), and `doc2markdown` was split by document
+type (≈4,320 → ≈2,311 tokens), with the eval suite confirming no behaviour
+loss at each step.
 
 Related loading facts worth knowing:
 

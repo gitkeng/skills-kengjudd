@@ -2,6 +2,42 @@
 
 ## 2026-11-08
 
+- **Open items of the review closed** (repo v0.18.0; init-project 1.4.0,
+  doc2markdown 1.2.1), unattended at Kongsak's request ("ทำทั้ง 3 ข้อ").
+  init-project: Phase 2 and 3 full text to `references/phase-research.md`
+  and `references/phase-kb.md`, body ≈4,094 tokens — within 2% of the 4,000
+  target the review set; the bold-label grep and the `--self` gate both
+  pass. doc2markdown: a synthetic Thai PDF fixture (reportlab + the macOS
+  Ayuthaya font, every ำ written as ํ + า) exercised the repair path and
+  exposed a gap — a pair split by a line break (`ขอกํ` / `าหนด`) was left
+  unrepaired because the adjacent-pair replacement runs per line; fixed at
+  block level in `pdf_text.py` (1.2.1), pinned by `no-stray-nikhahit` and a
+  `กำหนด` requirement in the new `doc2markdown-thai-pdf` case (2/2 runs,
+  7/7 graders). The first fixture draft had a SARA AM ratio of 0.4 and
+  tripped the "text layer unreliable → OCR everything" heuristic
+  (`SARA_AM_RATIO_LIMIT = 0.35`): a reminder that the heuristic assumes
+  natural ำ density; the fixture was rewritten to 0.08. Eval Δ for both
+  doc2markdown cases stays 0 — Claude reads PDFs and docx visually without
+  the skill — so those cases guard the scripts' behaviour, not a baseline
+  gap. **codebase-analysis parallel mode ran end to end** on a
+  synthetic 14-file Python service (`evals/codebase-analysis-parallel-smoke`,
+  1 run, 20 min, ≈$8.78): 6 subagents, resolver and validator ran, `.work/`
+  removed, no placeholder left — 8/8 graders. The run surfaced two defects:
+  the skill's own validator could not parse the `>-` description that
+  release 0.15.0 introduced (so every output-tree validation would have
+  failed on the frontmatter group — the sequential path was affected too,
+  undetected because no run happened between 0.15.0 and now), and the
+  resolver's `delta` included non-finding keys the validator rejects. Both
+  fixed in codebase-analysis 2.1.1 and re-validated on the kept tree (7/7
+  groups). Observations for the protocol: the orchestrator assigned registry
+  ownership per phase on its own and had no duplicate registrations (now a
+  rule in parallel-phases.md); one subagent was refused a file write by the
+  harness and the orchestrator wrote it from the returned content (now a
+  documented fallback); Apple's git shim is unusable in the sandbox, so the
+  run had no churn data. Lesson for the repo: a description rewrite is a
+  skill-content change for any skill whose validator reads its own
+  SKILL.md — run that validator, not just `claude plugin validate`.
+
 - **Phase 5 of the review** (repo v0.17.0; codebase-analysis 2.1.0). The
   skill gains an optional parallel mode: Phases 2–5 then 6–7 as concurrent
   subagents, aliases minted once at Phase 8 by the new
