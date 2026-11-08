@@ -1,9 +1,16 @@
 ---
 name: doc2markdown
-description: Convert a PDF, DOCX, XLSX, or PPTX into faithful Markdown, with images extracted and tables preserved. Use when asked to convert, extract, transcribe, read into markdown, or "make a .md out of" a document — including Thai documents, scans needing OCR, slide decks, RFPs, TORs, meeting minutes, and cost breakdown spreadsheets. Triggers on .pdf/.docx/.xlsx/.pptx paths and on "แปลงเอกสาร", "อ่านไฟล์เป็น markdown", "ถอดเอกสาร", "แปลงสไลด์", "พาวเวอร์พอยต์".
+description: >-
+  Convert a PDF, DOCX, XLSX, or PPTX into faithful Markdown with images
+  extracted and tables preserved. Use when asked to convert, extract,
+  transcribe, or read a document into markdown — "แปลงเอกสาร", "อ่านไฟล์เป็น
+  markdown", "ถอดเอกสาร" — or when a .pdf/.docx/.xlsx/.pptx path appears.
+  Handles Thai documents, scans needing OCR, slide decks ("แปลงสไลด์",
+  "พาวเวอร์พอยต์"), RFPs, TORs, meeting minutes, and cost breakdown
+  spreadsheets.
 metadata:
-  version: "1.1.1"
-  updated: "2026-08-30"
+  version: "1.1.2"
+  updated: "2026-11-08"
   upstream: "local ~/.claude/skills/doc-to-markdown (no git repo, no upstream version; imported 2026-08-29)"
 ---
 
@@ -297,28 +304,11 @@ Don't route around them; each encodes a failure you will otherwise hit.
 
 ## Updating
 
-This skill is versioned via `metadata.version` (see frontmatter) and
-distributed from the private repo `gitkeng/skills-kengjudd`. Use the command
-that matches how it was installed.
+Versioned by `metadata.version`; source: private repo `gitkeng/skills-kengjudd`.
 
-**Git clone + symlink install** — run from the repository root:
+- Git clone + symlink install (from the repo root; `readlink -f` a symlinked
+  skill dir to find it): `./scripts/update.sh doc2markdown`
+- Claude Code plugin install (`update.sh` cannot run in the plugin cache, which
+  has no `.git`): `claude plugin update kengjudd@kengjudd`
 
-```bash
-./scripts/update.sh doc2markdown
-```
-
-If this skill directory is a symlink (the normal install), resolve it with
-`readlink -f <this-skill-dir>`; the repo root is two directories above the
-resolved path.
-
-The script fetches `origin/main`, compares this skill's `metadata.version`,
-shows this skill's pending commits, and pulls after confirmation.
-
-**Claude Code plugin install** — the plugin cache has no `.git`, so
-`update.sh` cannot run there:
-
-```bash
-claude plugin update kengjudd@kengjudd
-```
-
-After updating, restart the agent session so the new version loads.
+Then reload skills or restart the session (Claude Code: `/reload-skills`).
